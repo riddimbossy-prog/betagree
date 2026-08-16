@@ -69,9 +69,9 @@ function FixturePage() {
           </div>
         </div>
         <dl className="mt-5 grid grid-cols-3 gap-2">
-          <OddCell k="1" v={formatDecimal(fixture.away.ml)} />
-          <OddCell k="X" v={formatDecimal(fixture.drawMl)} />
-          <OddCell k="2" v={formatDecimal(fixture.home.ml)} />
+          <OddCell k={fixture.away.abbr} v={formatDecimal(fixture.away.ml)} />
+          <OddCell k="Draw" v={formatDecimal(fixture.drawMl)} />
+          <OddCell k={fixture.home.abbr} v={formatDecimal(fixture.home.ml)} />
         </dl>
       </header>
 

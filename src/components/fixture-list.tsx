@@ -41,9 +41,9 @@ export function FixtureList({
                 </span>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                <span className="odds-chip bg-secondary">1 {formatDecimal(f.away.ml)}</span>
-                <span className="odds-chip bg-secondary">X {formatDecimal(f.drawMl)}</span>
-                <span className="odds-chip bg-secondary">2 {formatDecimal(f.home.ml)}</span>
+                <span className="odds-chip bg-secondary">{formatDecimal(f.away.ml)}</span>
+                <span className="odds-chip bg-secondary">{formatDecimal(f.drawMl)}</span>
+                <span className="odds-chip bg-secondary">{formatDecimal(f.home.ml)}</span>
               </div>
               {top ? (
                 <p className="mt-3 text-sm text-primary">{top.label}</p>

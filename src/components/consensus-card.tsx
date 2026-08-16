@@ -40,9 +40,9 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
         </div>
       </div>
       <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-        <span className="odds-chip">1 {formatDecimal(f.away.ml)}</span>
-        <span className="odds-chip">X {formatDecimal(f.drawMl)}</span>
-        <span className="odds-chip">2 {formatDecimal(f.home.ml)}</span>
+        <span className="odds-chip">{formatDecimal(f.away.ml)}</span>
+        <span className="odds-chip">{formatDecimal(f.drawMl)}</span>
+        <span className="odds-chip">{formatDecimal(f.home.ml)}</span>
       </div>
       <p className="mt-4 text-center text-sm font-semibold">{item.label}</p>
       <p className="mt-1 text-center text-xs text-white/70">
