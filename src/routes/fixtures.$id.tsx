@@ -47,26 +47,34 @@ function FixturePage() {
         {fixture.league}
       </p>
 
-      <header>
+      <header className="rounded-3xl bg-card p-5">
         <LiveBar fetchedAt={data?.fetchedAt} liveCount={fixture.live ? 1 : 0} />
-        <p className="mt-2 text-xs text-subtle">
+        <p className="mt-3 text-xs text-subtle">
           {fixture.live || fixture.status === "post" ? fixture.detail : formatKickoffLong(fixture.start)}
+          {" · "}
+          {fixture.league}
         </p>
-        <h1 className="font-display mt-2 text-4xl">
-          {fixture.away.name}
-          {fixture.away.score != null ? ` ${fixture.away.score}` : ""}{" "}
-          <span className="text-muted-foreground">at</span>{" "}
-          {fixture.home.score != null ? `${fixture.home.score} ` : ""}
-          {fixture.home.name}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {fixture.venue || fixture.league}
-          {fixture.total != null ? ` · O/U ${fixture.total}` : ""}
-        </p>
-        <dl className="mt-5 grid max-w-lg grid-cols-3 gap-3">
-          <OddCell k={fixture.away.abbr} v={formatDecimal(fixture.away.ml)} />
-          <OddCell k="Draw" v={formatDecimal(fixture.drawMl)} />
-          <OddCell k={fixture.home.abbr} v={formatDecimal(fixture.home.ml)} />
+        <div className="mt-5 flex items-center justify-between gap-3">
+          <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
+            <span className="grid size-14 place-items-center rounded-full bg-secondary text-sm font-bold">
+              {fixture.away.abbr.slice(0, 3)}
+            </span>
+            <span className="text-center text-sm font-medium">{fixture.away.name}</span>
+          </div>
+          <p className="text-4xl font-bold tabular">
+            {fixture.away.score ?? "–"} <span className="text-subtle">:</span> {fixture.home.score ?? "–"}
+          </p>
+          <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
+            <span className="grid size-14 place-items-center rounded-full bg-secondary text-sm font-bold">
+              {fixture.home.abbr.slice(0, 3)}
+            </span>
+            <span className="text-center text-sm font-medium">{fixture.home.name}</span>
+          </div>
+        </div>
+        <dl className="mt-5 grid grid-cols-3 gap-2">
+          <OddCell k="1" v={formatDecimal(fixture.away.ml)} />
+          <OddCell k="X" v={formatDecimal(fixture.drawMl)} />
+          <OddCell k="2" v={formatDecimal(fixture.home.ml)} />
         </dl>
       </header>
 
@@ -147,7 +155,7 @@ function FixturePage() {
 
 function OddCell({ k, v }: { k: string; v: string }) {
   return (
-    <div className="rounded-sm bg-card px-3 py-3 shadow-border">
+    <div className="rounded-2xl bg-secondary px-3 py-3 text-center">
       <dt className="text-xs text-subtle">{k}</dt>
       <dd className="mt-1 font-mono text-lg tabular">{v}</dd>
     </div>
