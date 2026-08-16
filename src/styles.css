@@ -477,6 +477,40 @@
     0 0 0 1px hsl(40 58% 62% / 0.22);
 }
 
+.price-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  min-width: 4.25rem;
+  border-radius: 1rem;
+  background: var(--color-or);
+  color: var(--color-crest-foreground);
+  padding: 0.45rem 0.8rem 0.4rem;
+  line-height: 1;
+  box-shadow:
+    0 0 0 1px hsl(40 58% 78% / 0.45),
+    0 12px 22px -12px hsl(40 58% 30% / 0.75);
+}
+
+.price-chip-label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-crest-foreground);
+  opacity: 0.7;
+}
+
+.price-chip-value {
+  font-family: var(--font-serif);
+  font-size: 1.7rem;
+  font-weight: 400;
+  color: var(--color-crest-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
 .crest-plate {
   position: relative;
   display: inline-grid;

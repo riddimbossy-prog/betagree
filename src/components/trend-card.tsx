@@ -1,4 +1,5 @@
 import { Crest } from "@/components/crest";
+import { PriceChip } from "@/components/price-chip";
 import { briefFromTrend, usePickSheet } from "@/components/pick-sheet";
 import { formatBoardTime } from "@/lib/format";
 import type { DeskSource, TrendPick } from "@/lib/types";
@@ -18,7 +19,7 @@ export function SourcePills({ sources, invert }: { sources: DeskSource[]; invert
           className={cn(
             "rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase",
             invert
-              ? "bg-white/15 text-primary-foreground backdrop-blur-md"
+              ? "bg-primary-foreground/15 text-primary-foreground backdrop-blur-md"
               : s === "form"
                 ? "glass-purpure text-primary-foreground"
                 : "glass-azure text-primary-foreground",
@@ -45,7 +46,7 @@ export function TimeChip({
     <span
       className={cn(
         "inline-flex items-baseline gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase tabular",
-        invert ? "bg-white/15 text-primary-foreground backdrop-blur-md" : "glass-or text-or",
+        invert ? "bg-primary-foreground/15 text-primary-foreground backdrop-blur-md" : "glass-or text-or",
       )}
     >
       {day ? <span className="font-medium opacity-80">{day}</span> : null}
@@ -67,32 +68,23 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
     >
       <div className="flex items-start justify-between gap-3">
         <SourcePills sources={pick.sources} invert={highlight} />
-        <span
-          className={cn(
-            "rounded-full px-3 py-1 text-sm font-semibold tabular",
-            highlight ? "bg-white/15 text-primary-foreground" : "glass-or text-crest-foreground",
-          )}
-        >
-          {pick.odds.toFixed(2)}
-        </span>
       </div>
       <div className="mt-4 flex items-center gap-3">
         <Crest name={pick.home} logo={pick.homeLogo} />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <TimeChip raw={pick.kickoff} iso={pick.kickoffIso} invert={highlight} />
-            <span className={cn("truncate text-sm", highlight ? "text-white/70" : "text-muted-foreground")}>
-              {pick.league}
-            </span>
-          </div>
-          <p className="mt-1 truncate font-semibold">
-            {pick.home} <span className="text-subtle">vs</span> {pick.away}
-          </p>
+        <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
+          <PriceChip value={pick.odds} />
+          <TimeChip raw={pick.kickoff} iso={pick.kickoffIso} invert={highlight} />
+          <span className={cn("max-w-full truncate text-center text-xs", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
+            {pick.league}
+          </span>
         </div>
         <Crest name={pick.away} logo={pick.awayLogo} />
       </div>
-      <p className="mt-4 text-base font-semibold">{pick.label}</p>
-      <p className={cn("mt-1 text-sm", highlight ? "text-white/70" : "text-muted-foreground")}>
+      <p className="mt-3 truncate text-center text-sm font-semibold">
+        {pick.home} <span className="text-subtle">vs</span> {pick.away}
+      </p>
+      <p className="mt-3 text-center text-base font-semibold">{pick.label}</p>
+      <p className={cn("mt-1 text-sm", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
         {pick.statLabel}
       </p>
     </button>

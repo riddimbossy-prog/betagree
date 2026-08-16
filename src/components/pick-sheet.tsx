@@ -2,6 +2,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { Crest } from "@/components/crest";
+import { PriceChip } from "@/components/price-chip";
 import { formatBoardTime } from "@/lib/format";
 import { formatDecimal, formatPct } from "@/lib/odds";
 import type { DeskSource, FormRow, TrendNote, TrendPick } from "@/lib/types";
@@ -159,11 +160,7 @@ export function PickProvider({ children }: { children: ReactNode }) {
                         {SOURCE_LABEL[s]}
                       </span>
                     ))}
-                    {price ? (
-                      <span className="glass-or rounded-full px-3 py-1 text-sm font-semibold text-crest-foreground tabular">
-                        {price}
-                      </span>
-                    ) : null}
+                    {price ? <PriceChip value={price} /> : null}
                     {brief.league ? <span className="text-sm text-muted-foreground">{brief.league}</span> : null}
                   </div>
 
