@@ -3,6 +3,7 @@ import type { ConsensusItem } from "@/lib/types";
 import { formatKickoff } from "@/lib/format";
 import { formatDecimal, formatPct } from "@/lib/odds";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: number }) {
   const f = item.fixture;
