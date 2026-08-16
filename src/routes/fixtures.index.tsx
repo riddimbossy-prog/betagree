@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { FixtureList } from "@/components/fixture-list";
 import { BoardState, LiveBar } from "@/components/live-bar";
@@ -33,6 +33,9 @@ function FixturesPage() {
         <p className="mt-3 text-muted-foreground">
           Live slate. Scores and prices refresh on their own. Open a row to see each desk.
         </p>
+        <Link to="/odds" className="mt-3 inline-block text-sm text-primary">
+          Filter 1.20–1.55
+        </Link>
       </header>
 
       <div className="chip-row">

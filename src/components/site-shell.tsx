@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, ChartNoAxesColumn, Home, Shield } from "lucide-react";
+import { Bell, ChartNoAxesColumn, Filter, Home, Shield } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ const NAV = [
   { to: "/", label: "Today", icon: Home },
   { to: "/fixtures", label: "Fixtures", icon: ChartNoAxesColumn },
   { to: "/tipsters", label: "Desks", icon: Shield },
+  { to: "/odds", label: "Filter", icon: Filter },
   { to: "/accuracy", label: "Accuracy", icon: Bell },
 ] as const;
 

@@ -3,7 +3,7 @@ import { CircleDot } from "lucide-react";
 import { ConsensusCard } from "@/components/consensus-card";
 import { FixtureList } from "@/components/fixture-list";
 import { BoardState } from "@/components/live-bar";
-import { useSlate } from "@/lib/live/use-live";
+import { fixturesInBand } from "@/lib/odds-band";
 
 export const Route = createFileRoute("/")({ component: Home });
 
@@ -14,6 +14,7 @@ function Home() {
   const top = consensus.filter((c) => c.market === "1x2" || c.pct >= 0.65).slice(0, 6);
   const byFixture = new Map(fixtures.map((f) => [f.id, consensus.filter((c) => c.fixture.id === f.id)]));
   const upcoming = fixtures.filter((f) => f.status !== "post").slice(0, 8);
+  const band = fixturesInBand(fixtures);
   const liveCount = fixtures.filter((f) => f.live).length;
 
   return (
@@ -29,9 +30,9 @@ function Home() {
         <span className="inline-flex shrink-0 items-center rounded-full bg-card px-4 py-2 text-sm text-muted-foreground">
           {liveCount} live
         </span>
-        <span className="inline-flex shrink-0 items-center rounded-full bg-card px-4 py-2 text-sm text-muted-foreground">
-          {consensus.filter((c) => c.pct >= 0.66).length} consensus
-        </span>
+        <Link to="/odds" className="inline-flex shrink-0 items-center rounded-full bg-card px-4 py-2 text-sm text-muted-foreground">
+          {band.length} in 1.20–1.55
+        </Link>
       </div>
 
       <BoardState loading={loading} error={error} empty={!loading && !error && fixtures.length === 0} />

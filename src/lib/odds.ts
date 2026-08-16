@@ -15,10 +15,14 @@ export function americanProfit(odds: number, stake = 1): number {
   return odds > 0 ? stake * (odds / 100) : stake * (100 / Math.abs(odds));
 }
 
+export function toDecimal(odds: number | null | undefined): number | null {
+  if (odds == null || !Number.isFinite(odds) || odds === 0) return null;
+  return odds > 0 ? odds / 100 + 1 : 100 / Math.abs(odds) + 1;
+}
+
 export function formatDecimal(odds: number | null | undefined): string {
-  if (odds == null || !Number.isFinite(odds)) return "—";
-  const dec = odds > 0 ? odds / 100 + 1 : 100 / Math.abs(odds) + 1;
-  return dec.toFixed(2);
+  const dec = toDecimal(odds);
+  return dec == null ? "—" : dec.toFixed(2);
 }
 
 export function formatPct(n: number, digits = 0): string {

@@ -14,6 +14,7 @@ import { Route as AccuracyRouteImport } from './routes/accuracy'
 import { Route as BoardRouteImport } from './routes/board'
 import { Route as FixturesRouteImport } from './routes/fixtures'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as OddsRouteImport } from './routes/odds'
 import { Route as PlaybookRouteImport } from './routes/playbook'
 import { Route as TipstersRouteImport } from './routes/tipsters'
 import { Route as ApiLedgerRouteImport } from './routes/api/ledger'
@@ -47,6 +48,11 @@ const FixturesRoute = FixturesRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OddsRoute = OddsRouteImport.update({
+  id: '/odds',
+  path: '/odds',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlaybookRoute = PlaybookRouteImport.update({
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/board': typeof BoardRoute
   '/fixtures': typeof FixturesRouteWithChildren
   '/login': typeof LoginRoute
+  '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/api/ledger': typeof ApiLedgerRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/accuracy': typeof AccuracyRoute
   '/board': typeof BoardRoute
   '/login': typeof LoginRoute
+  '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
   '/api/ledger': typeof ApiLedgerRoute
   '/api/slate': typeof ApiSlateRoute
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/board': typeof BoardRoute
   '/fixtures': typeof FixturesRouteWithChildren
   '/login': typeof LoginRoute
+  '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/api/ledger': typeof ApiLedgerRoute
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
     | '/board'
     | '/fixtures'
     | '/login'
+    | '/odds'
     | '/playbook'
     | '/tipsters'
     | '/api/ledger'
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
     | '/accuracy'
     | '/board'
     | '/login'
+    | '/odds'
     | '/playbook'
     | '/api/ledger'
     | '/api/slate'
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
     | '/board'
     | '/fixtures'
     | '/login'
+    | '/odds'
     | '/playbook'
     | '/tipsters'
     | '/api/ledger'
@@ -197,6 +209,7 @@ export interface RootRouteChildren {
   BoardRoute: typeof BoardRoute
   FixturesRoute: typeof FixturesRouteWithChildren
   LoginRoute: typeof LoginRoute
+  OddsRoute: typeof OddsRoute
   PlaybookRoute: typeof PlaybookRoute
   TipstersRoute: typeof TipstersRouteWithChildren
   ApiLedgerRoute: typeof ApiLedgerRoute
@@ -239,6 +252,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/odds': {
+      id: '/odds'
+      path: '/odds'
+      fullPath: '/odds'
+      preLoaderRoute: typeof OddsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/playbook': {
@@ -341,6 +361,7 @@ const rootRouteChildren: RootRouteChildren = {
   BoardRoute: BoardRoute,
   FixturesRoute: FixturesRouteWithChildren,
   LoginRoute: LoginRoute,
+  OddsRoute: OddsRoute,
   PlaybookRoute: PlaybookRoute,
   TipstersRoute: TipstersRouteWithChildren,
   ApiLedgerRoute: ApiLedgerRoute,
