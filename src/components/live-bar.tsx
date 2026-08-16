@@ -9,9 +9,9 @@ export function LiveBar({
 }) {
   const ago = fetchedAt ? formatWhen(fetchedAt) : "";
   return (
-    <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-display text-xs tracking-wider uppercase">
-      <span className="inline-flex items-center gap-1.5">
-        <span className="size-2 bg-loss" />
+    <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-2.5 py-1 font-semibold text-primary-foreground">
+        <span className="size-1.5 animate-pulse rounded-full bg-white" />
         Live
       </span>
       {ago ? <span>Updated {ago}</span> : null}
@@ -30,17 +30,15 @@ export function BoardState({
   empty?: boolean;
 }) {
   if (loading) {
-    return (
-      <p className="border-2 border-ink bg-card px-4 py-8 text-center">Reading the live board…</p>
-    );
+    return <p className="rounded-3xl bg-card px-4 py-10 text-center text-sm text-muted-foreground">Reading the live board…</p>;
   }
   if (error) {
-    return <p className="border-2 border-ink bg-card px-4 py-8 text-center text-loss">{error}</p>;
+    return <p className="rounded-3xl bg-card px-4 py-10 text-center text-sm text-hot">{error}</p>;
   }
   if (empty) {
     return (
-      <p className="border-2 border-ink bg-card px-4 py-8 text-center">
-        No fixtures on the board for this window. Check back closer to kickoff.
+      <p className="rounded-3xl bg-card px-4 py-10 text-center text-sm text-muted-foreground">
+        No fixtures on the board for this window.
       </p>
     );
   }

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Menu, X } from "lucide-react";
+import { Bell, ChartNoAxesColumn, Home, Menu, Shield, X } from "lucide-react";
 import { useState } from "react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
@@ -8,23 +8,22 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const NAV = [
-  { to: "/", label: "Today" },
-  { to: "/fixtures", label: "Fixtures" },
-  { to: "/tipsters", label: "Desks" },
-  { to: "/accuracy", label: "Accuracy" },
-  { to: "/playbook", label: "Playbook" },
+  { to: "/", label: "Today", icon: Home },
+  { to: "/fixtures", label: "Fixtures", icon: ChartNoAxesColumn },
+  { to: "/tipsters", label: "Desks", icon: Shield },
+  { to: "/accuracy", label: "Accuracy", icon: Bell },
 ] as const;
+
+function greeting() {
+  const h = new Date().getUTCHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
 
 export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
-  const dateLabel = new Date().toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  });
 
   return (
     <div className="flex min-h-dvh flex-col overflow-x-hidden bg-background text-foreground">
@@ -34,34 +33,13 @@ export function SiteShell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <header className="sticky top-0 z-40 bg-background">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6">
-          <div className="flex items-center justify-between pt-3 font-mono text-xs uppercase">
-            <span>{dateLabel}</span>
-            <span>Soccer daily</span>
-          </div>
-          <div className="masthead mt-2 flex items-end justify-between gap-4 py-3">
-            <Link to="/" className="min-w-0 no-underline">
-              <span className="font-display block text-5xl leading-none sm:text-6xl">Betagree</span>
-            </Link>
-            <div className="flex items-center gap-2 pb-1">
-              <AuthSlot />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="md:hidden"
-                aria-label={open ? "Close menu" : "Open menu"}
-                onClick={() => setOpen((v) => !v)}
-              >
-                {open ? <X /> : <Menu />}
-              </Button>
-            </div>
-          </div>
-          <nav
-            className="hidden items-stretch border-b-2 border-ink md:flex"
-            aria-label="Primary"
-          >
+      <header className="sticky top-0 z-40 border-b border-hairline bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+          <Link to="/" className="min-w-0 no-underline">
+            <p className="text-sm font-semibold">{greeting()}</p>
+            <p className="text-xs text-muted-foreground">Betagree · live consensus</p>
+          </Link>
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
             {NAV.map((item) => {
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               return (
@@ -69,8 +47,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "font-display px-4 py-2.5 text-sm tracking-wider uppercase",
-                    active ? "bg-primary text-primary-foreground" : "hover:bg-card",
+                    "rounded-full px-4 py-2 text-sm font-medium",
+                    active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {item.label}
@@ -78,9 +56,22 @@ export function SiteShell({ children }: { children: ReactNode }) {
               );
             })}
           </nav>
+          <div className="flex items-center gap-2">
+            <AuthSlot />
+            <Button
+              type="button"
+              variant="secondary"
+              size="icon"
+              className="rounded-full md:hidden"
+              aria-label={open ? "Close menu" : "Open menu"}
+              onClick={() => setOpen((v) => !v)}
+            >
+              {open ? <X /> : <Menu />}
+            </Button>
+          </div>
         </div>
         {open ? (
-          <nav className="border-b-2 border-ink px-4 py-2 md:hidden" aria-label="Mobile">
+          <nav className="space-y-1 px-4 pb-4 md:hidden" aria-label="Mobile">
             {NAV.map((item) => {
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               return (
@@ -89,31 +80,58 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   to={item.to}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "font-display block border-b border-ink/30 py-3 text-sm tracking-wider uppercase",
-                    active && "text-loss",
+                    "block rounded-2xl px-4 py-3 text-sm font-medium",
+                    active ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground",
                   )}
                 >
                   {item.label}
                 </Link>
               );
             })}
+            <Link
+              to="/playbook"
+              onClick={() => setOpen(false)}
+              className="block rounded-2xl px-4 py-3 text-sm text-muted-foreground"
+            >
+              Playbook
+            </Link>
           </nav>
         ) : null}
       </header>
 
-      <main id="main" className="mx-auto w-full min-w-0 max-w-5xl flex-1 px-4 py-8 sm:px-6">
+      <main id="main" className="mx-auto w-full min-w-0 max-w-5xl flex-1 px-4 py-6 pb-24 sm:px-6 sm:pb-10">
         {children}
       </main>
 
-      <footer className="mt-auto">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6">
-          <div className="flex flex-col gap-3 border-t-4 border-ink py-5 text-sm text-muted-foreground sm:flex-row sm:justify-between">
-            <p className="max-w-xl">
-              Betagree is a soccer consensus daily. Not a sportsbook. 18+ / 21+ where it applies.
-              ncpgambling.org
-            </p>
-            <p className="font-display tracking-wider uppercase">© 2026 Betagree</p>
-          </div>
+      <nav
+        className="fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(92%,22rem)] items-center justify-between rounded-full bg-card px-2 py-2 shadow-lift md:hidden"
+        aria-label="Tabs"
+      >
+        {NAV.map((item) => {
+          const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              aria-label={item.label}
+              className={cn(
+                "grid size-11 place-items-center rounded-full",
+                active ? "bg-foreground text-background" : "text-muted-foreground",
+              )}
+            >
+              <Icon className="size-5" />
+            </Link>
+          );
+        })}
+      </nav>
+
+      <footer className="mt-auto hidden border-t border-hairline md:block">
+        <div className="mx-auto flex max-w-5xl justify-between gap-4 px-6 py-6 text-xs text-subtle">
+          <p>Betagree ranks soccer picks where the desks overlap. Not a sportsbook.</p>
+          <Link to="/playbook" className="hover:text-foreground">
+            Playbook
+          </Link>
         </div>
       </footer>
     </div>
@@ -123,21 +141,21 @@ export function SiteShell({ children }: { children: ReactNode }) {
 function AuthSlot() {
   const { user, isPending } = useCurrentUserState();
   if (isPending) {
-    return <div className="h-9 w-16 animate-pulse bg-secondary" aria-hidden />;
+    return <div className="size-10 animate-pulse rounded-full bg-secondary" aria-hidden />;
   }
   if (user) {
     return (
-      <div className="hidden sm:block">
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-      </div>
+      <SignedIn>
+        <UserButton />
+      </SignedIn>
     );
   }
   return (
     <SignedOut>
-      <Button asChild variant="outline" size="sm">
-        <Link to="/login">Sign in</Link>
+      <Button asChild variant="secondary" size="icon" className="rounded-full">
+        <Link to="/login" aria-label="Sign in">
+          <Bell />
+        </Link>
       </Button>
     </SignedOut>
   );

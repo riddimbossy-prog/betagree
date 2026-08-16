@@ -1,8 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ConsensusItem, Fixture } from "@/lib/types";
 import { formatKickoff } from "@/lib/format";
-import { Badge } from "@/components/ui/badge";
-import { OddsTriple } from "@/components/consensus-card";
+import { formatDecimal } from "@/lib/odds";
 
 export function FixtureList({
   fixtures,
@@ -12,7 +11,7 @@ export function FixtureList({
   byFixture: Map<string, ConsensusItem[]>;
 }) {
   return (
-    <ul className="divide-y-2 divide-ink border-2 border-ink bg-card">
+    <ul className="flex flex-col gap-3">
       {fixtures.map((f) => {
         const top = (byFixture.get(f.id) ?? []).find((c) => c.market === "1x2");
         return (
@@ -20,35 +19,29 @@ export function FixtureList({
             <Link
               to="/fixtures/$id"
               params={{ id: f.id }}
-              className="flex flex-col gap-2 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between"
+              className="block rounded-3xl bg-card p-4 shadow-border"
             >
-              <div className="min-w-0">
-                <p className="text-xs text-subtle">
-                  {f.live ? (
-                    <span className="text-primary">{f.detail || "Live"}</span>
-                  ) : (
-                    formatKickoff(f.start)
-                  )}{" "}
-                  · {f.league}
-                </p>
-                <p className="mt-0.5 truncate text-sm font-medium">
-                  {f.away.name}
-                  {f.away.score != null ? ` ${f.away.score}` : ""}{" "}
-                  <span className="text-subtle">at</span>{" "}
-                  {f.home.score != null ? `${f.home.score} ` : ""}
-                  {f.home.name}
-                </p>
-                <OddsTriple away={f.away.ml} draw={f.drawMl} home={f.home.ml} />
+              <p className="text-xs text-subtle">
+                {f.live ? <span className="text-hot">{f.detail || "Live"}</span> : formatKickoff(f.start)}
+                {" · "}
+                {f.league}
+              </p>
+              <div className="mt-3 flex items-center justify-between gap-3">
+                <span className="min-w-0 flex-1 truncate text-sm font-medium">{f.away.name}</span>
+                <span className="text-xl font-bold tabular">
+                  {f.away.score ?? "–"} : {f.home.score ?? "–"}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-right text-sm font-medium">{f.home.name}</span>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="odds-chip bg-secondary">1 {formatDecimal(f.away.ml)}</span>
+                <span className="odds-chip bg-secondary">X {formatDecimal(f.drawMl)}</span>
+                <span className="odds-chip bg-secondary">2 {formatDecimal(f.home.ml)}</span>
               </div>
               {top ? (
-                <div className="flex items-center gap-2 sm:text-right">
-                  <span className="text-sm">{top.label}</span>
-                  <Badge variant={top.pct >= 0.7 ? "win" : "outline"}>
-                    {top.count}/{top.coverage}
-                  </Badge>
-                </div>
+                <p className="mt-3 text-sm text-primary">{top.label}</p>
               ) : (
-                <span className="text-xs text-subtle">No consensus</span>
+                <p className="mt-3 text-xs text-subtle">No consensus</p>
               )}
             </Link>
           </li>

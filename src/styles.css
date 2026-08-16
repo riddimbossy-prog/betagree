@@ -2,51 +2,53 @@
 @import "tw-animate-css";
 
 @theme {
-  --font-sans: "Newsreader", "Times New Roman", Georgia, serif;
-  --font-display: "Oswald", "Arial Narrow", Impact, sans-serif;
+  --font-sans: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", "Times New Roman", Georgia, serif;
   --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 
-  --color-background: #f3b7c5;
-  --color-foreground: #121212;
-  --color-card: #fbe0e6;
-  --color-card-foreground: #121212;
-  --color-popover: #fbe0e6;
-  --color-popover-foreground: #121212;
-  --color-primary: #121212;
-  --color-primary-foreground: #f3b7c5;
-  --color-secondary: #e89aaa;
-  --color-secondary-foreground: #121212;
-  --color-muted: #e89aaa;
-  --color-muted-foreground: #5a3038;
-  --color-accent: #e89aaa;
-  --color-accent-foreground: #121212;
-  --color-destructive: #8b1020;
-  --color-destructive-foreground: #fbe0e6;
-  --color-border: #121212;
-  --color-input: #121212;
-  --color-ring: #121212;
-  --color-ink: #121212;
-  --color-elevated: #fbe0e6;
-  --color-hairline: #121212;
-  --color-subtle: #6b3a44;
-  --color-win: #0d5c38;
-  --color-loss: #8b1020;
-  --color-push: #6b3a44;
-  --color-warn: #7a4a00;
-  --color-info: #123a6b;
-  --color-rule: #121212;
+  --color-background: #08080e;
+  --color-foreground: #ffffff;
+  --color-card: #14141c;
+  --color-card-foreground: #ffffff;
+  --color-popover: #1b1b26;
+  --color-popover-foreground: #ffffff;
+  --color-primary: #7f52fc;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #1b1b26;
+  --color-secondary-foreground: #ffffff;
+  --color-muted: #1b1b26;
+  --color-muted-foreground: #9a9aab;
+  --color-accent: #1b1b26;
+  --color-accent-foreground: #ffffff;
+  --color-destructive: #fe5168;
+  --color-destructive-foreground: #ffffff;
+  --color-border: rgb(255 255 255 / 0.08);
+  --color-input: rgb(255 255 255 / 0.1);
+  --color-ring: #7f52fc;
+  --color-ink: #ffffff;
+  --color-elevated: #1b1b26;
+  --color-hairline: rgb(255 255 255 / 0.08);
+  --color-subtle: #7a7a8c;
+  --color-win: #7f52fc;
+  --color-loss: #fe5168;
+  --color-push: #7a7a8c;
+  --color-warn: #f0c36a;
+  --color-info: #7f52fc;
+  --color-hot: #fe5168;
+  --color-hot-foreground: #ffffff;
 
-  --radius-xs: 0;
-  --radius-sm: 0;
-  --radius-md: 0;
-  --radius-lg: 0;
-  --radius-xl: 0;
-  --radius-2xl: 0;
-  --radius: 0;
+  --radius-xs: 8px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 28px;
+  --radius: 20px;
 
-  --shadow-border: 0 0 0 2px #121212;
-  --shadow-border-hover: 4px 4px 0 0 #121212;
-  --shadow-lift: 6px 6px 0 0 #121212;
+  --shadow-border: 0 0 0 1px rgb(255 255 255 / 0.06);
+  --shadow-border-hover: 0 0 0 1px rgb(127 82 252 / 0.55);
+  --shadow-lift: 0 18px 40px -20px rgb(0 0 0 / 0.7);
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -66,6 +68,7 @@
   body {
     min-height: 100dvh;
     background-color: var(--color-background);
+    background-image: radial-gradient(900px 480px at 50% -20%, rgb(127 82 252 / 0.22), transparent 58%);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     line-height: 1.5;
@@ -75,11 +78,8 @@
   h2,
   h3 {
     text-wrap: balance;
-    font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    line-height: 0.95;
-    text-transform: uppercase;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
   }
 
   p {
@@ -96,8 +96,8 @@
   }
 
   ::selection {
-    background: #121212;
-    color: #f3b7c5;
+    background: rgb(127 82 252 / 0.35);
+    color: #fff;
   }
 }
 
@@ -116,7 +116,15 @@
   font-variant-numeric: tabular-nums;
 }
 
-.masthead {
-  border-bottom: 6px solid var(--color-ink);
-  border-top: 2px solid var(--color-ink);
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.odds-chip {
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.16);
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
