@@ -37,6 +37,8 @@
   --color-info: #7f52fc;
   --color-hot: #fe5168;
   --color-hot-foreground: #ffffff;
+  --color-crest: #ffffff;
+  --color-crest-foreground: #12121a;
 
   --radius-xs: 8px;
   --radius-sm: 12px;
@@ -49,6 +51,7 @@
   --shadow-border: 0 0 0 1px rgb(255 255 255 / 0.06);
   --shadow-border-hover: 0 0 0 1px rgb(127 82 252 / 0.55);
   --shadow-lift: 0 18px 40px -20px rgb(0 0 0 / 0.7);
+  --shadow-crest: 0 0 0 2px rgb(255 255 255 / 0.35), 0 6px 14px -6px rgb(0 0 0 / 0.45);
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -127,4 +130,20 @@
   font-size: 0.75rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+.crest-plate {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-crest);
+  box-shadow: var(--shadow-crest);
+}
+
+.crest-plate img {
+  width: 78%;
+  height: 78%;
+  object-fit: contain;
 }
