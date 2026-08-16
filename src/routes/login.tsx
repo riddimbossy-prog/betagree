@@ -11,7 +11,7 @@ function Login() {
         <p className="text-xs tracking-widest text-subtle uppercase">Account</p>
         <h1 className="font-display mt-2 text-3xl">Sign in</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Save the consensus card on this device. Linework never places a bet.
+          Save the consensus card on this device. Betagree never places a bet.
         </p>
         <div className="mt-6 flex flex-col gap-2">
           {authEnabled ? (

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { LedgerPayload, SlatePayload } from "@/lib/types";
+import { getLedger, getSlate } from "./store";
 
 export function useSlate(pollMs = 45_000) {
   const [data, setData] = useState<SlatePayload | null>(null);
@@ -10,9 +11,7 @@ export function useSlate(pollMs = 45_000) {
     let dead = false;
     const load = async () => {
       try {
-        const res = await fetch("/api/slate");
-        if (!res.ok) throw new Error("slate");
-        const json = (await res.json()) as SlatePayload;
+        const json = await getSlate();
         if (!dead) {
           setData(json);
           setError(null);
@@ -43,11 +42,7 @@ export function useLedger() {
 
   useEffect(() => {
     let dead = false;
-    fetch("/api/ledger")
-      .then((res) => {
-        if (!res.ok) throw new Error("ledger");
-        return res.json() as Promise<LedgerPayload>;
-      })
+    getLedger()
       .then((json) => {
         if (!dead) {
           setData(json);

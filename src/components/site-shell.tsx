@@ -23,6 +23,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
     day: "numeric",
     month: "long",
     year: "numeric",
+    timeZone: "UTC",
   });
 
   return (
@@ -42,7 +43,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
           <div className="paper-rule mt-2 flex items-center justify-between gap-4 py-3">
             <Link to="/" className="min-w-0 no-underline">
               <span className="font-display block text-3xl leading-none font-semibold tracking-tight sm:text-4xl">
-                Linework
+                Betagree
               </span>
               <span className="mt-1 block text-[11px] tracking-[0.22em] text-primary uppercase">
                 Soccer consensus
@@ -115,11 +116,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="paper-rule flex flex-col gap-3 py-6 text-xs text-subtle sm:flex-row sm:items-start sm:justify-between">
             <p className="max-w-xl leading-relaxed">
-              Linework reads today's live soccer slate and ranks the picks the desks actually
+              Betagree reads today's live soccer slate and ranks the picks the desks actually
               agree on. Prices and scores refresh on their own. Not a sportsbook. 18+ / 21+ where it
               applies. ncpgambling.org
             </p>
-            <p className="shrink-0 tracking-wide uppercase">© 2026 Linework</p>
+            <p className="shrink-0 tracking-wide uppercase">© 2026 Betagree · betagree.com</p>
           </div>
         </div>
       </footer>

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatKickoffLong, marketLabel } from "@/lib/format";
 import { useSlate } from "@/lib/live/use-live";
-import { formatAmerican } from "@/lib/odds";
+import { formatDecimal } from "@/lib/odds";
 
 export const Route = createFileRoute("/fixtures/$id")({
   component: FixturePage,
@@ -64,9 +64,9 @@ function FixturePage() {
           {fixture.total != null ? ` · O/U ${fixture.total}` : ""}
         </p>
         <dl className="mt-5 grid max-w-lg grid-cols-3 gap-3">
-          <OddCell k={fixture.away.abbr} v={formatAmerican(fixture.away.ml)} />
-          <OddCell k="Draw" v={formatAmerican(fixture.drawMl)} />
-          <OddCell k={fixture.home.abbr} v={formatAmerican(fixture.home.ml)} />
+          <OddCell k={fixture.away.abbr} v={formatDecimal(fixture.away.ml)} />
+          <OddCell k="Draw" v={formatDecimal(fixture.drawMl)} />
+          <OddCell k={fixture.home.abbr} v={formatDecimal(fixture.home.ml)} />
         </dl>
       </header>
 

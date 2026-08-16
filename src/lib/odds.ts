@@ -15,10 +15,10 @@ export function americanProfit(odds: number, stake = 1): number {
   return odds > 0 ? stake * (odds / 100) : stake * (100 / Math.abs(odds));
 }
 
-export function formatAmerican(odds: number | null | undefined): string {
+export function formatDecimal(odds: number | null | undefined): string {
   if (odds == null || !Number.isFinite(odds)) return "—";
-  const rounded = Math.round(odds);
-  return rounded > 0 ? `+${rounded}` : `${rounded}`;
+  const dec = odds > 0 ? odds / 100 + 1 : 100 / Math.abs(odds) + 1;
+  return dec.toFixed(2);
 }
 
 export function formatPct(n: number, digits = 0): string {

@@ -5,11 +5,9 @@ import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { SiteShell } from "@/components/site-shell";
 import appCss from "../styles.css?url";
 
-const APP_NAME = "Linework";
-const host = import.meta.env.VITE_PUBLIC_HOSTNAME;
-const ogImage = host
-  ? `https://og.grok.me/v1/card.png?host=${encodeURIComponent(host)}&title=${encodeURIComponent(APP_NAME)}`
-  : undefined;
+const APP_NAME = "Betagree";
+const host = import.meta.env.VITE_PUBLIC_HOSTNAME ?? "betagree.com";
+const ogImage = `https://og.grok.me/v1/card.png?host=${encodeURIComponent(host)}&title=${encodeURIComponent(APP_NAME)}`;
 
 export const Route = createRootRoute({
   notFoundComponent: AppNotFound,
@@ -19,12 +17,12 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       {
-        title: "Linework — today's soccer consensus",
+        title: "Betagree — today's soccer consensus",
       },
       {
         name: "description",
         content:
-          "Today's soccer fixtures, compared across tipsters. Linework ranks the picks the desks actually agree on.",
+          "Today's soccer fixtures, compared across live desks. Betagree ranks the picks they actually agree on.",
       },
       { name: "apple-mobile-web-app-title", content: APP_NAME },
       { name: "theme-color", content: "#f3ead8" },

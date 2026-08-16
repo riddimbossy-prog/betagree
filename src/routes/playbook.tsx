@@ -33,7 +33,7 @@ function PlaybookPage() {
         <p className="text-xs tracking-widest text-subtle uppercase">Method</p>
         <h1 className="font-display mt-2 text-4xl">Playbook</h1>
         <p className="mt-3 text-muted-foreground">
-          Linework is a live soccer consensus desk. It does not invent tipsters. It tells you where
+          Betagree is a live soccer consensus desk. It does not invent tipsters. It tells you where
           the price and the recent numbers overlap on today's fixtures.
         </p>
       </header>
@@ -63,7 +63,7 @@ function PlaybookPage() {
           <CardContent className="p-6">
             <h2 className="font-display text-2xl">Limits</h2>
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-              Kick-offs, scores, and prices are live. Linework is not a sportsbook and does not place
+              Kick-offs, scores, and prices are live. Betagree is not a sportsbook and does not place
               bets. 18+ / 21+ where betting is legal. ncpgambling.org
             </p>
           </CardContent>

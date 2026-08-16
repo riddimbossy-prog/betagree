@@ -12,7 +12,7 @@ import type {
   SlatePayload,
 } from "@/lib/types";
 import { americanProfit, americanToImplied, parseAmerican } from "@/lib/odds";
-import { format } from "date-fns";
+import { format, isValid } from "date-fns";
 
 export const DESKS: Desk[] = [
   {
@@ -374,9 +374,11 @@ export function gradeLedger(history: Fixture[]): LedgerPayload {
 
   const first = history[0]?.start;
   const last = history[history.length - 1]?.start;
+  const a = first ? new Date(first) : null;
+  const b = last ? new Date(last) : null;
   const windowLabel =
-    first && last
-      ? `${format(new Date(first), "d MMM")} – ${format(new Date(last), "d MMM yyyy")}`
+    a && b && isValid(a) && isValid(b)
+      ? `${format(a, "d MMM")} – ${format(b, "d MMM yyyy")}`
       : "Last 21 days";
 
   return {
@@ -393,7 +395,7 @@ export function assembleSlate(day: Date, fixtures: Fixture[], history: Fixture[]
   const consensus = buildConsensus(picks, fixtures);
   return {
     date: day.toISOString().slice(0, 10),
-    dateLabel: format(day, "EEEE d MMMM yyyy"),
+    dateLabel: isValid(day) ? format(day, "EEEE d MMMM yyyy") : "Today",
     fetchedAt: new Date().toISOString(),
     fixtures,
     picks,

@@ -15,11 +15,13 @@ function todayUtc() {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
 }
 
-async function history(day: Date): Promise<Fixture[]> {
+async function history(day: Date, withPrices = false): Promise<Fixture[]> {
   const now = Date.now();
-  if (historyCache && now - historyCache.at < HISTORY_TTL) return historyCache.data;
+  if (historyCache && now - historyCache.at < HISTORY_TTL && (!withPrices || historyCache.data.some((f) => f.home.ml != null))) {
+    return historyCache.data;
+  }
   const raw = await fetchHistoryFixtures(day, 21);
-  const data = await enrichOdds(raw);
+  const data = withPrices ? await enrichOdds(raw) : raw;
   historyCache = { at: now, data };
   return data;
 }
@@ -28,7 +30,7 @@ export async function getSlate(force = false): Promise<SlatePayload> {
   const now = Date.now();
   if (!force && slateCache && now - slateCache.at < SLATE_TTL) return slateCache.data;
   const day = todayUtc();
-  const [fixtures, past] = await Promise.all([fetchSlateFixtures(day), history(day)]);
+  const [fixtures, past] = await Promise.all([fetchSlateFixtures(day), history(day, false)]);
   const data = assembleSlate(day, fixtures, past);
   slateCache = { at: now, data };
   return data;
@@ -37,7 +39,7 @@ export async function getSlate(force = false): Promise<SlatePayload> {
 export async function getLedger(force = false): Promise<LedgerPayload> {
   const now = Date.now();
   if (!force && ledgerCache && now - ledgerCache.at < LEDGER_TTL) return ledgerCache.data;
-  const data = gradeLedger(await history(todayUtc()));
+  const data = gradeLedger(await history(todayUtc(), false));
   ledgerCache = { at: now, data };
   return data;
 }

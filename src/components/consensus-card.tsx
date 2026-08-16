@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import type { ConsensusItem } from "@/lib/types";
 import { formatKickoff } from "@/lib/format";
-import { formatAmerican, formatPct } from "@/lib/odds";
+import { formatDecimal, formatPct } from "@/lib/odds";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
@@ -69,7 +69,7 @@ export function OddsTriple({
 }) {
   return (
     <span className="font-mono text-xs text-muted-foreground tabular">
-      {formatAmerican(away)} / {formatAmerican(draw)} / {formatAmerican(home)}
+      {formatDecimal(away)} / {formatDecimal(draw)} / {formatDecimal(home)}
     </span>
   );
 }

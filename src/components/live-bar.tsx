@@ -1,4 +1,4 @@
-import { formatDistanceToNow } from "date-fns";
+import { formatWhen } from "@/lib/format";
 
 export function LiveBar({
   fetchedAt,
@@ -7,15 +7,14 @@ export function LiveBar({
   fetchedAt?: string;
   liveCount?: number;
 }) {
+  const ago = fetchedAt ? formatWhen(fetchedAt) : "";
   return (
     <p className="flex flex-wrap items-center gap-2 text-xs tracking-wide text-subtle uppercase">
       <span className="inline-flex items-center gap-1.5 text-primary">
         <span className="size-1.5 animate-pulse rounded-full bg-primary" />
         Live
       </span>
-      {fetchedAt ? (
-        <span>Updated {formatDistanceToNow(new Date(fetchedAt), { addSuffix: true })}</span>
-      ) : null}
+      {ago ? <span>Updated {ago}</span> : null}
       {liveCount ? <span>{liveCount} in play</span> : null}
     </p>
   );

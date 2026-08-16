@@ -68,7 +68,6 @@ export function parseEspnEvent(e: Record<string, unknown>, league: string, slug:
 async function fetchJson(url: string): Promise<Record<string, unknown> | null> {
   try {
     const res = await fetch(url, {
-      headers: { "User-Agent": "Linework/1.0 (soccer consensus)" },
       signal: AbortSignal.timeout(12_000),
     });
     if (!res.ok) return null;
