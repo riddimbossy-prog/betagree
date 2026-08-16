@@ -22,6 +22,7 @@ import { Route as TipstersRouteImport } from './routes/tipsters'
 import { Route as TrendsRouteImport } from './routes/trends'
 import { Route as ApiFormRouteImport } from './routes/api/form'
 import { Route as ApiLedgerRouteImport } from './routes/api/ledger'
+import { Route as ApiScoresRouteImport } from './routes/api/scores'
 import { Route as ApiSlateRouteImport } from './routes/api/slate'
 import { Route as ApiTrendsRouteImport } from './routes/api/trends'
 import { Route as FixturesIndexRouteImport } from './routes/fixtures.index'
@@ -95,6 +96,11 @@ const ApiLedgerRoute = ApiLedgerRouteImport.update({
   path: '/api/ledger',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiScoresRoute = ApiScoresRouteImport.update({
+  id: '/api/scores',
+  path: '/api/scores',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSlateRoute = ApiSlateRouteImport.update({
   id: '/api/slate',
   path: '/api/slate',
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/trends': typeof TrendsRoute
   '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
+  '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
   '/api/trends': typeof ApiTrendsRoute
   '/fixtures/$id': typeof FixturesIdRoute
@@ -165,6 +172,7 @@ export interface FileRoutesByTo {
   '/trends': typeof TrendsRoute
   '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
+  '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
   '/api/trends': typeof ApiTrendsRoute
   '/fixtures/$id': typeof FixturesIdRoute
@@ -188,6 +196,7 @@ export interface FileRoutesById {
   '/trends': typeof TrendsRoute
   '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
+  '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
   '/api/trends': typeof ApiTrendsRoute
   '/fixtures/$id': typeof FixturesIdRoute
@@ -212,6 +221,7 @@ export interface FileRouteTypes {
     | '/trends'
     | '/api/form'
     | '/api/ledger'
+    | '/api/scores'
     | '/api/slate'
     | '/api/trends'
     | '/fixtures/$id'
@@ -232,6 +242,7 @@ export interface FileRouteTypes {
     | '/trends'
     | '/api/form'
     | '/api/ledger'
+    | '/api/scores'
     | '/api/slate'
     | '/api/trends'
     | '/fixtures/$id'
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/trends'
     | '/api/form'
     | '/api/ledger'
+    | '/api/scores'
     | '/api/slate'
     | '/api/trends'
     | '/fixtures/$id'
@@ -277,6 +289,7 @@ export interface RootRouteChildren {
   TrendsRoute: typeof TrendsRoute
   ApiFormRoute: typeof ApiFormRoute
   ApiLedgerRoute: typeof ApiLedgerRoute
+  ApiScoresRoute: typeof ApiScoresRoute
   ApiSlateRoute: typeof ApiSlateRoute
   ApiTrendsRoute: typeof ApiTrendsRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -375,6 +388,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLedgerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/scores': {
+      id: '/api/scores'
+      path: '/api/scores'
+      fullPath: '/api/scores'
+      preLoaderRoute: typeof ApiScoresRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/slate': {
       id: '/api/slate'
       path: '/api/slate'
@@ -469,6 +489,7 @@ const rootRouteChildren: RootRouteChildren = {
   TrendsRoute: TrendsRoute,
   ApiFormRoute: ApiFormRoute,
   ApiLedgerRoute: ApiLedgerRoute,
+  ApiScoresRoute: ApiScoresRoute,
   ApiSlateRoute: ApiSlateRoute,
   ApiTrendsRoute: ApiTrendsRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

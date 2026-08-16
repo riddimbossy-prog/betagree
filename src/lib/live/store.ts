@@ -1,5 +1,7 @@
 import type { Fixture, LedgerPayload, SlatePayload } from "@/lib/types";
 import { assembleSlate, gradeLedger } from "./engine";
+import { applySlateScores, peekLivePatches, scheduleFinishedLookups, getLivePatches } from "./scores";
+import { setBoardPairs } from "./board-pairs";
 import { enrichOdds, fetchHistoryFixtures, fetchSlateFixtures } from "./espn";
 
 const SLATE_TTL = 45_000;
@@ -31,7 +33,12 @@ export async function getSlate(force = false): Promise<SlatePayload> {
   if (!force && slateCache && now - slateCache.at < SLATE_TTL) return slateCache.data;
   const day = todayUtc();
   const [fixtures, past] = await Promise.all([fetchSlateFixtures(day), history(day, false)]);
-  const data = assembleSlate(day, fixtures, past);
+  setBoardPairs(fixtures.map((f) => ({ home: f.home.name, away: f.away.name })));
+  scheduleFinishedLookups(fixtures);
+  const patches = peekLivePatches();
+  if (!patches.length) void getLivePatches("fresh");
+  const assembled = assembleSlate(day, fixtures, past);
+  const data = patches.length ? applySlateScores(assembled, patches) : assembled;
   slateCache = { at: now, data };
   return data;
 }

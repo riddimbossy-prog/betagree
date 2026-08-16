@@ -25,8 +25,8 @@ export type PickBrief = {
 };
 
 const SOURCE_TONE: Record<DeskSource, string> = {
-  form: "bg-purpure text-primary-foreground",
-  odds: "bg-azure text-primary-foreground shadow-[0_0_0_1px_hsl(40_58%_62%/0.7)]",
+  form: "glass-purpure text-primary-foreground",
+  odds: "glass-azure text-primary-foreground",
 };
 
 const SOURCE_LABEL: Record<DeskSource, string> = {
@@ -105,12 +105,12 @@ export function PickProvider({ children }: { children: ReactNode }) {
       {children}
       <Dialog.Root open={Boolean(brief)} onOpenChange={(next) => !next && setBrief(null)}>
         <Dialog.Portal>
-          <Dialog.Overlay className="fixed inset-0 z-50 bg-[hsl(240_14%_4%/0.72)] backdrop-blur-sm" />
-          <Dialog.Content className="fixed inset-x-3 bottom-3 z-50 max-h-[88dvh] overflow-y-auto rounded-[28px] bg-card text-card-foreground shadow-[0_0_0_1px_hsl(40_58%_62%/0.35),0_24px_60px_-24px_rgb(0_0_0/0.7)] outline-none fold:inset-auto fold:top-1/2 fold:left-1/2 fold:w-[min(32rem,92vw)] fold:-translate-x-1/2 fold:-translate-y-1/2 fold:bottom-auto">
+          <Dialog.Overlay className="fixed inset-0 z-50 bg-[hsl(240_16%_4%/0.45)] backdrop-blur-md" />
+          <Dialog.Content className="glass-strong fixed inset-x-3 bottom-3 z-50 max-h-[88dvh] overflow-y-auto rounded-[28px] text-card-foreground outline-none fold:inset-auto fold:top-1/2 fold:left-1/2 fold:w-[min(32rem,92vw)] fold:-translate-x-1/2 fold:-translate-y-1/2 fold:bottom-auto">
             {brief ? (
               <>
-                <div className="relative bg-[linear-gradient(160deg,hsl(262_52%_38%)_0%,hsl(214_52%_28%)_55%,hsl(354_58%_32%)_100%)] px-5 pt-5 pb-6 text-primary-foreground">
-                  <Dialog.Close className="absolute top-3 right-3 grid size-10 place-items-center rounded-full bg-black/25 text-white">
+                <div className="glass-purpure relative px-5 pt-5 pb-6 text-primary-foreground">
+                  <Dialog.Close className="glass absolute top-3 right-3 grid size-10 place-items-center rounded-full text-primary-foreground">
                     <X className="size-5" />
                     <span className="sr-only">Close</span>
                   </Dialog.Close>
@@ -118,7 +118,7 @@ export function PickProvider({ children }: { children: ReactNode }) {
                   <Dialog.Title className="mt-2 pr-12 text-2xl font-semibold tracking-tight">
                     {brief.label}
                   </Dialog.Title>
-                  {brief.league ? <p className="mt-1 text-sm text-white/70">{brief.league}</p> : null}
+                  {brief.league ? <p className="mt-1 text-sm text-primary-foreground/70">{brief.league}</p> : null}
                 </div>
 
                 <div className="space-y-4 px-5 pt-5 pb-6">
@@ -130,7 +130,7 @@ export function PickProvider({ children }: { children: ReactNode }) {
                     <div className="pb-8 text-center">
                       <p className="font-serif text-3xl italic text-or">{brief.away ? "vs" : "form"}</p>
                       {time ? (
-                        <div className="mt-2 inline-flex flex-col items-center rounded-full bg-or/15 px-3 py-1 text-or">
+                        <div className="glass-or mt-2 inline-flex flex-col items-center rounded-full px-3 py-1 text-or">
                           {time.day ? (
                             <span className="text-[10px] tracking-wide uppercase">{time.day}</span>
                           ) : null}
@@ -160,7 +160,7 @@ export function PickProvider({ children }: { children: ReactNode }) {
                       </span>
                     ))}
                     {price ? (
-                      <span className="rounded-full bg-or px-3 py-1 text-sm font-semibold text-crest-foreground tabular">
+                      <span className="glass-or rounded-full px-3 py-1 text-sm font-semibold text-crest-foreground tabular">
                         {price}
                       </span>
                     ) : null}
@@ -178,15 +178,13 @@ export function PickProvider({ children }: { children: ReactNode }) {
                           key={n.source}
                           className={cn(
                             "flex items-center justify-between rounded-2xl px-4 py-3",
-                            n.source === "odds"
-                              ? "bg-azure/15 shadow-[0_0_0_1px_hsl(214_52%_52%/0.45)]"
-                              : "bg-purpure/15",
+                            n.source === "odds" ? "glass-azure" : "glass-purpure",
                           )}
                         >
                           <span
                             className={cn(
                               "text-sm font-semibold",
-                              n.source === "odds" ? "text-azure" : "text-purpure",
+                              n.source === "odds" ? "text-or" : "text-primary-foreground",
                             )}
                           >
                             {SOURCE_LABEL[n.source]}

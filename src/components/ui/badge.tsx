@@ -7,13 +7,13 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-secondary text-muted-foreground",
-        outline: "shadow-border text-muted-foreground",
-        win: "bg-win/15 text-win",
-        loss: "bg-loss/15 text-loss",
-        warn: "bg-warn/15 text-warn",
-        info: "bg-info/15 text-info",
-        solid: "bg-primary text-primary-foreground",
+        default: "bg-secondary text-muted-foreground backdrop-blur-md",
+        outline: "shadow-border text-muted-foreground backdrop-blur-md",
+        win: "glass-or text-or",
+        loss: "glass-gules text-hot-foreground",
+        warn: "glass-or text-or",
+        info: "glass-azure text-primary-foreground",
+        solid: "glass-purpure text-primary-foreground",
       },
     },
     defaultVariants: { variant: "default" },

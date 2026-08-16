@@ -30,14 +30,14 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
   return (
     <PickProvider>
-    <div className="flex min-h-dvh flex-col overflow-x-hidden bg-background text-foreground">
+    <div className="relative z-10 flex min-h-dvh flex-col overflow-x-hidden text-foreground">
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:bg-primary focus:px-3 focus:py-2 focus:text-primary-foreground"
       >
         Skip to content
       </a>
-      <header className="sticky top-0 z-40 border-b border-hairline bg-background/80 backdrop-blur-xl">
+      <header className="glass-strong sticky top-0 z-40">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link to="/" className="flex min-w-0 items-center gap-3 no-underline">
             <Crest name="Betagree" size="md" />
@@ -74,7 +74,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
         })}
       </nav>
 
-      <footer className="mt-auto hidden border-t border-hairline xl:block">
+      <footer className="glass mt-auto hidden xl:block">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-6 text-xs text-subtle">
           <p>Betagree ranks soccer picks where the desks overlap. Not a sportsbook.</p>
           <div className="flex flex-wrap gap-4">

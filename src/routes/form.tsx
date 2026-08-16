@@ -53,7 +53,7 @@ function FormPage() {
         </p>
       </header>
 
-      <div className="flex rounded-full bg-card p-1">
+      <div className="glass flex rounded-full p-1">
         {(["most", "least"] as const).map((p) => (
           <button
             key={p}
@@ -61,7 +61,7 @@ function FormPage() {
             onClick={() => setPole(p)}
             className={cn(
               "flex-1 rounded-full px-4 py-2.5 text-sm font-semibold capitalize",
-              pole === p ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+              pole === p ? "glass-purpure text-primary-foreground" : "text-muted-foreground",
             )}
           >
             {p}
@@ -77,7 +77,7 @@ function FormPage() {
             onClick={() => setMetric(m.id)}
             className={cn(
               "inline-flex shrink-0 items-center rounded-full px-4 py-2 text-sm",
-              metric === m.id ? "bg-primary font-semibold text-primary-foreground" : "bg-card text-muted-foreground",
+              metric === m.id ? "glass-purpure font-semibold text-primary-foreground" : "glass text-muted-foreground",
             )}
           >
             {m.label}
@@ -86,7 +86,7 @@ function FormPage() {
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        <div className="flex rounded-full bg-card p-1">
+        <div className="glass flex rounded-full p-1">
           {FORM_VENUES.map((v) => (
             <button
               key={v.id}
@@ -106,7 +106,7 @@ function FormPage() {
           onClick={() => setTodayOnly((v) => !v)}
           className={cn(
             "rounded-full px-4 py-2 text-sm",
-            todayOnly ? "bg-hot font-semibold text-hot-foreground" : "bg-card text-muted-foreground",
+            todayOnly ? "glass-gules font-semibold text-hot-foreground" : "glass text-muted-foreground",
           )}
         >
           Playing today

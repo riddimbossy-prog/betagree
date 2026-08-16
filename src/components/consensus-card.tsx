@@ -29,7 +29,7 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
       }
       className={cn(
         "block w-full min-w-0 overflow-hidden rounded-3xl p-5 text-left text-primary-foreground",
-        hot ? "bg-hot" : "bg-primary",
+        hot ? "glass-gules" : "glass-purpure",
       )}
     >
       <p className="text-xs font-medium tracking-wide text-white/70">

@@ -151,7 +151,7 @@ function OddsFilterPage() {
                         why: `${hit.favorite.name} is the short price at ${hit.price.toFixed(2)} in the 1.20–1.55 band. This is the Odds desk read, kept on Betagree.`,
                       })
                     }
-                    className="block w-full rounded-3xl bg-card p-4 text-left"
+                    className="glass block w-full rounded-3xl p-4 text-left"
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       {hit.fixture.live ? (
@@ -235,7 +235,7 @@ function TeamTile({
             why: `${row.team.name} are the short price at ${row.price.toFixed(2)} against ${row.versus.name}. Odds-desk band only — the sheet stays on Betagree.`,
           })
         }
-        className="flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left"
+        className="glass flex w-full items-center gap-3 rounded-3xl p-4 text-left"
       >
         <Crest name={row.team.name} logo={row.team.logo} />
         <div className="min-w-0 flex-1">

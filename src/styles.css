@@ -7,29 +7,29 @@
   --font-serif: "Instrument Serif", "Times New Roman", Georgia, serif;
   --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 
-  --color-background: hsl(240 14% 6%);
+  --color-background: hsl(240 16% 5%);
   --color-foreground: hsl(40 22% 95%);
-  --color-card: hsl(240 16% 10%);
+  --color-card: hsl(240 18% 16% / 0.42);
   --color-card-foreground: hsl(40 22% 95%);
-  --color-popover: hsl(240 16% 12%);
+  --color-popover: hsl(240 20% 14% / 0.62);
   --color-popover-foreground: hsl(40 22% 95%);
   --color-primary: hsl(262 52% 46%);
   --color-primary-foreground: hsl(40 22% 96%);
-  --color-secondary: hsl(240 14% 14%);
+  --color-secondary: hsl(240 16% 20% / 0.38);
   --color-secondary-foreground: hsl(40 22% 95%);
-  --color-muted: hsl(240 14% 14%);
-  --color-muted-foreground: hsl(40 10% 68%);
-  --color-accent: hsl(240 14% 14%);
+  --color-muted: hsl(240 16% 20% / 0.38);
+  --color-muted-foreground: hsl(40 10% 72%);
+  --color-accent: hsl(240 16% 22% / 0.45);
   --color-accent-foreground: hsl(40 22% 95%);
   --color-destructive: hsl(354 68% 46%);
   --color-destructive-foreground: hsl(40 22% 96%);
-  --color-border: hsl(40 30% 62% / 0.16);
-  --color-input: hsl(40 30% 62% / 0.18);
+  --color-border: hsl(40 30% 72% / 0.18);
+  --color-input: hsl(40 30% 72% / 0.2);
   --color-ring: hsl(40 58% 62%);
   --color-ink: hsl(40 22% 95%);
-  --color-elevated: hsl(240 16% 13%);
-  --color-hairline: hsl(40 30% 62% / 0.16);
-  --color-subtle: hsl(40 8% 58%);
+  --color-elevated: hsl(240 18% 18% / 0.55);
+  --color-hairline: hsl(40 30% 72% / 0.16);
+  --color-subtle: hsl(40 8% 62%);
   --color-win: hsl(40 58% 62%);
   --color-loss: hsl(354 68% 48%);
   --color-push: hsl(40 8% 58%);
@@ -62,12 +62,22 @@
   --radius: 20px;
   --breakpoint-fold: 42.5rem;
 
-  --shadow-border: 0 0 0 1px hsl(40 40% 62% / 0.2);
-  --shadow-border-hover: 0 0 0 1px hsl(40 58% 62% / 0.62);
-  --shadow-lift: 0 18px 40px -20px rgb(0 0 0 / 0.7);
+  --shadow-border:
+    inset 0 1px 0 hsl(40 30% 92% / 0.1),
+    0 0 0 1px hsl(40 40% 72% / 0.16);
+  --shadow-border-hover:
+    inset 0 1px 0 hsl(40 50% 88% / 0.18),
+    0 0 0 1px hsl(40 58% 62% / 0.55);
+  --shadow-lift: 0 22px 48px -24px rgb(0 0 0 / 0.65);
   --shadow-crest: 0 0 0 1px hsl(40 58% 62% / 0.55), 0 8px 16px -8px rgb(0 0 0 / 0.5);
+  --shadow-glass:
+    inset 0 1px 0 hsl(40 30% 92% / 0.12),
+    0 0 0 1px hsl(40 40% 72% / 0.18),
+    0 18px 40px -24px rgb(0 0 0 / 0.5);
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --blur-glass: 18px;
+  --blur-glass-strong: 28px;
 }
 
 @layer base {
@@ -86,12 +96,26 @@
     min-height: 100dvh;
     background-color: var(--color-background);
     background-image:
-      radial-gradient(880px 460px at 50% -18%, hsl(262 52% 42% / 0.3), transparent 58%),
-      radial-gradient(520px 340px at 100% 88%, hsl(354 60% 38% / 0.1), transparent 62%),
-      radial-gradient(480px 300px at 0% 78%, hsl(214 52% 34% / 0.12), transparent 60%);
+      radial-gradient(980px 520px at 8% -12%, hsl(262 58% 42% / 0.48), transparent 58%),
+      radial-gradient(760px 480px at 108% 4%, hsl(214 56% 38% / 0.32), transparent 56%),
+      radial-gradient(640px 420px at 92% 96%, hsl(354 62% 36% / 0.2), transparent 60%),
+      radial-gradient(520px 340px at -6% 88%, hsl(40 58% 52% / 0.1), transparent 58%);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     line-height: 1.5;
+  }
+
+  body::before {
+    content: "";
+    pointer-events: none;
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background-image:
+      linear-gradient(hsl(40 30% 90% / 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(40 30% 90% / 0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse at 50% 20%, black 20%, transparent 75%);
   }
 
   h1,
@@ -132,6 +156,95 @@
   }
 }
 
+@utility glass {
+  background-color: hsl(240 18% 16% / 0.4);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.45);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.45);
+  box-shadow: var(--shadow-glass);
+}
+
+@utility glass-strong {
+  background-color: hsl(240 20% 10% / 0.58);
+  backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.55);
+  -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.55);
+  box-shadow: var(--shadow-glass);
+}
+
+@utility glass-purpure {
+  background-color: hsl(262 52% 38% / 0.52);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
+  box-shadow:
+    inset 0 1px 0 hsl(40 30% 92% / 0.14),
+    0 0 0 1px hsl(262 50% 70% / 0.28);
+}
+
+@utility glass-azure {
+  background-color: hsl(214 52% 34% / 0.5);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
+  box-shadow:
+    inset 0 1px 0 hsl(40 30% 92% / 0.12),
+    0 0 0 1px hsl(40 58% 62% / 0.45);
+}
+
+@utility glass-gules {
+  background-color: hsl(354 62% 36% / 0.52);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.5);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.5);
+  box-shadow:
+    inset 0 1px 0 hsl(40 30% 92% / 0.12),
+    0 0 0 1px hsl(354 50% 70% / 0.28);
+}
+
+@utility glass-or {
+  background-color: hsl(40 58% 52% / 0.18);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow:
+    inset 0 1px 0 hsl(40 50% 88% / 0.16),
+    0 0 0 1px hsl(40 58% 62% / 0.28);
+}
+
+@layer components {
+  .bg-card {
+    background-color: hsl(240 18% 16% / 0.4);
+    backdrop-filter: blur(var(--blur-glass)) saturate(1.45);
+    -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.45);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .bg-secondary {
+    background-color: hsl(240 16% 22% / 0.36);
+    backdrop-filter: blur(12px) saturate(1.3);
+    -webkit-backdrop-filter: blur(12px) saturate(1.3);
+  }
+
+  .bg-popover {
+    background-color: hsl(240 20% 12% / 0.64);
+    backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.5);
+    -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.5);
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass,
+  .glass-strong,
+  .bg-card,
+  .bg-popover {
+    background-color: hsl(240 16% 11%);
+  }
+  .glass-purpure {
+    background-color: hsl(262 52% 38%);
+  }
+  .glass-azure {
+    background-color: hsl(214 52% 32%);
+  }
+  .glass-gules {
+    background-color: hsl(354 62% 36%);
+  }
+}
+
 .tabular {
   font-variant-numeric: tabular-nums;
 }
@@ -152,9 +265,14 @@
   align-items: center;
   justify-content: space-between;
   border-radius: 999px;
-  background: var(--color-card);
+  background: hsl(240 20% 10% / 0.55);
   padding: 0.5rem;
-  box-shadow: 0 0 0 1px hsl(40 58% 62% / 0.28), var(--shadow-lift);
+  backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.55);
+  -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.55);
+  box-shadow:
+    inset 0 1px 0 hsl(40 30% 92% / 0.14),
+    0 0 0 1px hsl(40 58% 62% / 0.28),
+    var(--shadow-lift);
 }
 
 .chip-row {
@@ -176,6 +294,158 @@
   scroll-snap-align: start;
 }
 
+.hero-tabs {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  overflow-x: auto;
+  padding: 0.4rem;
+  border-radius: 1.75rem;
+  background: hsl(240 20% 10% / 0.48);
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.55);
+  -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.55);
+  box-shadow:
+    inset 0 1px 0 hsl(40 30% 92% / 0.12),
+    0 0 0 1px hsl(40 58% 62% / 0.22),
+    var(--shadow-lift);
+}
+
+.hero-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.hero-tab {
+  display: flex;
+  min-height: 4.5rem;
+  min-width: 5.25rem;
+  flex-shrink: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.2rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 1.25rem;
+  color: var(--color-foreground);
+  text-decoration: none;
+  scroll-snap-align: start;
+  transition:
+    background-color 180ms var(--ease-out-soft),
+    box-shadow 180ms var(--ease-out-soft),
+    transform 180ms var(--ease-out-soft);
+}
+
+.hero-tab:hover {
+  background: hsl(240 16% 22% / 0.42);
+  box-shadow: var(--shadow-border-hover);
+}
+
+.hero-tab-value {
+  font-family: var(--font-serif);
+  font-size: 1.7rem;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--color-argent);
+  font-variant-numeric: tabular-nums;
+}
+
+.hero-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-subtle);
+}
+
+.hero-tab-sport {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 10.25rem;
+  padding-inline: 0.85rem 1.15rem;
+  background: hsl(262 52% 42% / 0.78);
+  box-shadow:
+    inset 0 1px 0 hsl(40 30% 92% / 0.14),
+    0 0 0 1px hsl(262 52% 70% / 0.22);
+}
+
+.hero-tab-sport:hover {
+  background: hsl(262 52% 46% / 0.88);
+}
+
+.hero-tab-mark {
+  display: grid;
+  size: 2.25rem;
+  place-items: center;
+  border-radius: 999px;
+  background: hsl(40 22% 96% / 0.12);
+  color: var(--color-or);
+}
+
+.hero-tab-sport-name {
+  display: block;
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  line-height: 1.1;
+  color: var(--color-primary-foreground);
+}
+
+.hero-tab-sport .hero-tab-label {
+  color: hsl(40 22% 92% / 0.72);
+}
+
+.hero-tab-live .hero-tab-value {
+  color: var(--color-or);
+}
+
+.hero-tab-live {
+  background: hsl(354 62% 36% / 0.28);
+  box-shadow:
+    inset 0 1px 0 hsl(40 30% 92% / 0.1),
+    0 0 0 1px hsl(354 50% 70% / 0.2);
+}
+
+.hero-tab-or .hero-tab-value {
+  color: var(--color-or);
+}
+
+.hero-tab-azure .hero-tab-value {
+  color: var(--color-info);
+}
+
+.hero-tab-active {
+  background: hsl(262 52% 42% / 0.42);
+  box-shadow:
+    inset 0 1px 0 hsl(40 30% 92% / 0.12),
+    0 0 0 1px hsl(40 58% 62% / 0.35);
+}
+
+.hero-tab-pip {
+  display: inline-block;
+  size: 0.4rem;
+  border-radius: 999px;
+  background: var(--color-or);
+  box-shadow: 0 0 0 3px hsl(40 58% 62% / 0.18);
+  animation: hero-pip 1.6s var(--ease-out-soft) infinite;
+}
+
+@keyframes hero-pip {
+  50% {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-tab-pip {
+    animation: none;
+  }
+}
+
 @media (min-width: 80rem) {
   .tab-dock {
     display: none;
@@ -194,12 +464,17 @@
 
 .odds-chip {
   border-radius: 999px;
-  background: hsl(40 58% 62% / 0.16);
+  background: hsl(40 58% 52% / 0.16);
   color: var(--color-or);
   padding: 0.35rem 0.7rem;
   font-size: 0.75rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+  backdrop-filter: blur(10px) saturate(1.3);
+  -webkit-backdrop-filter: blur(10px) saturate(1.3);
+  box-shadow:
+    inset 0 1px 0 hsl(40 50% 88% / 0.12),
+    0 0 0 1px hsl(40 58% 62% / 0.22);
 }
 
 .crest-plate {

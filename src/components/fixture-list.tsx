@@ -43,7 +43,7 @@ export function FixtureList({
                     : `${f.away.name} visit ${f.home.name} in ${f.league}. No desk overlap yet.`,
                 })
               }
-              className="block w-full rounded-3xl bg-card p-4 text-left shadow-border"
+              className="glass block w-full rounded-3xl p-4 text-left"
             >
               <div className="flex flex-wrap items-center gap-2">
                 {f.live ? (

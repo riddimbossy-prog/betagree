@@ -41,13 +41,13 @@ function TrendsPage() {
             const n = cats?.[c.id]?.length ?? 0;
             if (!n) return null;
             return (
-              <a key={c.id} href={`#${c.id}`} className="inline-flex shrink-0 items-center rounded-full bg-card px-4 py-2 text-sm">
+              <a key={c.id} href={`#${c.id}`} className="glass inline-flex shrink-0 items-center rounded-full px-4 py-2 text-sm">
                 {c.label}
                 <span className="ml-2 tabular text-muted-foreground">{n}</span>
               </a>
             );
           })}
-          <Link to="/banker" className="inline-flex shrink-0 items-center rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+          <Link to="/banker" className="glass-purpure inline-flex shrink-0 items-center rounded-full px-4 py-2 text-sm font-semibold text-primary-foreground">
             Bankers {data?.bankers.length ?? 0}
           </Link>
         </div>

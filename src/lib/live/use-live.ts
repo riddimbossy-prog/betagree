@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { DeskSource, FormPayload, LedgerPayload, SlatePayload, TrendPick, TrendsPayload } from "@/lib/types";
+import { applySlateScores, type ScorePatch } from "@/lib/live/score-apply";
 
 async function loadJson<T>(paths: string[]): Promise<T> {
   let last: unknown;
@@ -87,36 +88,73 @@ function scrubSlate(data: SlatePayload): SlatePayload {
   };
 }
 
-export function useSlate(pollMs = 45_000) {
+export function useSlate(pollMs = 15_000) {
   const [data, setData] = useState<SlatePayload | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let dead = false;
-    const load = async () => {
+    let board: SlatePayload | null = null;
+    let pending: ScorePatch[] | null = null;
+
+    const paint = (next: SlatePayload) => {
+      if (dead) return;
+      setData(next);
+      setError(null);
+      setLoading(false);
+    };
+
+    const withScores = (base: SlatePayload, scores?: ScorePatch[] | null) =>
+      scores?.length ? applySlateScores(base, scores) : base;
+
+    const loadSnapshot = async () => {
+      const today = utcDate(0);
+      const json = scrubSlate(await loadJson<SlatePayload>([`/data/slate-${today}.json`, "/data/slate.json"]));
+      board = withScores(json, pending);
+      paint(board);
+    };
+
+    const loadLiveBoard = async () => {
       try {
-        const today = utcDate(0);
-        const json = scrubSlate(
-          await loadJson<SlatePayload>([`/data/slate-${today}.json`, "/api/slate", "/data/slate.json"]),
-        );
-        if (!dead) {
-          setData(json);
-          setError(null);
-          setLoading(false);
+        const json = scrubSlate(await loadJson<SlatePayload>(["/api/slate"]));
+        board = withScores(json, pending);
+        paint(board);
+      } catch {
+        /* snapshot is enough */
+      }
+    };
+
+    const loadScores = async () => {
+      try {
+        const pack = await loadJson<{ scores: ScorePatch[] }>(["/api/scores", "/data/scores.json"]);
+        pending = pack?.scores ?? null;
+        if (board && pending?.length) {
+          board = applySlateScores(board, pending);
+          paint(board);
         }
       } catch {
+        /* keep last board if the score ping misses */
+      }
+    };
+
+    void loadSnapshot().catch(() => {
+      void loadLiveBoard().catch(() => {
         if (!dead) {
           setError("Could not reach the live board.");
           setLoading(false);
         }
-      }
-    };
-    void load();
-    const id = window.setInterval(() => void load(), pollMs);
+      });
+    });
+    void loadScores();
+    void loadLiveBoard();
+
+    const scoreId = window.setInterval(() => void loadScores(), pollMs);
+    const boardId = window.setInterval(() => void loadLiveBoard(), Math.max(pollMs * 4, 60_000));
     return () => {
       dead = true;
-      window.clearInterval(id);
+      window.clearInterval(scoreId);
+      window.clearInterval(boardId);
     };
   }, [pollMs]);
 

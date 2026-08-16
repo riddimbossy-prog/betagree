@@ -51,7 +51,7 @@ function BankerPage() {
         </p>
       ) : null}
 
-      <section className="rounded-3xl bg-card p-5">
+      <section className="glass rounded-3xl p-5">
         <h2 className="text-lg font-semibold">How a banker is made</h2>
         <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
           {CATEGORY_META.map((c) => (

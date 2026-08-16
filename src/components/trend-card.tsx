@@ -18,10 +18,10 @@ export function SourcePills({ sources, invert }: { sources: DeskSource[]; invert
           className={cn(
             "rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase",
             invert
-              ? "bg-white/20 text-white"
+              ? "bg-white/15 text-primary-foreground backdrop-blur-md"
               : s === "form"
-                ? "bg-purpure text-primary-foreground"
-                : "bg-azure text-primary-foreground shadow-[0_0_0_1px_hsl(40_58%_62%/0.65)]",
+                ? "glass-purpure text-primary-foreground"
+                : "glass-azure text-primary-foreground",
           )}
         >
           {SOURCE_LABEL[s]}
@@ -45,7 +45,7 @@ export function TimeChip({
     <span
       className={cn(
         "inline-flex items-baseline gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase tabular",
-        invert ? "bg-white/20 text-white" : "bg-or/15 text-or",
+        invert ? "bg-white/15 text-primary-foreground backdrop-blur-md" : "glass-or text-or",
       )}
     >
       {day ? <span className="font-medium opacity-80">{day}</span> : null}
@@ -61,8 +61,8 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
       type="button"
       onClick={() => sheet.open(briefFromTrend(pick))}
       className={cn(
-        "block w-full rounded-3xl p-5 text-left shadow-border transition-[box-shadow] duration-150 hover:shadow-border-hover",
-        highlight ? "bg-primary text-primary-foreground" : "bg-card",
+        "block w-full rounded-3xl p-5 text-left transition-[box-shadow] duration-150 hover:shadow-border-hover",
+        highlight ? "glass-purpure text-primary-foreground" : "glass",
       )}
     >
       <div className="flex items-start justify-between gap-3">
@@ -70,7 +70,7 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
         <span
           className={cn(
             "rounded-full px-3 py-1 text-sm font-semibold tabular",
-            highlight ? "bg-white/20 text-white" : "bg-or text-crest-foreground",
+            highlight ? "bg-white/15 text-primary-foreground" : "glass-or text-crest-foreground",
           )}
         >
           {pick.odds.toFixed(2)}
@@ -101,7 +101,7 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
 
 export function TrendEmpty({ label }: { label: string }) {
   return (
-    <p className="rounded-3xl bg-card px-4 py-8 text-center text-sm text-muted-foreground">
+    <p className="glass rounded-3xl px-4 py-8 text-center text-sm text-muted-foreground">
       No {label} today cleared 70% with odds 1.20–1.55.
     </p>
   );

@@ -19,8 +19,8 @@ export function FormRowCard({
       type="button"
       onClick={() => sheet.open(briefFromForm(row, unit))}
       className={cn(
-        "flex w-full items-center gap-3 rounded-3xl p-4 text-left shadow-border transition-[box-shadow] duration-150 hover:shadow-border-hover",
-        highlight ? "bg-primary text-primary-foreground" : "bg-card",
+        "flex w-full items-center gap-3 rounded-3xl p-4 text-left transition-[box-shadow] duration-150 hover:shadow-border-hover",
+        highlight ? "glass-purpure text-primary-foreground" : "glass",
       )}
     >
       <span className="w-8 shrink-0 text-lg font-semibold tabular text-subtle">{row.rank}</span>

@@ -48,7 +48,7 @@ function FixturePage() {
         {fixture.league}
       </p>
 
-      <header className="rounded-3xl bg-card p-5">
+      <header className="glass rounded-3xl p-5">
         <LiveBar fetchedAt={data?.fetchedAt} liveCount={fixture.live ? 1 : 0} />
         <p className="mt-3 text-xs text-subtle">
           {fixture.live || fixture.status === "post" ? fixture.detail : formatKickoffLong(fixture.start)}

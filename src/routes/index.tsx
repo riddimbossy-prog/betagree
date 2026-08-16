@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { CircleDot } from "lucide-react";
+import { HeroTabs } from "@/components/hero-tabs";
 import { ConsensusCard } from "@/components/consensus-card";
 import { FixtureList } from "@/components/fixture-list";
 import { BoardState } from "@/components/live-bar";
@@ -28,30 +28,18 @@ function Home() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="chip-row">
-        <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-          <CircleDot className="size-4" />
-          Football
-        </span>
-        <span className="inline-flex shrink-0 items-center rounded-full bg-card px-4 py-2 text-sm text-muted-foreground">
-          {loading ? "—" : fixtures.length} fixtures
-        </span>
-        <span className="inline-flex shrink-0 items-center rounded-full bg-card px-4 py-2 text-sm text-muted-foreground">
-          {liveCount} live
-        </span>
-        <Link to="/form" className="inline-flex shrink-0 items-center rounded-full bg-card px-4 py-2 text-sm text-muted-foreground">
-          Form
-        </Link>
-        <Link to="/trends" className="inline-flex shrink-0 items-center rounded-full bg-card px-4 py-2 text-sm text-muted-foreground">
-          {trendTotal} at 70%+
-        </Link>
-        <Link to="/banker" className="inline-flex shrink-0 items-center rounded-full bg-card px-4 py-2 text-sm text-muted-foreground">
-          {bankers.length} bankers
-        </Link>
-        <Link to="/odds" className="inline-flex shrink-0 items-center rounded-full bg-card px-4 py-2 text-sm text-muted-foreground">
-          {band.length} in 1.20–1.55
-        </Link>
-      </div>
+      <HeroTabs
+        sport="Football"
+        sportNote="Today's board"
+        tabs={[
+          { id: "fixtures", label: "fixtures", value: loading ? "—" : fixtures.length, to: "/fixtures" },
+          { id: "live", label: "live", value: liveCount, to: "/fixtures", tone: liveCount ? "live" : "plain" },
+          { id: "form", label: "form", value: formHot.length || "—", to: "/form" },
+          { id: "trends", label: "at 70%+", value: trendTotal, to: "/trends", tone: "or" },
+          { id: "bankers", label: "bankers", value: bankers.length, to: "/banker" },
+          { id: "band", label: "1.20–1.55", value: band.length, to: "/odds", tone: "azure" },
+        ]}
+      />
 
       <BoardState loading={loading} error={error} empty={!loading && !error && fixtures.length === 0} />
 
