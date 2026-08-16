@@ -19,37 +19,32 @@ function Home() {
 
   return (
     <div className="flex flex-col gap-10">
-      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl bg-card p-6 shadow-border sm:col-span-2 lg:row-span-2">
-          <LiveBar fetchedAt={data?.fetchedAt} liveCount={liveCount} />
-          <h1 className="font-display mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">
-            Where the desks agree.
-          </h1>
-          <p className="mt-4 max-w-lg text-muted-foreground">
-            Live slate. Market, form, and attack. The card is every pick that lands on more than
-            one desk.
-          </p>
-        </div>
-        <Stat k="Fixtures" v={loading ? "—" : String(fixtures.length)} />
-        <Stat k="In play" v={loading ? "—" : String(liveCount)} />
-        <Stat k="Leagues" v={loading ? "—" : String(leagues)} />
-        <Stat k="Consensus" v={loading ? "—" : String(pack)} />
-      </section>
+      <header>
+        <LiveBar fetchedAt={data?.fetchedAt} liveCount={liveCount} />
+        <h1 className="mt-3 text-5xl sm:text-7xl">Where the desks agree</h1>
+        <p className="mt-4 max-w-xl text-lg text-muted-foreground">
+          Today's soccer slate. Market, form, and attack. The card is the picks that land on more
+          than one desk.
+        </p>
+        <dl className="mt-6 grid grid-cols-2 border-2 border-ink sm:grid-cols-4">
+          <Stat k="Fixtures" v={loading ? "—" : String(fixtures.length)} />
+          <Stat k="Leagues" v={loading ? "—" : String(leagues)} />
+          <Stat k="In play" v={loading ? "—" : String(liveCount)} />
+          <Stat k="Consensus" v={loading ? "—" : String(pack)} />
+        </dl>
+      </header>
 
       <BoardState loading={loading} error={error} empty={!loading && !error && fixtures.length === 0} />
 
       {top.length ? (
         <section>
-          <div className="mb-4 flex items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium tracking-widest text-subtle uppercase">The card</p>
-              <h2 className="mt-1 text-2xl font-semibold">Strongest agreement</h2>
-            </div>
-            <Link to="/fixtures" className="text-sm text-primary hover:underline">
+          <div className="mb-4 flex items-end justify-between gap-3 border-b-2 border-ink pb-2">
+            <h2 className="text-3xl">The card</h2>
+            <Link to="/fixtures" className="font-display text-sm tracking-wider uppercase underline">
               Full slate
             </Link>
           </div>
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-0 md:grid-cols-2">
             {top.map((item, i) => (
               <ConsensusCard key={item.id} item={item} rank={i + 1} />
             ))}
@@ -59,11 +54,8 @@ function Home() {
 
       {upcoming.length ? (
         <section>
-          <p className="text-xs font-medium tracking-widest text-subtle uppercase">Kickoff order</p>
-          <h2 className="mt-1 text-2xl font-semibold">Next up</h2>
-          <div className="mt-4">
-            <FixtureList fixtures={upcoming} byFixture={byFixture} />
-          </div>
+          <h2 className="mb-4 border-b-2 border-ink pb-2 text-3xl">Next kickoff</h2>
+          <FixtureList fixtures={upcoming} byFixture={byFixture} />
         </section>
       ) : null}
     </div>
@@ -72,9 +64,9 @@ function Home() {
 
 function Stat({ k, v }: { k: string; v: string }) {
   return (
-    <div className="rounded-2xl bg-card px-5 py-5 shadow-border">
-      <dt className="text-xs font-medium tracking-wide text-subtle uppercase">{k}</dt>
-      <dd className="mt-2 text-3xl font-semibold tabular">{v}</dd>
+    <div className="border-ink px-4 py-3 not-last:border-b-2 sm:border-b-0 sm:not-last:border-r-2">
+      <dt className="font-display text-xs tracking-wider uppercase">{k}</dt>
+      <dd className="font-display mt-1 text-3xl tabular">{v}</dd>
     </div>
   );
 }

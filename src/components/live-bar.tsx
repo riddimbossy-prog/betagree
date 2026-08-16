@@ -9,9 +9,9 @@ export function LiveBar({
 }) {
   const ago = fetchedAt ? formatWhen(fetchedAt) : "";
   return (
-    <p className="flex flex-wrap items-center gap-2 text-xs font-medium tracking-wide text-subtle uppercase">
-      <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-2.5 py-1 text-primary">
-        <span className="size-1.5 animate-pulse rounded-full bg-primary" />
+    <p className="flex flex-wrap items-center gap-x-3 gap-y-1 font-display text-xs tracking-wider uppercase">
+      <span className="inline-flex items-center gap-1.5">
+        <span className="size-2 bg-loss" />
         Live
       </span>
       {ago ? <span>Updated {ago}</span> : null}
@@ -31,19 +31,15 @@ export function BoardState({
 }) {
   if (loading) {
     return (
-      <p className="rounded-lg bg-card px-4 py-8 text-center text-sm text-muted-foreground shadow-border">
-        Reading the live board…
-      </p>
+      <p className="border-2 border-ink bg-card px-4 py-8 text-center">Reading the live board…</p>
     );
   }
   if (error) {
-    return (
-      <p className="rounded-lg bg-card px-4 py-8 text-center text-sm text-loss shadow-border">{error}</p>
-    );
+    return <p className="border-2 border-ink bg-card px-4 py-8 text-center text-loss">{error}</p>;
   }
   if (empty) {
     return (
-      <p className="rounded-lg bg-card px-4 py-8 text-center text-sm text-muted-foreground shadow-border">
+      <p className="border-2 border-ink bg-card px-4 py-8 text-center">
         No fixtures on the board for this window. Check back closer to kickoff.
       </p>
     );
