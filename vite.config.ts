@@ -123,11 +123,7 @@ function authPopupPlugin(): Plugin {
   };
 }
 
-// `0.0.0.0:8080` is the live-preview contract — don't change host/port.
-// Keep `nitro` gated to `build` (the Vercel deploy target): enabled in dev it
-// opens a second dev-server port, which breaks the single-port preview.
-// The dev server starts once `src/router.tsx` and `src/routes/` exist — see
-// AGENTS.md § "First scaffold".
+// Keep nitro gated to `build` so the live preview stays on a single port.
 export default defineConfig(({ command }) => ({
   server: {
     host: "0.0.0.0",
@@ -146,10 +142,7 @@ export default defineConfig(({ command }) => ({
     ...(command === "build"
       ? [
           nitro({
-            preset: "vercel",
-            // Auto-registers server/middleware/* (the PWA install page +
-            // manifest + head-tag middleware). Nitro v3 defaults serverDir to
-            // false, so removing this silently unwires /?install=1 on deploys.
+            preset: "node-server",
             serverDir: "./server",
           }),
         ]
