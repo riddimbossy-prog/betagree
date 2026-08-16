@@ -10,8 +10,8 @@ import type {
   PickResult,
   RecordSlice,
   SlatePayload,
-} from "@/lib/types";
-import { americanProfit, americanToImplied, parseAmerican } from "@/lib/odds";
+} from "../types";
+import { americanProfit, americanToImplied, parseAmerican } from "../odds";
 import { format, isValid } from "date-fns";
 
 export const DESKS: Desk[] = [

@@ -1,5 +1,5 @@
-import type { Fixture } from "@/lib/types";
-import { parseAmerican } from "@/lib/odds";
+import type { Fixture } from "../types";
+import { parseAmerican } from "../odds";
 import { LEAGUES } from "./leagues";
 
 function ymd(d: Date) {

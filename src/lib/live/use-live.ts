@@ -1,6 +1,19 @@
 import { useEffect, useState } from "react";
 import type { LedgerPayload, SlatePayload } from "@/lib/types";
-import { getLedger, getSlate } from "./store";
+
+async function loadJson<T>(paths: string[]): Promise<T> {
+  let last: unknown;
+  for (const path of paths) {
+    try {
+      const res = await fetch(path);
+      if (!res.ok) continue;
+      return (await res.json()) as T;
+    } catch (err) {
+      last = err;
+    }
+  }
+  throw last ?? new Error("unavailable");
+}
 
 export function useSlate(pollMs = 45_000) {
   const [data, setData] = useState<SlatePayload | null>(null);
@@ -11,7 +24,7 @@ export function useSlate(pollMs = 45_000) {
     let dead = false;
     const load = async () => {
       try {
-        const json = await getSlate();
+        const json = await loadJson<SlatePayload>(["/api/slate", "/data/slate.json"]);
         if (!dead) {
           setData(json);
           setError(null);
@@ -42,7 +55,7 @@ export function useLedger() {
 
   useEffect(() => {
     let dead = false;
-    getLedger()
+    loadJson<LedgerPayload>(["/api/ledger", "/data/ledger.json"])
       .then((json) => {
         if (!dead) {
           setData(json);
