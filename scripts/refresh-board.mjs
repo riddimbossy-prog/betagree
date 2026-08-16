@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -370,20 +370,55 @@ async function loadRange(start, end, settledOnly) {
   return out.sort((a, b) => +new Date(a.start) - +new Date(b.start));
 }
 
+function labelFor(d) {
+  return d.toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+function packSlate(dayDate, dayFixtures, history) {
+  const picks = buildPicks(dayFixtures, history);
+  const consensus = buildConsensus(picks, dayFixtures);
+  const date = dayDate.toISOString().slice(0, 10);
+  return {
+    date,
+    dateLabel: labelFor(dayDate),
+    fetchedAt: new Date().toISOString(),
+    fixtures: dayFixtures,
+    picks,
+    consensus,
+    desks,
+  };
+}
+
+function writeJson(path, payload, { keepIfEmpty = false } = {}) {
+  if (keepIfEmpty && payload.fixtures?.length === 0 && existsSync(path)) {
+    console.log(`kept ${path} (empty pull)`);
+    return false;
+  }
+  writeFileSync(path, JSON.stringify(payload));
+  return true;
+}
+
 const now = new Date();
 const day = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-const next = new Date(day.getTime() + 36 * 3600_000);
+const tomorrow = new Date(day.getTime() + 86400_000);
+const horizon = new Date(day.getTime() + 48 * 3600_000);
 const histStart = new Date(day.getTime() - 21 * 86400_000);
 
-const [rawSlate, history] = await Promise.all([loadRange(day, next, false), loadRange(histStart, day, true)]);
+const [rawSlate, history] = await Promise.all([
+  loadRange(day, horizon, false),
+  loadRange(histStart, day, true),
+]);
 const dayStr = day.toISOString().slice(0, 10);
-const nextStr = next.toISOString().slice(0, 10);
-const fixtures = rawSlate.filter((f) => {
-  const d = f.start.slice(0, 10);
-  return d === dayStr || d === nextStr;
-});
-const picks = buildPicks(fixtures, history);
-const consensus = buildConsensus(picks, fixtures);
+const tomStr = tomorrow.toISOString().slice(0, 10);
+const todayFix = rawSlate.filter((f) => f.start.slice(0, 10) === dayStr);
+const tomFix = rawSlate.filter((f) => f.start.slice(0, 10) === tomStr);
+
 const desks = DESKS.map((d) => ({
   ...d,
   style:
@@ -400,21 +435,8 @@ const desks = DESKS.map((d) => ({
         : "Compares each side's recent scoring and conceding. Also posts the total and BTTS.",
 }));
 
-const slate = {
-  date: dayStr,
-  dateLabel: day.toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC",
-  }),
-  fetchedAt: new Date().toISOString(),
-  fixtures,
-  picks,
-  consensus,
-  desks,
-};
+const todaySlate = packSlate(day, todayFix, history);
+const tomorrowSlate = packSlate(tomorrow, tomFix, history);
 
 const histPicks = [];
 for (let i = 0; i < history.length; i++) {
@@ -488,8 +510,22 @@ const ledger = {
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dir = join(root, "public", "data");
 mkdirSync(dir, { recursive: true });
-writeFileSync(join(dir, "slate.json"), JSON.stringify(slate));
-writeFileSync(join(dir, "ledger.json"), JSON.stringify(ledger));
+writeJson(join(dir, "slate.json"), todaySlate);
+writeJson(join(dir, `slate-${dayStr}.json`), todaySlate);
+writeJson(join(dir, `slate-${tomStr}.json`), tomorrowSlate, { keepIfEmpty: true });
+writeJson(join(dir, "ledger.json"), ledger);
+writeFileSync(
+  join(dir, "index.json"),
+  JSON.stringify({
+    generatedAt: new Date().toISOString(),
+    today: dayStr,
+    tomorrow: tomStr,
+    days: {
+      [dayStr]: { fixtures: todayFix.length, consensus: todaySlate.consensus.length },
+      [tomStr]: { fixtures: tomFix.length, consensus: tomorrowSlate.consensus.length },
+    },
+  }),
+);
 console.log(
-  `wrote slate ${fixtures.length} fixtures / ${consensus.length} consensus, ledger ${history.length} matches`,
+  `published ${dayStr} ${todayFix.length} fixtures / ${todaySlate.consensus.length} consensus; ${tomStr} ${tomFix.length} fixtures / ${tomorrowSlate.consensus.length} consensus; ledger ${history.length}`,
 );

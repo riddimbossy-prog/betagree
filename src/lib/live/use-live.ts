@@ -15,6 +15,12 @@ async function loadJson<T>(paths: string[]): Promise<T> {
   throw last ?? new Error("unavailable");
 }
 
+function utcDate(offsetDays = 0) {
+  const now = new Date();
+  const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + offsetDays));
+  return d.toISOString().slice(0, 10);
+}
+
 export function useSlate(pollMs = 45_000) {
   const [data, setData] = useState<SlatePayload | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +30,12 @@ export function useSlate(pollMs = 45_000) {
     let dead = false;
     const load = async () => {
       try {
-        const json = await loadJson<SlatePayload>(["/api/slate", "/data/slate.json"]);
+        const today = utcDate(0);
+        const json = await loadJson<SlatePayload>([
+          `/data/slate-${today}.json`,
+          "/api/slate",
+          "/data/slate.json",
+        ]);
         if (!dead) {
           setData(json);
           setError(null);
