@@ -1,19 +1,34 @@
-import { Link } from "@tanstack/react-router";
 import type { ConsensusItem } from "@/lib/types";
 import { Crest } from "@/components/crest";
-import { formatKickoff } from "@/lib/format";
+import { TimeChip } from "@/components/trend-card";
+import { usePickSheet } from "@/components/pick-sheet";
 import { formatDecimal, formatPct } from "@/lib/odds";
 import { cn } from "@/lib/utils";
 
 export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: number }) {
   const f = item.fixture;
   const hot = (rank ?? 0) % 2 === 0;
+  const sheet = usePickSheet();
   return (
-    <Link
-      to="/fixtures/$id"
-      params={{ id: f.id }}
+    <button
+      type="button"
+      onClick={() =>
+        sheet.open({
+          id: item.id,
+          home: f.home.name,
+          away: f.away.name,
+          homeLogo: f.home.logo,
+          awayLogo: f.away.logo,
+          league: f.league,
+          kickoffIso: f.start,
+          label: item.label,
+          odds: item.market === "1x2" ? (item.selection === "home" ? f.home.ml : item.selection === "away" ? f.away.ml : f.drawMl) : null,
+          sources: ["form", "odds"],
+          why: `${item.label}. ${item.count} of ${item.coverage} desks land here (${formatPct(item.pct)}). This is our read — the sheet stays on Betagree.`,
+        })
+      }
       className={cn(
-        "block w-full min-w-0 overflow-hidden rounded-3xl p-5 text-primary-foreground",
+        "block w-full min-w-0 overflow-hidden rounded-3xl p-5 text-left text-primary-foreground",
         hot ? "bg-hot" : "bg-primary",
       )}
     >
@@ -23,20 +38,20 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
       </p>
       <div className="mt-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col items-center gap-1.5">
-          <Crest logo={f.away.logo} abbr={f.away.abbr} />
-          <span className="max-w-20 truncate text-center text-xs">{f.away.name}</span>
+          <Crest name={f.away.name} logo={f.away.logo} size="lg" />
+          <span className="max-w-24 truncate text-center text-xs">{f.away.name}</span>
         </div>
         <div className="text-center">
           <p className="text-3xl font-bold tabular">
             {f.away.score ?? "–"} <span className="text-white/50">:</span> {f.home.score ?? "–"}
           </p>
-          <p className="mt-1 text-xs text-white/70">
-            {f.live ? f.detail || "Live" : formatKickoff(f.start)}
-          </p>
+          <div className="mt-2 flex justify-center">
+            <TimeChip raw={null} iso={f.start} invert />
+          </div>
         </div>
         <div className="flex min-w-0 flex-col items-center gap-1.5">
-          <Crest logo={f.home.logo} abbr={f.home.abbr} />
-          <span className="max-w-20 truncate text-center text-xs">{f.home.name}</span>
+          <Crest name={f.home.name} logo={f.home.logo} size="lg" />
+          <span className="max-w-24 truncate text-center text-xs">{f.home.name}</span>
         </div>
       </div>
       <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
@@ -48,7 +63,7 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
       <p className="mt-1 text-center text-xs text-white/70">
         {item.count}/{item.coverage} desks · {formatPct(item.pct)}
       </p>
-    </Link>
+    </button>
   );
 }
 

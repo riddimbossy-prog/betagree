@@ -1,12 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Crest } from "@/components/crest";
 import { BoardState, LiveBar } from "@/components/live-bar";
+import { TimeChip } from "@/components/trend-card";
+import { usePickSheet } from "@/components/pick-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { bandTeams, DEFAULT_BAND, fixturesInBand, type BandSide } from "@/lib/odds-band";
 import { formatDecimal, toDecimal } from "@/lib/odds";
-import { formatKickoff } from "@/lib/format";
 import { useSlate } from "@/lib/live/use-live";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +15,7 @@ export const Route = createFileRoute("/odds")({ component: OddsFilterPage });
 
 function OddsFilterPage() {
   const { data, error, loading } = useSlate();
+  const sheet = usePickSheet();
   const [from, setFrom] = useState(String(DEFAULT_BAND.from));
   const [to, setTo] = useState(String(DEFAULT_BAND.to));
   const [side, setSide] = useState<BandSide>("any");
@@ -35,7 +37,7 @@ function OddsFilterPage() {
           Odds <span className="font-serif italic font-normal">filter</span>
         </h1>
         <p className="mt-3 text-muted-foreground">
-          BetExplorer-style 1X2 band. Default is {DEFAULT_BAND.from.toFixed(2)}–{DEFAULT_BAND.to.toFixed(2)} —
+          1X2 price band. Default is {DEFAULT_BAND.from.toFixed(2)}–{DEFAULT_BAND.to.toFixed(2)} —
           short favorites and the teams they sit on.
         </p>
       </header>
@@ -132,21 +134,38 @@ function OddsFilterPage() {
             <ul className="mt-4 flex flex-col gap-3">
               {hits.map((hit) => (
                 <li key={`${hit.fixture.id}-${hit.side}`}>
-                  <Link
-                    to="/fixtures/$id"
-                    params={{ id: hit.fixture.id }}
-                    className="block rounded-3xl bg-card p-4"
+                  <button
+                    type="button"
+                    onClick={() =>
+                      sheet.open({
+                        id: `${hit.fixture.id}-${hit.side}`,
+                        home: hit.fixture.home.name,
+                        away: hit.fixture.away.name,
+                        homeLogo: hit.fixture.home.logo,
+                        awayLogo: hit.fixture.away.logo,
+                        league: hit.fixture.league,
+                        kickoffIso: hit.fixture.start,
+                        label: `${hit.favorite.name} @ ${hit.price.toFixed(2)}`,
+                        odds: hit.price,
+                        sources: ["odds"],
+                        why: `${hit.favorite.name} is the short price at ${hit.price.toFixed(2)} in the 1.20–1.55 band. This is the Odds desk read, kept on Betagree.`,
+                      })
+                    }
+                    className="block w-full rounded-3xl bg-card p-4 text-left"
                   >
-                    <p className="text-xs text-subtle">
-                      {hit.fixture.live
-                        ? hit.fixture.detail || "Live"
-                        : formatKickoff(hit.fixture.start)}
-                      {" · "}
-                      {hit.fixture.league}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {hit.fixture.live ? (
+                        <span className="rounded-full bg-gules px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-hot-foreground uppercase">
+                          {hit.fixture.detail || "Live"}
+                        </span>
+                      ) : (
+                        <TimeChip raw={null} iso={hit.fixture.start} />
+                      )}
+                      <span className="truncate text-xs text-subtle">{hit.fixture.league}</span>
+                    </div>
                     <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                       <span className="flex min-w-0 items-center gap-2">
-                        <Crest logo={hit.fixture.away.logo} abbr={hit.fixture.away.abbr} size="sm" />
+                        <Crest name={hit.fixture.away.name} logo={hit.fixture.away.logo} size="sm" />
                         <span className="truncate text-sm font-medium">{hit.fixture.away.name}</span>
                       </span>
                       <span className="text-lg font-bold tabular">
@@ -154,7 +173,7 @@ function OddsFilterPage() {
                       </span>
                       <span className="flex min-w-0 items-center justify-end gap-2">
                         <span className="truncate text-right text-sm font-medium">{hit.fixture.home.name}</span>
-                        <Crest logo={hit.fixture.home.logo} abbr={hit.fixture.home.abbr} size="sm" />
+                        <Crest name={hit.fixture.home.name} logo={hit.fixture.home.logo} size="sm" />
                       </span>
                     </div>
                     <div className="mt-3 flex flex-wrap justify-center gap-2">
@@ -176,10 +195,10 @@ function OddsFilterPage() {
                         {formatDecimal(hit.fixture.home.ml)}
                       </span>
                     </div>
-                    <p className="mt-3 text-center text-sm text-primary">
+                    <p className="mt-3 text-center text-sm text-azure">
                       {hit.favorite.name} @ {hit.price.toFixed(2)}
                     </p>
-                  </Link>
+                  </button>
                 </li>
               ))}
             </ul>
@@ -195,15 +214,30 @@ function TeamTile({
 }: {
   row: ReturnType<typeof bandTeams>["best"][number];
 }) {
+  const sheet = usePickSheet();
   const vsPrice = toDecimal(row.versus.ml);
   return (
     <li>
-      <Link
-        to="/fixtures/$id"
-        params={{ id: row.fixture.id }}
-        className="flex items-center gap-3 rounded-3xl bg-card p-4"
+      <button
+        type="button"
+        onClick={() =>
+          sheet.open({
+            id: `team:${row.fixture.id}:${row.team.id}`,
+            home: row.team.name,
+            away: row.versus.name,
+            homeLogo: row.team.logo,
+            awayLogo: row.versus.logo,
+            league: row.fixture.league,
+            kickoffIso: row.fixture.start,
+            label: `${row.team.name} @ ${row.price.toFixed(2)}`,
+            odds: row.price,
+            sources: ["odds"],
+            why: `${row.team.name} are the short price at ${row.price.toFixed(2)} against ${row.versus.name}. Odds-desk band only — the sheet stays on Betagree.`,
+          })
+        }
+        className="flex w-full items-center gap-3 rounded-3xl bg-card p-4 text-left"
       >
-        <Crest logo={row.team.logo} abbr={row.team.abbr} />
+        <Crest name={row.team.name} logo={row.team.logo} />
         <div className="min-w-0 flex-1">
           <p className="truncate font-semibold">{row.team.name}</p>
           <p className="truncate text-xs text-subtle">
@@ -211,10 +245,10 @@ function TeamTile({
             {vsPrice ? ` · ${vsPrice.toFixed(2)}` : ""}
           </p>
         </div>
-        <span className="rounded-full bg-primary px-3 py-1 text-sm font-semibold tabular text-primary-foreground">
+        <span className="rounded-full bg-azure px-3 py-1 text-sm font-semibold tabular text-primary-foreground">
           {row.price.toFixed(2)}
         </span>
-      </Link>
+      </button>
     </li>
   );
 }

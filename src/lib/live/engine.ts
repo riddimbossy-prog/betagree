@@ -18,11 +18,11 @@ export const DESKS: Desk[] = [
   {
     id: "market",
     name: "Market",
-    handle: "@draftkings",
+    handle: "@market",
     desk: "Price",
     style: "The posted 1X2 and total — whatever the book is shortest on",
     verified: true,
-    bio: "Live DraftKings number from the ESPN board. Not a tipster. The price itself.",
+    bio: "The posted price itself. Not a tipster — just the shortest 1X2 and total on the board.",
   },
   {
     id: "form",

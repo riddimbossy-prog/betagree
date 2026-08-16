@@ -7,38 +7,51 @@
   --font-serif: "Instrument Serif", "Times New Roman", Georgia, serif;
   --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 
-  --color-background: #08080e;
-  --color-foreground: #ffffff;
-  --color-card: #14141c;
-  --color-card-foreground: #ffffff;
-  --color-popover: #1b1b26;
-  --color-popover-foreground: #ffffff;
-  --color-primary: #7f52fc;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #1b1b26;
-  --color-secondary-foreground: #ffffff;
-  --color-muted: #1b1b26;
-  --color-muted-foreground: #9a9aab;
-  --color-accent: #1b1b26;
-  --color-accent-foreground: #ffffff;
-  --color-destructive: #fe5168;
-  --color-destructive-foreground: #ffffff;
-  --color-border: rgb(255 255 255 / 0.08);
-  --color-input: rgb(255 255 255 / 0.1);
-  --color-ring: #7f52fc;
-  --color-ink: #ffffff;
-  --color-elevated: #1b1b26;
-  --color-hairline: rgb(255 255 255 / 0.08);
-  --color-subtle: #7a7a8c;
-  --color-win: #7f52fc;
-  --color-loss: #fe5168;
-  --color-push: #7a7a8c;
-  --color-warn: #f0c36a;
-  --color-info: #7f52fc;
-  --color-hot: #fe5168;
-  --color-hot-foreground: #ffffff;
-  --color-crest: #ffffff;
-  --color-crest-foreground: #12121a;
+  --color-background: hsl(240 14% 6%);
+  --color-foreground: hsl(40 22% 95%);
+  --color-card: hsl(240 16% 10%);
+  --color-card-foreground: hsl(40 22% 95%);
+  --color-popover: hsl(240 16% 12%);
+  --color-popover-foreground: hsl(40 22% 95%);
+  --color-primary: hsl(262 52% 46%);
+  --color-primary-foreground: hsl(40 22% 96%);
+  --color-secondary: hsl(240 14% 14%);
+  --color-secondary-foreground: hsl(40 22% 95%);
+  --color-muted: hsl(240 14% 14%);
+  --color-muted-foreground: hsl(40 10% 68%);
+  --color-accent: hsl(240 14% 14%);
+  --color-accent-foreground: hsl(40 22% 95%);
+  --color-destructive: hsl(354 68% 46%);
+  --color-destructive-foreground: hsl(40 22% 96%);
+  --color-border: hsl(40 30% 62% / 0.16);
+  --color-input: hsl(40 30% 62% / 0.18);
+  --color-ring: hsl(40 58% 62%);
+  --color-ink: hsl(40 22% 95%);
+  --color-elevated: hsl(240 16% 13%);
+  --color-hairline: hsl(40 30% 62% / 0.16);
+  --color-subtle: hsl(40 8% 58%);
+  --color-win: hsl(40 58% 62%);
+  --color-loss: hsl(354 68% 48%);
+  --color-push: hsl(40 8% 58%);
+  --color-warn: hsl(40 58% 62%);
+  --color-info: hsl(214 52% 58%);
+  --color-hot: hsl(354 68% 46%);
+  --color-hot-foreground: hsl(40 22% 96%);
+  --color-crest: hsl(40 22% 92%);
+  --color-crest-foreground: hsl(240 12% 9%);
+  --color-or: hsl(40 58% 62%);
+  --color-argent: hsl(40 22% 92%);
+  --color-gules: hsl(354 68% 46%);
+  --color-azure: hsl(214 52% 52%);
+  --color-vert: hsl(148 36% 38%);
+  --color-purpure: hsl(262 52% 46%);
+  --tincture-or: hsl(40 58% 62%);
+  --tincture-argent: hsl(40 22% 92%);
+  --tincture-gules: hsl(354 68% 40%);
+  --tincture-azure: hsl(214 52% 34%);
+  --tincture-sable: hsl(240 12% 9%);
+  --tincture-vert: hsl(148 36% 26%);
+  --tincture-purpure: hsl(262 52% 42%);
 
   --radius-xs: 8px;
   --radius-sm: 12px;
@@ -49,10 +62,10 @@
   --radius: 20px;
   --breakpoint-fold: 42.5rem;
 
-  --shadow-border: 0 0 0 1px rgb(255 255 255 / 0.06);
-  --shadow-border-hover: 0 0 0 1px rgb(127 82 252 / 0.55);
+  --shadow-border: 0 0 0 1px hsl(40 40% 62% / 0.2);
+  --shadow-border-hover: 0 0 0 1px hsl(40 58% 62% / 0.62);
   --shadow-lift: 0 18px 40px -20px rgb(0 0 0 / 0.7);
-  --shadow-crest: 0 0 0 2px rgb(255 255 255 / 0.35), 0 6px 14px -6px rgb(0 0 0 / 0.45);
+  --shadow-crest: 0 0 0 1px hsl(40 58% 62% / 0.55), 0 8px 16px -8px rgb(0 0 0 / 0.5);
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -72,7 +85,10 @@
   body {
     min-height: 100dvh;
     background-color: var(--color-background);
-    background-image: radial-gradient(900px 480px at 50% -20%, rgb(127 82 252 / 0.22), transparent 58%);
+    background-image:
+      radial-gradient(880px 460px at 50% -18%, hsl(262 52% 42% / 0.3), transparent 58%),
+      radial-gradient(520px 340px at 100% 88%, hsl(354 60% 38% / 0.1), transparent 62%),
+      radial-gradient(480px 300px at 0% 78%, hsl(214 52% 34% / 0.12), transparent 60%);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     line-height: 1.5;
@@ -100,8 +116,8 @@
   }
 
   ::selection {
-    background: rgb(127 82 252 / 0.35);
-    color: #fff;
+    background: hsl(40 58% 62% / 0.35);
+    color: hsl(240 12% 8%);
   }
 }
 
@@ -122,6 +138,23 @@
 
 .font-serif {
   font-family: var(--font-serif);
+  color: var(--color-or);
+}
+
+.tab-dock {
+  position: fixed;
+  inset-inline: 0;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 40;
+  margin-inline: auto;
+  display: flex;
+  width: min(92%, 26rem);
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 999px;
+  background: var(--color-card);
+  padding: 0.5rem;
+  box-shadow: 0 0 0 1px hsl(40 58% 62% / 0.28), var(--shadow-lift);
 }
 
 .chip-row {
@@ -143,22 +176,6 @@
   scroll-snap-align: start;
 }
 
-.tab-dock {
-  position: fixed;
-  inset-inline: 0;
-  bottom: max(1rem, env(safe-area-inset-bottom));
-  z-index: 40;
-  margin-inline: auto;
-  display: flex;
-  width: min(92%, 26rem);
-  align-items: center;
-  justify-content: space-between;
-  border-radius: 999px;
-  background: var(--color-card);
-  padding: 0.5rem;
-  box-shadow: var(--shadow-lift);
-}
-
 @media (min-width: 80rem) {
   .tab-dock {
     display: none;
@@ -177,7 +194,8 @@
 
 .odds-chip {
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.16);
+  background: hsl(40 58% 62% / 0.16);
+  color: var(--color-or);
   padding: 0.35rem 0.7rem;
   font-size: 0.75rem;
   font-weight: 600;
@@ -185,17 +203,14 @@
 }
 
 .crest-plate {
-  display: grid;
+  position: relative;
+  display: inline-grid;
   place-items: center;
   flex-shrink: 0;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--color-crest);
-  box-shadow: var(--shadow-crest);
+  overflow: visible;
+  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.35));
 }
 
-.crest-plate img {
-  width: 78%;
-  height: 78%;
-  object-fit: contain;
+.crest-plate svg {
+  display: block;
 }

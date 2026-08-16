@@ -14,7 +14,7 @@ function TipstersPage() {
   return (
     <div className="flex flex-col gap-8">
       <header className="max-w-2xl">
-        <p className="text-xs tracking-widest text-subtle uppercase">{data?.windowLabel ?? "Live ledger"}</p>
+        <p className="text-xs tracking-widest text-subtle uppercase">{data?.windowLabel ?? "Live book"}</p>
         <h1 className="font-display mt-2 text-4xl">Desks</h1>
         <p className="mt-3 text-muted-foreground">
           Three live reads — the posted market, last-five form, and a goals lean. Graded on settled

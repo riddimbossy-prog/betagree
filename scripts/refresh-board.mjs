@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { buildTrends } from "./lib/desks.mjs";
+import { buildFormBoard, buildTrends } from "./lib/desks.mjs";
 
 const LEAGUES = [
   ["eng.1", "Premier League"],
@@ -29,7 +29,7 @@ const LEAGUES = [
 ];
 
 const DESKS = [
-  { id: "market", name: "Market", handle: "@draftkings", desk: "Price", style: "", verified: true, bio: "" },
+  { id: "market", name: "Market", handle: "@market", desk: "Price", style: "", verified: true, bio: "" },
   { id: "form", name: "Form", handle: "@form", desk: "Last five", style: "", verified: true, bio: "" },
   { id: "attack", name: "Attack", handle: "@attack", desk: "Goals", style: "", verified: true, bio: "" },
 ];
@@ -430,7 +430,7 @@ const desks = DESKS.map((d) => ({
         : "Goals for and against over the last five, used as a simple expected-goals lean",
   bio:
     d.id === "market"
-      ? "Live DraftKings number from the ESPN board. Not a tipster. The price itself."
+      ? "The posted price itself. Not a tipster — just the shortest 1X2 and total on the board."
       : d.id === "form"
         ? "3 for a win, 1 for a draw. Picks the side that has been collecting more points."
         : "Compares each side's recent scoring and conceding. Also posts the total and BTTS.",
@@ -528,6 +528,22 @@ try {
   console.error("trends refresh failed", err);
   trends = { bankers: [], counts: {} };
 }
+
+let form;
+try {
+  form = await buildFormBoard({
+    fixtures: [...todayFix, ...tomFix],
+    date: dayStr,
+    dateLabel: labelFor(day),
+  });
+  const hasRows = Object.values(form.boards ?? {}).some((b) => (b.overall?.length ?? 0) > 0);
+  if (hasRows) writeJson(join(dir, "form.json"), form);
+  else console.log("kept form.json (empty pull)");
+} catch (err) {
+  console.error("form refresh failed", err);
+  form = { playingToday: 0, boards: {} };
+}
+
 writeFileSync(
   join(dir, "index.json"),
   JSON.stringify({
@@ -542,8 +558,12 @@ writeFileSync(
       bankers: trends.bankers?.length ?? 0,
       counts: trends.counts ?? {},
     },
+    form: {
+      playingToday: form.playingToday ?? 0,
+      boards: Object.keys(form.boards ?? {}).length,
+    },
   }),
 );
 console.log(
-  `published ${dayStr} ${todayFix.length} fixtures / ${todaySlate.consensus.length} consensus; ${tomStr} ${tomFix.length} fixtures / ${tomorrowSlate.consensus.length} consensus; ledger ${history.length}; trends ${JSON.stringify(trends.counts ?? {})} bankers ${trends.bankers?.length ?? 0}`,
+  `published ${dayStr} ${todayFix.length} fixtures / ${todaySlate.consensus.length} consensus; ${tomStr} ${tomFix.length} fixtures / ${tomorrowSlate.consensus.length} consensus; ledger ${history.length}; trends ${JSON.stringify(trends.counts ?? {})} bankers ${trends.bankers?.length ?? 0}; form ${form.playingToday ?? 0} playing`,
 );

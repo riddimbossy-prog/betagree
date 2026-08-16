@@ -4,12 +4,14 @@ import {
   bankersFrom,
   buildPicksFromBeOu,
   buildPicksFromPrimaForm,
+  decorateFormRows,
   inOddsBand,
   nameScore,
   parseBeOverUnder,
   parseBeStreakRows,
   parsePct,
   parsePrimaForm,
+  parsePrimaFormTables,
   parsePrimaGames,
   parsePrimaTipMarkets,
   sameMatch,
@@ -68,6 +70,65 @@ test("PrimaTips form: winless is 1 - win%", () => {
   assert.equal(rows[0].playingToday, true);
   assert.ok(formRate(rows[0], "winless") >= 0.7);
   assert.ok(formRate(rows[0], "wins") < 0.7);
+});
+
+test("PrimaTips form tables split overall / home / away and keep goal averages", () => {
+  const html = `
+    <h2>Most Wins</h2>
+    <table class="form"><tr>
+      <td class="ps" title="1">1</td>
+      <td class="tm"><span class="dc"><span class="dce"><a class="tl" href="/teams/x/pacific" title="Premier - Canada">Pacific</a><a class="fgl" href="/tip/pacific-york-1"><img/></a></span></span></td>
+      <td class="sc">12</td>
+      <td class="gm">16</td>
+      <td class="pr">75%</td>
+    </tr></table>
+    <h2>Only Home Matches</h2>
+    <table class="form"><tr>
+      <td class="ps" title="1">1</td>
+      <td class="tm"><span class="dc"><span class="dce"><a class="tl" href="/teams/x/pacific/league-home" title="Premier - Canada">Pacific</a></span></span></td>
+      <td class="sc">8</td>
+      <td class="gm">8</td>
+      <td class="pr">100%</td>
+    </tr></table>
+    <h2>Only Away Matches</h2>
+    <table class="form"><tr>
+      <td class="ps" title="4">4</td>
+      <td class="tm"><span class="dc"><span class="dce"><a class="tl" href="/teams/x/york/league-away" title="Premier - Canada">York</a></span></span></td>
+      <td class="sc">2</td>
+      <td class="gm">8</td>
+      <td class="pr">25%</td>
+    </tr></table>`;
+  const tables = parsePrimaFormTables(html);
+  assert.equal(tables.overall[0].team, "Pacific");
+  assert.equal(tables.overall[0].playingToday, true);
+  assert.equal(tables.home[0].rate, 1);
+  assert.equal(tables.away[0].team, "York");
+  assert.equal(tables.away[0].rank, 4);
+
+  const goals = parsePrimaFormTables(`
+    <h2>Most Scored Goals</h2>
+    <table class="form"><tr>
+      <td class="ps" title="1">1</td>
+      <td class="tm"><span class="dc"><span class="dce"><a class="tl" href="/teams/x/arkadag" title="Yokary Liga">Arkadag</a></span></span></td>
+      <td class="sc">65</td>
+      <td class="gm">15</td>
+      <td class="pr">4.33</td>
+    </tr></table>`);
+  assert.equal(goals.overall[0].valueKind, "avg");
+  assert.equal(goals.overall[0].rate, 4.33);
+  assert.equal(goals.overall[0].display, "4.33");
+
+  const decorated = decorateFormRows(tables.overall, [
+    {
+      id: "fx1",
+      status: "pre",
+      home: { name: "Pacific FC", logo: "https://a.espncdn.com/pacific.png" },
+      away: { name: "York United", logo: null },
+    },
+  ]);
+  assert.equal(decorated[0].logo, "https://a.espncdn.com/pacific.png");
+  assert.equal(decorated[0].fixtureId, "fx1");
+  assert.equal(decorated[0].opponent, "York United");
 });
 
 test("form pick is dropped when odds miss the band", () => {
@@ -140,14 +201,14 @@ test("banker is only dual-source agreement inside the band", () => {
     odds: 1.3,
     rate: 0.8,
     sample: 5,
-    sources: ["primatips", "betexplorer"],
+    sources: ["form", "odds"],
     sourceNotes: [],
   };
-  const onlyPrima = { ...shared, home: "Other", away: "Side", sources: ["primatips"], odds: 1.22, rate: 0.9 };
+  const onlyPrima = { ...shared, home: "Other", away: "Side", sources: ["form"], odds: 1.22, rate: 0.9 };
   const cats = { wins: [shared, onlyPrima], losses: [], winless: [], undefeated: [], over25: [], under25: [], gg: [] };
   const bankers = bankersFrom(cats);
   assert.equal(bankers.length, 1);
-  assert.deepEqual(bankers[0].agreed, ["primatips", "betexplorer"]);
+  assert.deepEqual(bankers[0].agreed, ["form", "odds"]);
 });
 
 test("parse streak and tip markets", () => {

@@ -6,12 +6,12 @@ export const Route = createFileRoute("/playbook")({ component: PlaybookPage });
 const STEPS = [
   {
     n: "01",
-    title: "Pull today's slate",
-    body: "Fixtures, scores, and DraftKings prices come off the live ESPN soccer board every 45 seconds. No baked card.",
+    title: "Today's card",
+    body: "Every fixture, score, and price for the day sits on one board. Open a match to see how the desks lined up.",
   },
   {
     n: "02",
-    title: "Three live desks",
+    title: "Three desks",
     body: "Market follows the posted 1X2 and total. Form uses the last five settled results. Attack compares recent goals for and against.",
   },
   {
@@ -22,7 +22,12 @@ const STEPS = [
   {
     n: "04",
     title: "Grade the book",
-    body: "The last 21 days of finished matches are scored walk-forward — form never sees the game being graded. One unit at the posted number.",
+    body: "Finished matches are scored after the whistle. Form never uses the game being graded. One unit at the posted number.",
+  },
+  {
+    n: "05",
+    title: "Read current form",
+    body: "League tables for most and least wins, draws, losses, and goals — with home and away splits. Cups stay out.",
   },
 ];
 
@@ -55,7 +60,7 @@ function PlaybookPage() {
             <dl className="mt-4 divide-y divide-border text-sm">
               <Row k="3/3" v="Market, form, and attack all on the same side." />
               <Row k="2/3" v="A real lean. Check who faded — often the market vs the form." />
-              <Row k="Split" v="No consensus. The fixture stays on the slate; it does not make the card." />
+              <Row k="Split" v="No consensus. The fixture stays on the board; it does not make the card." />
             </dl>
           </CardContent>
         </Card>

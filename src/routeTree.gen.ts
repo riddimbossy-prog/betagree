@@ -14,11 +14,13 @@ import { Route as AccuracyRouteImport } from './routes/accuracy'
 import { Route as BankerRouteImport } from './routes/banker'
 import { Route as BoardRouteImport } from './routes/board'
 import { Route as FixturesRouteImport } from './routes/fixtures'
+import { Route as FormRouteImport } from './routes/form'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OddsRouteImport } from './routes/odds'
 import { Route as PlaybookRouteImport } from './routes/playbook'
 import { Route as TipstersRouteImport } from './routes/tipsters'
 import { Route as TrendsRouteImport } from './routes/trends'
+import { Route as ApiFormRouteImport } from './routes/api/form'
 import { Route as ApiLedgerRouteImport } from './routes/api/ledger'
 import { Route as ApiSlateRouteImport } from './routes/api/slate'
 import { Route as ApiTrendsRouteImport } from './routes/api/trends'
@@ -53,6 +55,11 @@ const FixturesRoute = FixturesRouteImport.update({
   path: '/fixtures',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FormRoute = FormRouteImport.update({
+  id: '/form',
+  path: '/form',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
@@ -76,6 +83,11 @@ const TipstersRoute = TipstersRouteImport.update({
 const TrendsRoute = TrendsRouteImport.update({
   id: '/trends',
   path: '/trends',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiFormRoute = ApiFormRouteImport.update({
+  id: '/api/form',
+  path: '/api/form',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiLedgerRoute = ApiLedgerRouteImport.update({
@@ -125,11 +137,13 @@ export interface FileRoutesByFullPath {
   '/banker': typeof BankerRoute
   '/board': typeof BoardRoute
   '/fixtures': typeof FixturesRouteWithChildren
+  '/form': typeof FormRoute
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/trends': typeof TrendsRoute
+  '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
   '/api/slate': typeof ApiSlateRoute
   '/api/trends': typeof ApiTrendsRoute
@@ -144,10 +158,12 @@ export interface FileRoutesByTo {
   '/accuracy': typeof AccuracyRoute
   '/banker': typeof BankerRoute
   '/board': typeof BoardRoute
+  '/form': typeof FormRoute
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
   '/trends': typeof TrendsRoute
+  '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
   '/api/slate': typeof ApiSlateRoute
   '/api/trends': typeof ApiTrendsRoute
@@ -164,11 +180,13 @@ export interface FileRoutesById {
   '/banker': typeof BankerRoute
   '/board': typeof BoardRoute
   '/fixtures': typeof FixturesRouteWithChildren
+  '/form': typeof FormRoute
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/trends': typeof TrendsRoute
+  '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
   '/api/slate': typeof ApiSlateRoute
   '/api/trends': typeof ApiTrendsRoute
@@ -186,11 +204,13 @@ export interface FileRouteTypes {
     | '/banker'
     | '/board'
     | '/fixtures'
+    | '/form'
     | '/login'
     | '/odds'
     | '/playbook'
     | '/tipsters'
     | '/trends'
+    | '/api/form'
     | '/api/ledger'
     | '/api/slate'
     | '/api/trends'
@@ -205,10 +225,12 @@ export interface FileRouteTypes {
     | '/accuracy'
     | '/banker'
     | '/board'
+    | '/form'
     | '/login'
     | '/odds'
     | '/playbook'
     | '/trends'
+    | '/api/form'
     | '/api/ledger'
     | '/api/slate'
     | '/api/trends'
@@ -224,11 +246,13 @@ export interface FileRouteTypes {
     | '/banker'
     | '/board'
     | '/fixtures'
+    | '/form'
     | '/login'
     | '/odds'
     | '/playbook'
     | '/tipsters'
     | '/trends'
+    | '/api/form'
     | '/api/ledger'
     | '/api/slate'
     | '/api/trends'
@@ -245,11 +269,13 @@ export interface RootRouteChildren {
   BankerRoute: typeof BankerRoute
   BoardRoute: typeof BoardRoute
   FixturesRoute: typeof FixturesRouteWithChildren
+  FormRoute: typeof FormRoute
   LoginRoute: typeof LoginRoute
   OddsRoute: typeof OddsRoute
   PlaybookRoute: typeof PlaybookRoute
   TipstersRoute: typeof TipstersRouteWithChildren
   TrendsRoute: typeof TrendsRoute
+  ApiFormRoute: typeof ApiFormRoute
   ApiLedgerRoute: typeof ApiLedgerRoute
   ApiSlateRoute: typeof ApiSlateRoute
   ApiTrendsRoute: typeof ApiTrendsRoute
@@ -293,6 +319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FixturesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/form': {
+      id: '/form'
+      path: '/form'
+      fullPath: '/form'
+      preLoaderRoute: typeof FormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
@@ -326,6 +359,13 @@ declare module '@tanstack/react-router' {
       path: '/trends'
       fullPath: '/trends'
       preLoaderRoute: typeof TrendsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/form': {
+      id: '/api/form'
+      path: '/api/form'
+      fullPath: '/api/form'
+      preLoaderRoute: typeof ApiFormRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/ledger': {
@@ -421,11 +461,13 @@ const rootRouteChildren: RootRouteChildren = {
   BankerRoute: BankerRoute,
   BoardRoute: BoardRoute,
   FixturesRoute: FixturesRouteWithChildren,
+  FormRoute: FormRoute,
   LoginRoute: LoginRoute,
   OddsRoute: OddsRoute,
   PlaybookRoute: PlaybookRoute,
   TipstersRoute: TipstersRouteWithChildren,
   TrendsRoute: TrendsRoute,
+  ApiFormRoute: ApiFormRoute,
   ApiLedgerRoute: ApiLedgerRoute,
   ApiSlateRoute: ApiSlateRoute,
   ApiTrendsRoute: ApiTrendsRoute,

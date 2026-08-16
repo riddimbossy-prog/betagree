@@ -20,7 +20,7 @@ function TrendsPage() {
           Today <span className="font-serif italic font-normal">trends</span>
         </h1>
         <p className="mt-3 text-muted-foreground">
-          PrimaTips and BetExplorer, today only. A row appears when the stat is 70% or higher and the
+          Today only. A row appears when the stat is 70% or higher and the
           price sits between 1.20 and 1.55. Nothing is padded in.
         </p>
         <p className="mt-2 text-sm text-subtle">

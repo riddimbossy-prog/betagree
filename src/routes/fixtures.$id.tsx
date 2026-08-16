@@ -57,14 +57,14 @@ function FixturePage() {
         </p>
         <div className="mt-5 flex items-center justify-between gap-3">
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-            <Crest logo={fixture.away.logo} abbr={fixture.away.abbr} size="lg" />
+            <Crest name={fixture.away.name} logo={fixture.away.logo} size="lg" />
             <span className="text-center text-sm font-medium">{fixture.away.name}</span>
           </div>
           <p className="text-4xl font-bold tabular">
             {fixture.away.score ?? "–"} <span className="text-subtle">:</span> {fixture.home.score ?? "–"}
           </p>
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-            <Crest logo={fixture.home.logo} abbr={fixture.home.abbr} size="lg" />
+            <Crest name={fixture.home.name} logo={fixture.home.logo} size="lg" />
             <span className="text-center text-sm font-medium">{fixture.home.name}</span>
           </div>
         </div>

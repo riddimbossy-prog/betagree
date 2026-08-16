@@ -1,8 +1,8 @@
-import { Link } from "@tanstack/react-router";
 import type { ConsensusItem, Fixture } from "@/lib/types";
-import { formatKickoff } from "@/lib/format";
-import { formatDecimal } from "@/lib/odds";
+import { formatDecimal, formatPct } from "@/lib/odds";
 import { Crest } from "@/components/crest";
+import { TimeChip } from "@/components/trend-card";
+import { usePickSheet } from "@/components/pick-sheet";
 
 export function FixtureList({
   fixtures,
@@ -11,25 +11,53 @@ export function FixtureList({
   fixtures: Fixture[];
   byFixture: Map<string, ConsensusItem[]>;
 }) {
+  const sheet = usePickSheet();
   return (
     <ul className="flex flex-col gap-3">
       {fixtures.map((f) => {
         const top = (byFixture.get(f.id) ?? []).find((c) => c.market === "1x2");
         return (
           <li key={f.id}>
-            <Link
-              to="/fixtures/$id"
-              params={{ id: f.id }}
-              className="block rounded-3xl bg-card p-4 shadow-border"
+            <button
+              type="button"
+              onClick={() =>
+                sheet.open({
+                  id: f.id,
+                  home: f.home.name,
+                  away: f.away.name,
+                  homeLogo: f.home.logo,
+                  awayLogo: f.away.logo,
+                  league: f.league,
+                  kickoffIso: f.start,
+                  label: top?.label ?? `${f.away.name} vs ${f.home.name}`,
+                  odds: top
+                    ? top.selection === "home"
+                      ? f.home.ml
+                      : top.selection === "away"
+                        ? f.away.ml
+                        : f.drawMl
+                    : f.home.ml,
+                  sources: ["form", "odds"],
+                  why: top
+                    ? `${top.label}. ${top.count} of ${top.coverage} desks agree (${formatPct(top.pct)}). The sheet stays here — no hop off Betagree.`
+                    : `${f.away.name} visit ${f.home.name} in ${f.league}. No desk overlap yet.`,
+                })
+              }
+              className="block w-full rounded-3xl bg-card p-4 text-left shadow-border"
             >
-              <p className="text-xs text-subtle">
-                {f.live ? <span className="text-hot">{f.detail || "Live"}</span> : formatKickoff(f.start)}
-                {" · "}
-                {f.league}
-              </p>
+              <div className="flex flex-wrap items-center gap-2">
+                {f.live ? (
+                  <span className="rounded-full bg-gules px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-hot-foreground uppercase">
+                    {f.detail || "Live"}
+                  </span>
+                ) : (
+                  <TimeChip raw={null} iso={f.start} />
+                )}
+                <span className="truncate text-xs text-subtle">{f.league}</span>
+              </div>
               <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2 fold:gap-3">
                 <span className="flex min-w-0 items-center gap-2">
-                  <Crest logo={f.away.logo} abbr={f.away.abbr} size="sm" />
+                  <Crest name={f.away.name} logo={f.away.logo} />
                   <span className="truncate text-sm font-medium">{f.away.name}</span>
                 </span>
                 <span className="px-1 text-lg font-bold tabular fold:text-xl">
@@ -37,7 +65,7 @@ export function FixtureList({
                 </span>
                 <span className="flex min-w-0 items-center justify-end gap-2">
                   <span className="truncate text-right text-sm font-medium">{f.home.name}</span>
-                  <Crest logo={f.home.logo} abbr={f.home.abbr} size="sm" />
+                  <Crest name={f.home.name} logo={f.home.logo} />
                 </span>
               </div>
               <div className="mt-3 flex flex-wrap justify-center gap-2">
@@ -46,11 +74,11 @@ export function FixtureList({
                 <span className="odds-chip bg-secondary">{formatDecimal(f.home.ml)}</span>
               </div>
               {top ? (
-                <p className="mt-3 text-sm text-primary">{top.label}</p>
+                <p className="mt-3 text-sm text-or">{top.label}</p>
               ) : (
                 <p className="mt-3 text-xs text-subtle">No consensus</p>
               )}
-            </Link>
+            </button>
           </li>
         );
       })}

@@ -6,7 +6,7 @@ Today’s fixtures, three live desks (market, form, attack), ranked by agreement
 
 ## GitHub Pages + your Hostinger domain
 
-The site is a static app. The live board runs in the browser against ESPN. Hook the repo to Pages, then point **betagree.com** at GitHub.
+The site is a static app. Hook the repo to Pages, then point **betagree.com** at GitHub.
 
 ### 1. Turn on Pages
 

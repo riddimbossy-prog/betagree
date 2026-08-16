@@ -29,8 +29,8 @@ function AccuracyPage() {
         <p className="text-xs tracking-widest text-subtle uppercase">{data.windowLabel}</p>
         <h1 className="font-display mt-2 text-4xl">Accuracy</h1>
         <p className="mt-3 text-muted-foreground">
-          Same desks, graded against {data.sample} settled matches pulled from the live board. One
-          unit a pick at the posted number. Walk-forward — form never sees the game being graded.
+          Same desks, graded against {data.sample} settled matches. One unit a pick at the posted
+          number. Form never uses the game being graded.
         </p>
       </header>
 

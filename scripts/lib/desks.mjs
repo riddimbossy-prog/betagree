@@ -1,4 +1,4 @@
-/** Live PrimaTips + BetExplorer desks. No invented rows. */
+/** Live form and odds desks. No invented rows. */
 
 export const MIN_RATE = 0.7;
 export const ODDS_FROM = 1.2;
@@ -185,20 +185,25 @@ export function parsePrimaGames(html) {
   return games;
 }
 
-export function parsePrimaForm(html) {
-  const table = firstTable(html);
+export function parsePrimaFormRows(tableHtml) {
   const rows = [];
   const re = /<tr>([\s\S]*?)<\/tr>/g;
   let m;
-  while ((m = re.exec(table))) {
+  while ((m = re.exec(String(tableHtml)))) {
     const row = m[1];
     const name = decodeHtml((row.match(/class="tl"[^>]*>([^<]+)/) || [])[1] || "");
     if (!name) continue;
     const league = decodeHtml((row.match(/class="tl"[^>]*title="([^"]+)"/) || [])[1] || "");
-    const count = Number((row.match(/class="sc">\s*(\d+)/) || [])[1] || "");
+    const teamPath = (row.match(/class="tl" href="([^"]+)"/) || [])[1] || null;
+    const count = Number((row.match(/class="sc">\s*([\d.]+)/) || [])[1] || "");
     const matches = Number((row.match(/class="gm">\s*(\d+)/) || [])[1] || "");
-    const rate = parsePct((row.match(/class="pr">\s*([\d.]+)\s*%/) || [])[1]);
+    const prRaw = decodeHtml((row.match(/class="pr">\s*([^<]+)/) || [])[1] || "").replace(/\s+/g, "");
+    const rankRaw = (row.match(/class="ps"[^>]*title="(\d+)"/) || row.match(/class="ps"[^>]*>(\d+)/) || [])[1];
+    const rank = Number(rankRaw || rows.length + 1);
     const tipPath = (row.match(/class="fgl" href="([^"]+)"/) || [])[1] || null;
+    const hasPct = prRaw.includes("%");
+    const average = !hasPct && prRaw ? Number(prRaw.replace(",", ".")) : null;
+    const rate = hasPct ? parsePct(prRaw) : Number.isFinite(average) ? average : null;
     rows.push({
       team: name,
       league,
@@ -207,9 +212,115 @@ export function parsePrimaForm(html) {
       rate,
       playingToday: Boolean(tipPath),
       tipPath,
+      rank: Number.isFinite(rank) ? rank : rows.length + 1,
+      teamPath,
+      valueKind: hasPct ? "pct" : "avg",
+      display: hasPct ? prRaw : Number.isFinite(average) ? String(average) : prRaw,
     });
   }
   return rows;
+}
+
+export function parsePrimaForm(html) {
+  return parsePrimaFormRows(firstTable(html));
+}
+
+export function parsePrimaFormTables(html) {
+  const text = String(html);
+  const result = { overall: [], home: [], away: [] };
+  const pieces = [...text.matchAll(/<h2>([^<]*)<\/h2>\s*<table class="form">([\s\S]*?)<\/table>/gi)];
+  if (!pieces.length) {
+    result.overall = parsePrimaForm(text);
+    return result;
+  }
+  for (const m of pieces) {
+    const heading = decodeHtml(m[1]).toLowerCase();
+    const venue = heading.includes("home") ? "home" : heading.includes("away") ? "away" : "overall";
+    result[venue] = parsePrimaFormRows(m[2]);
+  }
+  return result;
+}
+
+export const FORM_BOARDS = [
+  { id: "most-wins", pole: "most", metric: "wins", path: "/form/most-wins", title: "Most wins", unit: "Wins", valueKind: "pct" },
+  { id: "most-draws", pole: "most", metric: "draws", path: "/form/most-draws", title: "Most draws", unit: "Draws", valueKind: "pct" },
+  { id: "most-losses", pole: "most", metric: "losses", path: "/form/most-losses", title: "Most losses", unit: "Losses", valueKind: "pct" },
+  { id: "most-goals-scored", pole: "most", metric: "scored", path: "/form/most-goals-scored", title: "Most scored", unit: "Goals", valueKind: "avg" },
+  { id: "most-goals-conceded", pole: "most", metric: "conceded", path: "/form/most-goals-conceded", title: "Most conceded", unit: "Goals", valueKind: "avg" },
+  { id: "least-wins", pole: "least", metric: "wins", path: "/form/least-wins", title: "Least wins", unit: "Wins", valueKind: "pct" },
+  { id: "least-draws", pole: "least", metric: "draws", path: "/form/least-draws", title: "Least draws", unit: "Draws", valueKind: "pct" },
+  { id: "least-losses", pole: "least", metric: "losses", path: "/form/least-losses", title: "Least losses", unit: "Losses", valueKind: "pct" },
+  { id: "least-goals-scored", pole: "least", metric: "scored", path: "/form/least-goals-scored", title: "Least scored", unit: "Goals", valueKind: "avg" },
+  { id: "least-goals-conceded", pole: "least", metric: "conceded", path: "/form/least-goals-conceded", title: "Least conceded", unit: "Goals", valueKind: "avg" },
+];
+
+function findTeamFixture(fixtures, team) {
+  let best = null;
+  let score = 0;
+  for (const f of fixtures || []) {
+    const sh = nameScore(f.home?.name, team);
+    const sa = nameScore(f.away?.name, team);
+    const s = Math.max(sh, sa);
+    if (s > score && s >= 0.72) {
+      best = s === sh
+        ? { fixture: f, side: f.home, opp: f.away }
+        : { fixture: f, side: f.away, opp: f.home };
+      score = s;
+    }
+  }
+  return best;
+}
+
+export function decorateFormRows(rows, fixtures, limit = 40) {
+  return (rows || []).slice(0, limit).map((row) => {
+    const hit = findTeamFixture(fixtures, row.team);
+    const live = Boolean(hit && hit.fixture.status !== "post");
+    return {
+      rank: row.rank ?? 0,
+      team: row.team,
+      league: row.league || "",
+      count: row.count ?? 0,
+      matches: row.matches ?? 0,
+      rate: row.rate,
+      display: row.display || (row.rate == null ? "—" : row.valueKind === "avg" ? String(row.rate) : `${Math.round(row.rate * 100)}%`),
+      valueKind: row.valueKind === "avg" ? "avg" : "pct",
+      playingToday: Boolean(row.playingToday || live),
+      tipPath: null,
+      teamPath: null,
+      logo: hit?.side?.logo ?? null,
+      fixtureId: live ? hit.fixture.id : null,
+      opponent: live ? hit.opp.name : null,
+    };
+  });
+}
+
+export async function buildFormBoard({ fixtures = [], date, dateLabel } = {}) {
+  const today = date || new Date().toISOString().slice(0, 10);
+  const pages = await Promise.all(FORM_BOARDS.map((b) => fetchHtml(`https://primatips.com${b.path}`)));
+  const boards = {};
+  let playingToday = 0;
+  for (let i = 0; i < FORM_BOARDS.length; i++) {
+    const meta = FORM_BOARDS[i];
+    const tables = parsePrimaFormTables(pages[i] || "");
+    const overall = decorateFormRows(tables.overall, fixtures);
+    const home = decorateFormRows(tables.home, fixtures);
+    const away = decorateFormRows(tables.away, fixtures);
+    if (meta.id === "most-wins") playingToday = overall.filter((r) => r.playingToday).length;
+    boards[meta.id] = {
+      ...meta,
+      overall,
+      home,
+      away,
+    };
+  }
+  return {
+    date: today,
+    dateLabel: dateLabel || today,
+    fetchedAt: new Date().toISOString(),
+    source: "form",
+    playingToday,
+    boards,
+  };
 }
 
 export function parseBeStreakRows(html) {
@@ -512,12 +623,12 @@ export function buildPicksFromPrimaForm(games, form, category, fixtures) {
         rate,
         sample: row.matches,
         statLabel: `${Math.round(rate * 100)}% of ${row.matches}`,
-        sources: ["primatips"],
-        sourceNotes: [{ source: "primatips", rate, sample: row.matches, odds }],
+        sources: ["form"],
+        sourceNotes: [{ source: "form", rate, sample: row.matches, odds }],
         fixtureId: null,
         homeLogo: null,
         awayLogo: null,
-        url: g.url,
+        url: "",
       },
       fixtures,
     );
@@ -570,12 +681,12 @@ export function buildPicksFromBeStreaks(games, rows, category, fixtures, todaySt
         rate,
         sample,
         statLabel: `${sample}-game run`,
-        sources: ["betexplorer"],
-        sourceNotes: [{ source: "betexplorer", rate, sample, odds }],
+        sources: ["odds"],
+        sourceNotes: [{ source: "odds", rate, sample, odds }],
         fixtureId: null,
         homeLogo: null,
         awayLogo: null,
-        url: row.url || g?.url || "",
+        url: "",
       },
       fixtures,
     );
@@ -613,12 +724,12 @@ export function buildPicksFromBeOu(games, rows, category, fixtures, todayStamp) 
         rate,
         sample: row.games,
         statLabel: `${Math.round((rate || 0) * 100)}% of ${row.games}`,
-        sources: ["betexplorer"],
-        sourceNotes: [{ source: "betexplorer", rate, sample: row.games, odds }],
+        sources: ["odds"],
+        sourceNotes: [{ source: "odds", rate, sample: row.games, odds }],
         fixtureId: null,
         homeLogo: null,
         awayLogo: null,
-        url: row.url || g?.url || "",
+        url: "",
       },
       fixtures,
     );
@@ -653,12 +764,12 @@ export function buildPicksFromPrimaHome(games, fixtures) {
           rate: s.rate ?? 0,
           sample: 10,
           statLabel: `${Math.round((s.rate ?? 0) * 100)}% model`,
-          sources: ["primatips"],
-          sourceNotes: [{ source: "primatips", rate: s.rate ?? 0, sample: 10, odds: s.odds }],
+          sources: ["form"],
+          sourceNotes: [{ source: "form", rate: s.rate ?? 0, sample: 10, odds: s.odds }],
           fixtureId: null,
           homeLogo: null,
           awayLogo: null,
-          url: g.url,
+          url: "",
         },
         fixtures,
       );
@@ -696,12 +807,12 @@ export function buildGgAndOuFromTip(game, markets, fixtures) {
         rate,
         sample: Math.max(ggSample, MIN_SAMPLE),
         statLabel: `${Math.round(rate * 100)}% recent GG`,
-        sources: ["primatips"],
-        sourceNotes: [{ source: "primatips", rate, sample: ggSample, odds }],
+        sources: ["form"],
+        sourceNotes: [{ source: "form", rate, sample: ggSample, odds }],
         fixtureId: null,
         homeLogo: null,
         awayLogo: null,
-        url: game.url,
+        url: "",
       },
       fixtures,
     );
@@ -737,12 +848,12 @@ export function buildGgAndOuFromTip(game, markets, fixtures) {
           rate,
           sample: Math.max(ggSample, MIN_SAMPLE),
           statLabel: `${Math.round(rate * 100)}% recent`,
-          sources: ["primatips"],
-          sourceNotes: [{ source: "primatips", rate, sample: ggSample, odds }],
+          sources: ["form"],
+          sourceNotes: [{ source: "form", rate, sample: ggSample, odds }],
           fixtureId: null,
           homeLogo: null,
           awayLogo: null,
-          url: game.url,
+          url: "",
         },
         fixtures,
       );
@@ -757,12 +868,12 @@ export function bankersFrom(categories) {
   const seen = new Set();
   for (const list of Object.values(categories)) {
     for (const p of list) {
-      if (!p.sources.includes("primatips") || !p.sources.includes("betexplorer")) continue;
+      if (!p.sources.includes("form") || !p.sources.includes("odds")) continue;
       if (!qualify(p)) continue;
       const key = `${p.category}|${normName(p.home)}|${normName(p.away)}|${p.selection}`;
       if (seen.has(key)) continue;
       seen.add(key);
-      out.push({ ...p, agreed: ["primatips", "betexplorer"] });
+      out.push({ ...p, agreed: ["form", "odds"] });
     }
   }
   return out.sort((a, b) => b.rate - a.rate || a.odds - b.odds);
@@ -867,7 +978,7 @@ export async function buildTrends({ fixtures = [], date, dateLabel } = {}) {
     minRate: MIN_RATE,
     oddsFrom: ODDS_FROM,
     oddsTo: ODDS_TO,
-    sources: ["primatips", "betexplorer"],
+    sources: ["form", "odds"],
     counts,
     categories,
     bankers,

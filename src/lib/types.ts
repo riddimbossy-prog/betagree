@@ -115,7 +115,7 @@ export type LedgerPayload = {
 /** @deprecated use Desk */
 export type Tipster = Desk;
 
-export type DeskSource = "primatips" | "betexplorer";
+export type DeskSource = "form" | "odds";
 
 export type TrendCategory =
   | "wins"
@@ -174,4 +174,47 @@ export type TrendsPayload = {
   categories: Record<TrendCategory, TrendPick[]>;
   bankers: BankerPick[];
   games: number;
+};
+
+export type FormPole = "most" | "least";
+export type FormMetric = "wins" | "draws" | "losses" | "scored" | "conceded";
+export type FormVenue = "overall" | "home" | "away";
+
+export type FormRow = {
+  rank: number;
+  team: string;
+  league: string;
+  count: number;
+  matches: number;
+  rate: number | null;
+  display: string;
+  valueKind: "pct" | "avg";
+  playingToday: boolean;
+  tipPath: string | null;
+  teamPath: string | null;
+  logo: string | null;
+  fixtureId: string | null;
+  opponent: string | null;
+};
+
+export type FormBoard = {
+  id: string;
+  pole: FormPole;
+  metric: FormMetric;
+  path: string;
+  title: string;
+  unit: string;
+  valueKind: "pct" | "avg";
+  overall: FormRow[];
+  home: FormRow[];
+  away: FormRow[];
+};
+
+export type FormPayload = {
+  date: string;
+  dateLabel: string;
+  fetchedAt: string;
+  source: "form";
+  playingToday: number;
+  boards: Record<string, FormBoard>;
 };

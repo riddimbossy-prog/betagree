@@ -1,17 +1,20 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, ChartNoAxesColumn, Home, Landmark, TrendingUp } from "lucide-react";
+import { Bell, ChartNoAxesColumn, Flame, Home, Landmark, TrendingUp } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Crest } from "@/components/crest";
+import { PickProvider } from "@/components/pick-sheet";
+import { preloadOfficialCrests } from "@/lib/official-crests";
 
 const NAV = [
   { to: "/", label: "Today", icon: Home },
+  { to: "/form", label: "Form", icon: Flame },
   { to: "/trends", label: "Trends", icon: TrendingUp },
-  { to: "/banker", label: "Banker", icon: Landmark },
   { to: "/fixtures", label: "Fixtures", icon: ChartNoAxesColumn },
-  { to: "/accuracy", label: "Accuracy", icon: Bell },
+  { to: "/banker", label: "Banker", icon: Landmark },
 ] as const;
 
 function greeting() {
@@ -23,8 +26,10 @@ function greeting() {
 
 export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  preloadOfficialCrests();
 
   return (
+    <PickProvider>
     <div className="flex min-h-dvh flex-col overflow-x-hidden bg-background text-foreground">
       <a
         href="#main"
@@ -34,9 +39,12 @@ export function SiteShell({ children }: { children: ReactNode }) {
       </a>
       <header className="sticky top-0 z-40 border-b border-hairline bg-background/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <Link to="/" className="min-w-0 no-underline">
-            <p className="text-sm font-semibold">{greeting()}</p>
-            <p className="text-xs text-muted-foreground">Betagree · live consensus</p>
+          <Link to="/" className="flex min-w-0 items-center gap-3 no-underline">
+            <Crest name="Betagree" size="md" />
+            <span className="min-w-0">
+              <p className="text-sm font-semibold">{greeting()}</p>
+              <p className="text-xs text-muted-foreground">Betagree · live consensus</p>
+            </span>
           </Link>
           <AuthSlot />
         </div>
@@ -57,7 +65,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
               aria-label={item.label}
               className={cn(
                 "grid size-11 place-items-center rounded-full",
-                active ? "bg-foreground text-background" : "text-muted-foreground",
+                active ? "bg-primary text-primary-foreground" : "text-muted-foreground",
               )}
             >
               <Icon className="size-5" />
@@ -78,6 +86,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
             <Link to="/odds" className="hover:text-foreground">
               Filter
             </Link>
+            <Link to="/accuracy" className="hover:text-foreground">
+              Accuracy
+            </Link>
             <Link to="/tipsters" className="hover:text-foreground">
               Desks
             </Link>
@@ -88,6 +99,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
         </div>
       </footer>
     </div>
+    </PickProvider>
   );
 }
 

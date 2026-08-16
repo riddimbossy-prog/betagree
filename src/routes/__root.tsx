@@ -25,7 +25,7 @@ export const Route = createRootRoute({
           "Today's soccer fixtures, compared across live desks. Betagree ranks the picks they actually agree on.",
       },
       { name: "apple-mobile-web-app-title", content: APP_NAME },
-      { name: "theme-color", content: "#08080e" },
+      { name: "theme-color", content: "#12101a" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
       { property: "og:title", content: APP_NAME },

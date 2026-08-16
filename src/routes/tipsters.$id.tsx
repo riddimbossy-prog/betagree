@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Crest } from "@/components/crest";
 import { BoardState } from "@/components/live-bar";
 import { FormDots, RecordLine, Units, formatRecord } from "@/components/record-line";
 import { Badge } from "@/components/ui/badge";
-import { formatKickoff, initials } from "@/lib/format";
+import { formatKickoff } from "@/lib/format";
 import { useLedger, useSlate } from "@/lib/live/use-live";
 import { formatPct } from "@/lib/odds";
 import type { RecordSlice } from "@/lib/types";
@@ -36,9 +37,7 @@ function TipsterPage() {
     <div className="flex flex-col gap-10">
       <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
         <div className="flex items-start gap-4">
-          <div className="font-display grid size-14 place-items-center bg-secondary text-xl shadow-border">
-            {initials(tipster.name)}
-          </div>
+          <Crest name={tipster.name} size="md" />
           <div>
             <p className="text-xs tracking-widest text-subtle uppercase">{tipster.handle}</p>
             <h1 className="font-display mt-1 text-4xl">{tipster.name}</h1>

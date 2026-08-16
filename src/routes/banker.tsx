@@ -18,7 +18,7 @@ function BankerPage() {
           Banker <span className="font-serif italic font-normal">desk</span>
         </h1>
         <p className="mt-3 text-muted-foreground">
-          Matches where PrimaTips and BetExplorer posted the same side, the stat is 70% or higher,
+          Matches where both desks posted the same side, the stat is 70% or higher,
           and the decimal price is between 1.20 and 1.55. If they do not both clear that bar, the
           match is not listed.
         </p>
@@ -28,7 +28,7 @@ function BankerPage() {
         loading={loading}
         error={error}
         empty={!loading && !error && bankers.length === 0}
-        emptyLabel="No bankers today — PrimaTips and BetExplorer did not agree on a 70% / 1.20–1.55 pick."
+        emptyLabel="No bankers today — the desks did not agree on a 70% / 1.20–1.55 pick."
       />
 
       {bankers.length ? (
