@@ -2,51 +2,51 @@
 @import "tw-animate-css";
 
 @theme {
-  --font-sans: "Manrope", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Syne", "Arial Narrow", sans-serif;
+  --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 
-  --color-background: #08110d;
-  --color-foreground: #e8f2eb;
-  --color-card: #101a15;
-  --color-card-foreground: #e8f2eb;
-  --color-popover: #16211c;
-  --color-popover-foreground: #e8f2eb;
-  --color-primary: #c6f04d;
-  --color-primary-foreground: #0b140f;
-  --color-secondary: #17241e;
-  --color-secondary-foreground: #e8f2eb;
-  --color-muted: #17241e;
-  --color-muted-foreground: #8fa397;
-  --color-accent: #1b2c24;
-  --color-accent-foreground: #e8f2eb;
-  --color-destructive: #ff7a6a;
-  --color-destructive-foreground: #08110d;
-  --color-border: rgb(232 242 235 / 0.08);
-  --color-input: rgb(232 242 235 / 0.12);
-  --color-ring: #c6f04d;
-  --color-ink: #e8f2eb;
-  --color-elevated: #16211c;
-  --color-hairline: rgb(232 242 235 / 0.08);
-  --color-subtle: #6f8278;
-  --color-win: #c6f04d;
-  --color-loss: #ff7a6a;
-  --color-push: #6f8278;
-  --color-warn: #e3c56b;
-  --color-info: #c6f04d;
-  --color-rule: #c6f04d;
+  --color-background: #f3f1ec;
+  --color-foreground: #141414;
+  --color-card: #ffffff;
+  --color-card-foreground: #141414;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #141414;
+  --color-primary: #c8102e;
+  --color-primary-foreground: #ffffff;
+  --color-secondary: #e8e5de;
+  --color-secondary-foreground: #141414;
+  --color-muted: #e8e5de;
+  --color-muted-foreground: #5c5a56;
+  --color-accent: #e8e5de;
+  --color-accent-foreground: #141414;
+  --color-destructive: #c8102e;
+  --color-destructive-foreground: #ffffff;
+  --color-border: rgb(20 20 20 / 0.1);
+  --color-input: rgb(20 20 20 / 0.12);
+  --color-ring: #c8102e;
+  --color-ink: #141414;
+  --color-elevated: #ffffff;
+  --color-hairline: rgb(20 20 20 / 0.08);
+  --color-subtle: #8a8780;
+  --color-win: #0f7a4a;
+  --color-loss: #c8102e;
+  --color-push: #8a8780;
+  --color-warn: #a56b12;
+  --color-info: #1d4e89;
+  --color-rule: #141414;
 
   --radius-xs: 4px;
   --radius-sm: 6px;
   --radius-md: 8px;
-  --radius-lg: 10px;
-  --radius-xl: 14px;
-  --radius-2xl: 18px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
   --radius: 8px;
 
-  --shadow-border: 0 0 0 1px rgb(232 242 235 / 0.08);
-  --shadow-border-hover: 0 0 0 1px rgb(198 240 77 / 0.55);
-  --shadow-lift: 0 18px 40px -24px rgb(0 0 0 / 0.7);
+  --shadow-border: 0 0 0 1px rgb(20 20 20 / 0.08), 0 1px 2px rgb(20 20 20 / 0.04);
+  --shadow-border-hover: 0 0 0 1px rgb(20 20 20 / 0.16), 0 8px 20px -12px rgb(20 20 20 / 0.2);
+  --shadow-lift: 0 16px 32px -20px rgb(20 20 20 / 0.22);
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -66,9 +66,6 @@
   body {
     min-height: 100dvh;
     background-color: var(--color-background);
-    background-image:
-      radial-gradient(1200px 500px at 80% -10%, rgb(198 240 77 / 0.07), transparent 55%),
-      radial-gradient(800px 400px at 0% 100%, rgb(198 240 77 / 0.04), transparent 50%);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     line-height: 1.55;
@@ -80,7 +77,7 @@
     text-wrap: balance;
     font-family: var(--font-display);
     letter-spacing: -0.03em;
-    line-height: 1.05;
+    line-height: 1.1;
   }
 
   p {
@@ -97,8 +94,8 @@
   }
 
   ::selection {
-    background: rgb(198 240 77 / 0.28);
-    color: var(--color-primary-foreground);
+    background: rgb(200 16 46 / 0.16);
+    color: var(--color-foreground);
   }
 }
 
@@ -130,8 +127,4 @@
 
 .tabular {
   font-variant-numeric: tabular-nums;
-}
-
-.pitch-rail {
-  box-shadow: inset 3px 0 0 var(--color-primary);
 }

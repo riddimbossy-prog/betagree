@@ -19,9 +19,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
   const dateLabel = new Date().toLocaleDateString("en-GB", {
-    weekday: "short",
+    weekday: "long",
     day: "numeric",
-    month: "short",
+    month: "long",
     timeZone: "UTC",
   });
 
@@ -33,22 +33,15 @@ export function SiteShell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <header className="sticky top-0 z-40 border-b border-hairline bg-background/85 backdrop-blur-md">
+      <header className="sticky top-0 z-40 border-b border-hairline bg-card/90 backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link to="/" className="flex min-w-0 items-center gap-3 no-underline">
-            <span className="grid size-9 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground">
-              <span className="font-display text-lg font-extrabold leading-none">B</span>
+          <Link to="/" className="min-w-0 no-underline">
+            <span className="font-display block text-xl font-semibold tracking-tight sm:text-2xl">
+              Betagree
             </span>
-            <span className="min-w-0">
-              <span className="font-display block text-xl font-extrabold tracking-tight sm:text-2xl">
-                Betagree
-              </span>
-              <span className="block text-xs tracking-widest text-subtle uppercase">
-                Live consensus
-              </span>
-            </span>
+            <span className="block text-xs text-subtle">{dateLabel}</span>
           </Link>
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
+          <nav className="hidden items-center gap-6 md:flex" aria-label="Primary">
             {NAV.map((item) => {
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               return (
@@ -56,21 +49,19 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
-                    active
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                    "relative py-2 text-sm font-medium transition-colors duration-150",
+                    active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {item.label}
+                  {active ? (
+                    <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
+                  ) : null}
                 </Link>
               );
             })}
           </nav>
           <div className="flex items-center gap-2">
-            <span className="hidden text-xs tracking-wide text-subtle uppercase lg:inline">
-              {dateLabel}
-            </span>
             <AuthSlot />
             <Button
               type="button"
@@ -86,7 +77,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
         </div>
         {open ? (
           <nav className="border-t border-hairline px-4 py-3 md:hidden" aria-label="Mobile">
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col">
               {NAV.map((item) => {
                 const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
                 return (
@@ -95,10 +86,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
                     to={item.to}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "rounded-md px-3 py-3 text-sm font-medium",
-                      active
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground",
+                      "border-b border-hairline py-3 text-sm font-medium",
+                      active ? "text-primary" : "text-muted-foreground",
                     )}
                   >
                     {item.label}
@@ -114,16 +103,14 @@ export function SiteShell({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <footer className="mt-auto border-t border-hairline">
+      <footer className="mt-auto border-t border-hairline bg-card">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-xs text-subtle sm:flex-row sm:items-start sm:justify-between sm:px-6">
           <p className="max-w-xl leading-relaxed">
             Betagree reads today's live soccer slate and ranks the picks the desks actually
             agree on. Prices and scores refresh on their own. Not a sportsbook. 18+ / 21+ where it
             applies. ncpgambling.org
           </p>
-          <p className="shrink-0 font-medium tracking-wide text-muted-foreground uppercase">
-            © 2026 Betagree
-          </p>
+          <p className="shrink-0 text-muted-foreground">© 2026 Betagree</p>
         </div>
       </footer>
     </div>

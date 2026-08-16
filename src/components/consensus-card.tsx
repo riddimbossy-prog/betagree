@@ -3,7 +3,6 @@ import type { ConsensusItem } from "@/lib/types";
 import { formatKickoff } from "@/lib/format";
 import { formatDecimal, formatPct } from "@/lib/odds";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 
 export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: number }) {
   const f = item.fixture;
@@ -11,10 +10,7 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
     <Link
       to="/fixtures/$id"
       params={{ id: f.id }}
-      className={cn(
-        "block w-full min-w-0 overflow-hidden rounded-lg bg-card p-5 shadow-border transition-[box-shadow,transform] duration-150 hover:shadow-border-hover",
-        item.pct >= 0.66 && "pitch-rail",
-      )}
+      className="block w-full min-w-0 overflow-hidden rounded-lg bg-card p-5 shadow-border transition-[box-shadow] duration-150 hover:shadow-border-hover"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">

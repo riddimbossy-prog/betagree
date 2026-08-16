@@ -20,7 +20,7 @@ function Home() {
     <div className="flex flex-col gap-12">
       <header className="max-w-3xl">
         <LiveBar fetchedAt={data?.fetchedAt} liveCount={liveCount} />
-        <h1 className="font-display mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
+        <h1 className="font-display mt-4 text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
           Where the desks agree.
         </h1>
         <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -73,7 +73,7 @@ function Stat({ k, v }: { k: string; v: string }) {
   return (
     <div className="rounded-lg bg-card px-4 py-3 shadow-border">
       <dt className="text-xs tracking-wide text-subtle uppercase">{k}</dt>
-      <dd className="font-display mt-1 text-2xl font-extrabold tabular">{v}</dd>
+      <dd className="font-display mt-1 text-2xl font-semibold tabular">{v}</dd>
     </div>
   );
 }
