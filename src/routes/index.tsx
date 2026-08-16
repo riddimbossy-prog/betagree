@@ -20,14 +20,14 @@ function Home() {
     <div className="flex flex-col gap-12">
       <header className="max-w-3xl">
         <LiveBar fetchedAt={data?.fetchedAt} liveCount={liveCount} />
-        <h1 className="font-display mt-3 text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
+        <h1 className="font-display mt-4 text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl">
           Where the desks agree.
         </h1>
         <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
           Today's live soccer slate. Market price, recent form, and attack lean — the card is
           the picks that show up on more than one sheet.
         </p>
-        <dl className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <dl className="mt-8 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           <Stat k="Fixtures" v={loading ? "—" : String(fixtures.length)} />
           <Stat k="Leagues" v={loading ? "—" : String(leagues)} />
           <Stat k="In play" v={loading ? "—" : String(liveCount)} />
@@ -71,9 +71,9 @@ function Home() {
 
 function Stat({ k, v }: { k: string; v: string }) {
   return (
-    <div className="rounded-sm bg-card px-4 py-3 shadow-border">
-      <dt className="text-xs text-subtle">{k}</dt>
-      <dd className="mt-1 font-mono text-xl tabular">{v}</dd>
+    <div className="rounded-lg bg-card px-4 py-3 shadow-border">
+      <dt className="text-xs tracking-wide text-subtle uppercase">{k}</dt>
+      <dd className="font-display mt-1 text-2xl font-extrabold tabular">{v}</dd>
     </div>
   );
 }

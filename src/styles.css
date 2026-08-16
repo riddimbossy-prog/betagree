@@ -2,51 +2,51 @@
 @import "tw-animate-css";
 
 @theme {
-  --font-sans: "Outfit", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Fraunces", "Times New Roman", Georgia, serif;
+  --font-sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Syne", "Arial Narrow", sans-serif;
   --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 
-  --color-background: #f3ead8;
-  --color-foreground: #1c1712;
-  --color-card: #faf4e8;
-  --color-card-foreground: #1c1712;
-  --color-popover: #fffaf0;
-  --color-popover-foreground: #1c1712;
-  --color-primary: #c23b22;
-  --color-primary-foreground: #faf4e8;
-  --color-secondary: #e6d9c2;
-  --color-secondary-foreground: #1c1712;
-  --color-muted: #e6d9c2;
-  --color-muted-foreground: #6a6156;
-  --color-accent: #e6d9c2;
-  --color-accent-foreground: #1c1712;
-  --color-destructive: #c23b22;
-  --color-destructive-foreground: #faf4e8;
-  --color-border: rgb(28 23 18 / 0.14);
-  --color-input: rgb(28 23 18 / 0.16);
-  --color-ring: #c23b22;
-  --color-ink: #1c1712;
-  --color-elevated: #fffaf0;
-  --color-hairline: rgb(28 23 18 / 0.1);
-  --color-subtle: #8a8074;
-  --color-win: #2d6a4f;
-  --color-loss: #c23b22;
-  --color-push: #8a8074;
-  --color-warn: #a67c2d;
-  --color-info: #3d5a6c;
-  --color-rule: #1c1712;
+  --color-background: #08110d;
+  --color-foreground: #e8f2eb;
+  --color-card: #101a15;
+  --color-card-foreground: #e8f2eb;
+  --color-popover: #16211c;
+  --color-popover-foreground: #e8f2eb;
+  --color-primary: #c6f04d;
+  --color-primary-foreground: #0b140f;
+  --color-secondary: #17241e;
+  --color-secondary-foreground: #e8f2eb;
+  --color-muted: #17241e;
+  --color-muted-foreground: #8fa397;
+  --color-accent: #1b2c24;
+  --color-accent-foreground: #e8f2eb;
+  --color-destructive: #ff7a6a;
+  --color-destructive-foreground: #08110d;
+  --color-border: rgb(232 242 235 / 0.08);
+  --color-input: rgb(232 242 235 / 0.12);
+  --color-ring: #c6f04d;
+  --color-ink: #e8f2eb;
+  --color-elevated: #16211c;
+  --color-hairline: rgb(232 242 235 / 0.08);
+  --color-subtle: #6f8278;
+  --color-win: #c6f04d;
+  --color-loss: #ff7a6a;
+  --color-push: #6f8278;
+  --color-warn: #e3c56b;
+  --color-info: #c6f04d;
+  --color-rule: #c6f04d;
 
-  --radius-xs: 2px;
-  --radius-sm: 3px;
-  --radius-md: 4px;
-  --radius-lg: 4px;
-  --radius-xl: 4px;
-  --radius-2xl: 4px;
-  --radius: 4px;
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 18px;
+  --radius: 8px;
 
-  --shadow-border: 0 0 0 1px rgb(28 23 18 / 0.16);
-  --shadow-border-hover: 0 0 0 1px rgb(28 23 18 / 0.32);
-  --shadow-lift: 0 12px 28px -18px rgb(28 23 18 / 0.28);
+  --shadow-border: 0 0 0 1px rgb(232 242 235 / 0.08);
+  --shadow-border-hover: 0 0 0 1px rgb(198 240 77 / 0.55);
+  --shadow-lift: 0 18px 40px -24px rgb(0 0 0 / 0.7);
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -67,13 +67,8 @@
     min-height: 100dvh;
     background-color: var(--color-background);
     background-image:
-      linear-gradient(180deg, rgb(28 23 18 / 0.03), transparent 180px),
-      repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgb(28 23 18 / 0.015) 3px
-      );
+      radial-gradient(1200px 500px at 80% -10%, rgb(198 240 77 / 0.07), transparent 55%),
+      radial-gradient(800px 400px at 0% 100%, rgb(198 240 77 / 0.04), transparent 50%);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     line-height: 1.55;
@@ -84,9 +79,8 @@
   h3 {
     text-wrap: balance;
     font-family: var(--font-display);
-    font-optical-sizing: auto;
-    letter-spacing: -0.02em;
-    line-height: 1.12;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
   }
 
   p {
@@ -103,8 +97,8 @@
   }
 
   ::selection {
-    background: rgb(194 59 34 / 0.18);
-    color: var(--color-foreground);
+    background: rgb(198 240 77 / 0.28);
+    color: var(--color-primary-foreground);
   }
 }
 
@@ -138,7 +132,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.paper-rule {
-  border-top: 2px solid var(--color-ink);
-  border-bottom: 1px solid var(--color-ink);
+.pitch-rail {
+  box-shadow: inset 3px 0 0 var(--color-primary);
 }

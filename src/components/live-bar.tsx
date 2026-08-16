@@ -31,19 +31,19 @@ export function BoardState({
 }) {
   if (loading) {
     return (
-      <p className="rounded-sm bg-card px-4 py-8 text-center text-sm text-muted-foreground shadow-border">
+      <p className="rounded-lg bg-card px-4 py-8 text-center text-sm text-muted-foreground shadow-border">
         Reading the live board…
       </p>
     );
   }
   if (error) {
     return (
-      <p className="rounded-sm bg-card px-4 py-8 text-center text-sm text-loss shadow-border">{error}</p>
+      <p className="rounded-lg bg-card px-4 py-8 text-center text-sm text-loss shadow-border">{error}</p>
     );
   }
   if (empty) {
     return (
-      <p className="rounded-sm bg-card px-4 py-8 text-center text-sm text-muted-foreground shadow-border">
+      <p className="rounded-lg bg-card px-4 py-8 text-center text-sm text-muted-foreground shadow-border">
         No fixtures on the board for this window. Check back closer to kickoff.
       </p>
     );

@@ -19,10 +19,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
   const dateLabel = new Date().toLocaleDateString("en-GB", {
-    weekday: "long",
+    weekday: "short",
     day: "numeric",
-    month: "long",
-    year: "numeric",
+    month: "short",
     timeZone: "UTC",
   });
 
@@ -34,36 +33,22 @@ export function SiteShell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-sm">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="flex items-center justify-between gap-3 pt-3 text-[11px] tracking-[0.18em] text-subtle uppercase">
-            <span>{dateLabel}</span>
-            <span className="hidden sm:inline">Live edition</span>
-          </div>
-          <div className="paper-rule mt-2 flex items-center justify-between gap-4 py-3">
-            <Link to="/" className="min-w-0 no-underline">
-              <span className="font-display block text-3xl leading-none font-semibold tracking-tight sm:text-4xl">
+      <header className="sticky top-0 z-40 border-b border-hairline bg-background/85 backdrop-blur-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+          <Link to="/" className="flex min-w-0 items-center gap-3 no-underline">
+            <span className="grid size-9 shrink-0 place-items-center rounded-md bg-primary text-primary-foreground">
+              <span className="font-display text-lg font-extrabold leading-none">B</span>
+            </span>
+            <span className="min-w-0">
+              <span className="font-display block text-xl font-extrabold tracking-tight sm:text-2xl">
                 Betagree
               </span>
-              <span className="mt-1 block text-[11px] tracking-[0.22em] text-primary uppercase">
-                Soccer consensus
+              <span className="block text-xs tracking-widest text-subtle uppercase">
+                Live consensus
               </span>
-            </Link>
-            <div className="flex items-center gap-2">
-              <AuthSlot />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="md:hidden"
-                aria-label={open ? "Close menu" : "Open menu"}
-                onClick={() => setOpen((v) => !v)}
-              >
-                {open ? <X /> : <Menu />}
-              </Button>
-            </div>
-          </div>
-          <nav className="hidden items-center gap-0 border-b border-ink/20 md:flex" aria-label="Primary">
+            </span>
+          </Link>
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
             {NAV.map((item) => {
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               return (
@@ -71,22 +56,37 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "relative px-3 py-2.5 text-sm tracking-wide uppercase transition-colors duration-150",
-                    active ? "text-primary" : "text-muted-foreground hover:text-foreground",
+                    "rounded-md px-3 py-2 text-sm font-medium transition-colors duration-150",
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                   )}
                 >
                   {item.label}
-                  {active ? (
-                    <span className="absolute inset-x-3 -bottom-px h-0.5 bg-primary" />
-                  ) : null}
                 </Link>
               );
             })}
           </nav>
+          <div className="flex items-center gap-2">
+            <span className="hidden text-xs tracking-wide text-subtle uppercase lg:inline">
+              {dateLabel}
+            </span>
+            <AuthSlot />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="md:hidden"
+              aria-label={open ? "Close menu" : "Open menu"}
+              onClick={() => setOpen((v) => !v)}
+            >
+              {open ? <X /> : <Menu />}
+            </Button>
+          </div>
         </div>
         {open ? (
-          <nav className="border-b border-ink/20 px-4 py-3 md:hidden" aria-label="Mobile">
-            <div className="flex flex-col">
+          <nav className="border-t border-hairline px-4 py-3 md:hidden" aria-label="Mobile">
+            <div className="flex flex-col gap-1">
               {NAV.map((item) => {
                 const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
                 return (
@@ -95,8 +95,10 @@ export function SiteShell({ children }: { children: ReactNode }) {
                     to={item.to}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "border-b border-hairline px-1 py-3 text-sm tracking-wide uppercase",
-                      active ? "text-primary" : "text-muted-foreground",
+                      "rounded-md px-3 py-3 text-sm font-medium",
+                      active
+                        ? "bg-primary text-primary-foreground"
+                        : "text-muted-foreground",
                     )}
                   >
                     {item.label}
@@ -112,16 +114,16 @@ export function SiteShell({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <footer className="mt-4">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="paper-rule flex flex-col gap-3 py-6 text-xs text-subtle sm:flex-row sm:items-start sm:justify-between">
-            <p className="max-w-xl leading-relaxed">
-              Betagree reads today's live soccer slate and ranks the picks the desks actually
-              agree on. Prices and scores refresh on their own. Not a sportsbook. 18+ / 21+ where it
-              applies. ncpgambling.org
-            </p>
-            <p className="shrink-0 tracking-wide uppercase">© 2026 Betagree · betagree.com</p>
-          </div>
+      <footer className="mt-auto border-t border-hairline">
+        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-xs text-subtle sm:flex-row sm:items-start sm:justify-between sm:px-6">
+          <p className="max-w-xl leading-relaxed">
+            Betagree reads today's live soccer slate and ranks the picks the desks actually
+            agree on. Prices and scores refresh on their own. Not a sportsbook. 18+ / 21+ where it
+            applies. ncpgambling.org
+          </p>
+          <p className="shrink-0 font-medium tracking-wide text-muted-foreground uppercase">
+            © 2026 Betagree
+          </p>
         </div>
       </footer>
     </div>
@@ -131,7 +133,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
 function AuthSlot() {
   const { user, isPending } = useCurrentUserState();
   if (isPending) {
-    return <div className="h-9 w-20 animate-pulse bg-secondary" aria-hidden />;
+    return <div className="h-9 w-20 animate-pulse rounded-md bg-secondary" aria-hidden />;
   }
   if (user) {
     return (

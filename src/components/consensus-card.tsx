@@ -11,7 +11,10 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
     <Link
       to="/fixtures/$id"
       params={{ id: f.id }}
-      className="block w-full min-w-0 overflow-hidden bg-card p-5 shadow-border transition-[box-shadow] duration-150 hover:shadow-border-hover"
+      className={cn(
+        "block w-full min-w-0 overflow-hidden rounded-lg bg-card p-5 shadow-border transition-[box-shadow,transform] duration-150 hover:shadow-border-hover",
+        item.pct >= 0.66 && "pitch-rail",
+      )}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
@@ -48,9 +51,9 @@ export function AgreeBar({ pct, className }: { pct: number; className?: string }
         <span>Agreement</span>
         <span className="font-mono tabular">{formatPct(pct)}</span>
       </div>
-      <div className="mt-1.5 h-1 overflow-hidden bg-secondary">
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
         <div
-          className="h-full bg-primary"
+          className="h-full rounded-full bg-primary"
           style={{ width: `${Math.round(pct * 100)}%` }}
         />
       </div>
