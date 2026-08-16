@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, ChartNoAxesColumn, Filter, Home, Shield } from "lucide-react";
+import { Bell, ChartNoAxesColumn, Home, Landmark, TrendingUp } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
@@ -8,9 +8,9 @@ import { Button } from "@/components/ui/button";
 
 const NAV = [
   { to: "/", label: "Today", icon: Home },
+  { to: "/trends", label: "Trends", icon: TrendingUp },
+  { to: "/banker", label: "Banker", icon: Landmark },
   { to: "/fixtures", label: "Fixtures", icon: ChartNoAxesColumn },
-  { to: "/tipsters", label: "Desks", icon: Shield },
-  { to: "/odds", label: "Filter", icon: Filter },
   { to: "/accuracy", label: "Accuracy", icon: Bell },
 ] as const;
 
@@ -75,6 +75,12 @@ export function SiteShell({ children }: { children: ReactNode }) {
                 {item.label}
               </Link>
             ))}
+            <Link to="/odds" className="hover:text-foreground">
+              Filter
+            </Link>
+            <Link to="/tipsters" className="hover:text-foreground">
+              Desks
+            </Link>
             <Link to="/playbook" className="hover:text-foreground">
               Playbook
             </Link>

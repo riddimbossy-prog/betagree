@@ -114,3 +114,64 @@ export type LedgerPayload = {
 
 /** @deprecated use Desk */
 export type Tipster = Desk;
+
+export type DeskSource = "primatips" | "betexplorer";
+
+export type TrendCategory =
+  | "wins"
+  | "losses"
+  | "winless"
+  | "undefeated"
+  | "over25"
+  | "under25"
+  | "gg";
+
+export type TrendNote = {
+  source: DeskSource;
+  rate: number;
+  sample: number;
+  odds: number | null;
+};
+
+export type TrendPick = {
+  id: string;
+  category: TrendCategory;
+  home: string;
+  away: string;
+  team: string;
+  opponent: string;
+  league: string;
+  kickoff: string | null;
+  kickoffIso: string | null;
+  selection: string;
+  label: string;
+  market: Market;
+  odds: number;
+  rate: number;
+  sample: number;
+  statLabel: string;
+  sources: DeskSource[];
+  sourceNotes: TrendNote[];
+  fixtureId: string | null;
+  homeLogo: string | null;
+  awayLogo: string | null;
+  url: string;
+};
+
+export type BankerPick = TrendPick & {
+  agreed: DeskSource[];
+};
+
+export type TrendsPayload = {
+  date: string;
+  dateLabel: string;
+  fetchedAt: string;
+  minRate: number;
+  oddsFrom: number;
+  oddsTo: number;
+  sources: DeskSource[];
+  counts: Record<TrendCategory, number>;
+  categories: Record<TrendCategory, TrendPick[]>;
+  bankers: BankerPick[];
+  games: number;
+};

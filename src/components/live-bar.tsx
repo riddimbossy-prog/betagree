@@ -24,10 +24,12 @@ export function BoardState({
   loading,
   error,
   empty,
+  emptyLabel,
 }: {
   loading: boolean;
   error: string | null;
   empty?: boolean;
+  emptyLabel?: string;
 }) {
   if (loading) {
     return <p className="rounded-3xl bg-card px-4 py-10 text-center text-sm text-muted-foreground">Reading the live board…</p>;
@@ -38,7 +40,7 @@ export function BoardState({
   if (empty) {
     return (
       <p className="rounded-3xl bg-card px-4 py-10 text-center text-sm text-muted-foreground">
-        No fixtures on the board for this window.
+        {emptyLabel ?? "No fixtures on the board for this window."}
       </p>
     );
   }

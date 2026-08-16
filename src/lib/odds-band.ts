@@ -28,8 +28,8 @@ function inBand(price: number | null, from: number, to: number): price is number
 
 export function fixturesInBand(
   fixtures: Fixture[],
-  from = DEFAULT_BAND.from,
-  to = DEFAULT_BAND.to,
+  from: number = DEFAULT_BAND.from,
+  to: number = DEFAULT_BAND.to,
   side: BandSide = "any",
 ): BandHit[] {
   const hits: BandHit[] = [];

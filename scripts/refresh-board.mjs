@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { buildTrends } from "./lib/desks.mjs";
 
 const LEAGUES = [
   ["eng.1", "Premier League"],
@@ -514,6 +515,19 @@ writeJson(join(dir, "slate.json"), todaySlate);
 writeJson(join(dir, `slate-${dayStr}.json`), todaySlate);
 writeJson(join(dir, `slate-${tomStr}.json`), tomorrowSlate, { keepIfEmpty: true });
 writeJson(join(dir, "ledger.json"), ledger);
+
+let trends;
+try {
+  trends = await buildTrends({
+    fixtures: todayFix,
+    date: dayStr,
+    dateLabel: labelFor(day),
+  });
+  writeJson(join(dir, "trends.json"), trends);
+} catch (err) {
+  console.error("trends refresh failed", err);
+  trends = { bankers: [], counts: {} };
+}
 writeFileSync(
   join(dir, "index.json"),
   JSON.stringify({
@@ -524,8 +538,12 @@ writeFileSync(
       [dayStr]: { fixtures: todayFix.length, consensus: todaySlate.consensus.length },
       [tomStr]: { fixtures: tomFix.length, consensus: tomorrowSlate.consensus.length },
     },
+    trends: {
+      bankers: trends.bankers?.length ?? 0,
+      counts: trends.counts ?? {},
+    },
   }),
 );
 console.log(
-  `published ${dayStr} ${todayFix.length} fixtures / ${todaySlate.consensus.length} consensus; ${tomStr} ${tomFix.length} fixtures / ${tomorrowSlate.consensus.length} consensus; ledger ${history.length}`,
+  `published ${dayStr} ${todayFix.length} fixtures / ${todaySlate.consensus.length} consensus; ${tomStr} ${tomFix.length} fixtures / ${tomorrowSlate.consensus.length} consensus; ledger ${history.length}; trends ${JSON.stringify(trends.counts ?? {})} bankers ${trends.bankers?.length ?? 0}`,
 );

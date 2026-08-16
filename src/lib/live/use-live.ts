@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { LedgerPayload, SlatePayload } from "@/lib/types";
+import type { LedgerPayload, SlatePayload, TrendsPayload } from "@/lib/types";
 
 async function loadJson<T>(paths: string[]): Promise<T> {
   let last: unknown;
@@ -83,6 +83,39 @@ export function useLedger() {
       dead = true;
     };
   }, []);
+
+  return { data, error, loading };
+}
+
+export function useTrends(pollMs = 60_000) {
+  const [data, setData] = useState<TrendsPayload | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let dead = false;
+    const load = async () => {
+      try {
+        const json = await loadJson<TrendsPayload>(["/data/trends.json", "/api/trends"]);
+        if (!dead) {
+          setData(json);
+          setError(null);
+          setLoading(false);
+        }
+      } catch {
+        if (!dead) {
+          setError("Could not reach the PrimaTips / BetExplorer board.");
+          setLoading(false);
+        }
+      }
+    };
+    void load();
+    const id = window.setInterval(() => void load(), pollMs);
+    return () => {
+      dead = true;
+      window.clearInterval(id);
+    };
+  }, [pollMs]);
 
   return { data, error, loading };
 }
