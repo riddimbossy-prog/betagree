@@ -1,26 +1,57 @@
-      - name: Locate static output
+name: pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/20 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm install
+      - name: Refresh live board
+        run: node scripts/refresh-board.mjs
+      - run: npm run build
+      - name: Prepare Pages folder
         id: out
         run: |
-          dir=""
-          if [ -f dist/client/_shell.html ]; then
-            dir=dist/client
-            cp -f dist/client/_shell.html dist/client/index.html
-            cp -f dist/client/_shell.html dist/client/404.html
-          else
-            for d in dist/client dist .output/public; do
-              if [ -f "$d/index.html" ] || [ -f "$d/_shell.html" ]; then
-                dir=$d
-                [ -f "$d/_shell.html" ] && cp -f "$d/_shell.html" "$d/index.html"
-                [ -f "$d/index.html" ] && cp -f "$d/index.html" "$d/404.html"
-                break
-              fi
-            done
-          fi
-          if [ -z "$dir" ]; then
-            echo "No static HTML found" >&2
-            find . -name '*.html' -not -path './node_modules/*' | head
+          dir=dist/client
+          if [ ! -f "$dir/_shell.html" ] && [ ! -f "$dir/index.html" ]; then
+            echo "Missing $dir HTML" >&2
+            find dist -type f | head -40
             exit 1
           fi
+          [ -f "$dir/_shell.html" ] && cp -f "$dir/_shell.html" "$dir/index.html"
+          cp -f "$dir/index.html" "$dir/404.html"
           echo "betagree.com" > "$dir/CNAME"
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
-          ls -la "$dir" | head
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.out.outputs.dir }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
