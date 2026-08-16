@@ -18,12 +18,6 @@ const NAV = [
 export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
-  const dateLabel = new Date().toLocaleDateString("en-GB", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    timeZone: "UTC",
-  });
 
   return (
     <div className="flex min-h-dvh flex-col overflow-x-hidden bg-background text-foreground">
@@ -33,15 +27,15 @@ export function SiteShell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <header className="sticky top-0 z-40 border-b border-hairline bg-card/90 backdrop-blur-md">
+      <header className="sticky top-0 z-40 glass border-b border-hairline">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
-          <Link to="/" className="min-w-0 no-underline">
-            <span className="font-display block text-xl font-semibold tracking-tight sm:text-2xl">
-              Betagree
+          <Link to="/" className="flex items-center gap-2.5 no-underline">
+            <span className="grid size-8 place-items-center rounded-lg bg-primary text-primary-foreground">
+              <span className="text-sm font-bold">B</span>
             </span>
-            <span className="block text-xs text-subtle">{dateLabel}</span>
+            <span className="text-base font-semibold tracking-tight">Betagree</span>
           </Link>
-          <nav className="hidden items-center gap-6 md:flex" aria-label="Primary">
+          <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
             {NAV.map((item) => {
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               return (
@@ -49,14 +43,13 @@ export function SiteShell({ children }: { children: ReactNode }) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "relative py-2 text-sm font-medium transition-colors duration-150",
-                    active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                    "rounded-full px-3.5 py-2 text-sm font-medium transition-colors duration-150",
+                    active
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {item.label}
-                  {active ? (
-                    <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
-                  ) : null}
                 </Link>
               );
             })}
@@ -67,7 +60,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
               type="button"
               variant="outline"
               size="icon"
-              className="md:hidden"
+              className="rounded-full md:hidden"
               aria-label={open ? "Close menu" : "Open menu"}
               onClick={() => setOpen((v) => !v)}
             >
@@ -77,7 +70,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
         </div>
         {open ? (
           <nav className="border-t border-hairline px-4 py-3 md:hidden" aria-label="Mobile">
-            <div className="flex flex-col">
+            <div className="flex flex-col gap-1">
               {NAV.map((item) => {
                 const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
                 return (
@@ -86,8 +79,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
                     to={item.to}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "border-b border-hairline py-3 text-sm font-medium",
-                      active ? "text-primary" : "text-muted-foreground",
+                      "rounded-xl px-3 py-3 text-sm font-medium",
+                      active ? "bg-secondary text-foreground" : "text-muted-foreground",
                     )}
                   >
                     {item.label}
@@ -103,12 +96,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      <footer className="mt-auto border-t border-hairline bg-card">
+      <footer className="mt-auto border-t border-hairline">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-6 text-xs text-subtle sm:flex-row sm:items-start sm:justify-between sm:px-6">
           <p className="max-w-xl leading-relaxed">
-            Betagree reads today's live soccer slate and ranks the picks the desks actually
-            agree on. Prices and scores refresh on their own. Not a sportsbook. 18+ / 21+ where it
-            applies. ncpgambling.org
+            Betagree ranks today's soccer picks where market, form, and attack overlap. Not a
+            sportsbook. 18+ / 21+ where it applies. ncpgambling.org
           </p>
           <p className="shrink-0 text-muted-foreground">© 2026 Betagree</p>
         </div>
@@ -120,7 +112,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
 function AuthSlot() {
   const { user, isPending } = useCurrentUserState();
   if (isPending) {
-    return <div className="h-9 w-20 animate-pulse rounded-md bg-secondary" aria-hidden />;
+    return <div className="h-9 w-20 animate-pulse rounded-full bg-secondary" aria-hidden />;
   }
   if (user) {
     return (
@@ -133,7 +125,7 @@ function AuthSlot() {
   }
   return (
     <SignedOut>
-      <Button asChild variant="outline" size="sm">
+      <Button asChild variant="outline" size="sm" className="rounded-full">
         <Link to="/login">Sign in</Link>
       </Button>
     </SignedOut>

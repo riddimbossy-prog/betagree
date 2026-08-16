@@ -12,7 +12,7 @@ export function FixtureList({
   byFixture: Map<string, ConsensusItem[]>;
 }) {
   return (
-    <ul className="divide-y divide-border overflow-hidden rounded-lg bg-card shadow-border">
+    <ul className="divide-y divide-border overflow-hidden rounded-2xl bg-card shadow-border">
       {fixtures.map((f) => {
         const top = (byFixture.get(f.id) ?? []).find((c) => c.market === "1x2");
         return (

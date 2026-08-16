@@ -2,51 +2,51 @@
 @import "tw-animate-css";
 
 @theme {
-  --font-sans: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Sora", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Outfit", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Outfit", "Segoe UI", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 
-  --color-background: #f3f1ec;
-  --color-foreground: #141414;
-  --color-card: #ffffff;
-  --color-card-foreground: #141414;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #141414;
-  --color-primary: #c8102e;
-  --color-primary-foreground: #ffffff;
-  --color-secondary: #e8e5de;
-  --color-secondary-foreground: #141414;
-  --color-muted: #e8e5de;
-  --color-muted-foreground: #5c5a56;
-  --color-accent: #e8e5de;
-  --color-accent-foreground: #141414;
-  --color-destructive: #c8102e;
-  --color-destructive-foreground: #ffffff;
-  --color-border: rgb(20 20 20 / 0.1);
-  --color-input: rgb(20 20 20 / 0.12);
-  --color-ring: #c8102e;
-  --color-ink: #141414;
-  --color-elevated: #ffffff;
-  --color-hairline: rgb(20 20 20 / 0.08);
-  --color-subtle: #8a8780;
-  --color-win: #0f7a4a;
-  --color-loss: #c8102e;
-  --color-push: #8a8780;
-  --color-warn: #a56b12;
-  --color-info: #1d4e89;
-  --color-rule: #141414;
+  --color-background: #0b1220;
+  --color-foreground: #eef3f8;
+  --color-card: #151d2c;
+  --color-card-foreground: #eef3f8;
+  --color-popover: #1b2536;
+  --color-popover-foreground: #eef3f8;
+  --color-primary: #2ee6c5;
+  --color-primary-foreground: #06211c;
+  --color-secondary: #1b2536;
+  --color-secondary-foreground: #eef3f8;
+  --color-muted: #1b2536;
+  --color-muted-foreground: #8b97a8;
+  --color-accent: #1b2536;
+  --color-accent-foreground: #eef3f8;
+  --color-destructive: #ff6b81;
+  --color-destructive-foreground: #0b1220;
+  --color-border: rgb(238 243 248 / 0.08);
+  --color-input: rgb(238 243 248 / 0.12);
+  --color-ring: #2ee6c5;
+  --color-ink: #eef3f8;
+  --color-elevated: #1b2536;
+  --color-hairline: rgb(238 243 248 / 0.08);
+  --color-subtle: #6d7a8c;
+  --color-win: #2ee6c5;
+  --color-loss: #ff6b81;
+  --color-push: #6d7a8c;
+  --color-warn: #f0c36a;
+  --color-info: #7db4ff;
+  --color-rule: #2ee6c5;
 
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
-  --radius-xl: 16px;
-  --radius-2xl: 20px;
-  --radius: 8px;
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius: 16px;
 
-  --shadow-border: 0 0 0 1px rgb(20 20 20 / 0.08), 0 1px 2px rgb(20 20 20 / 0.04);
-  --shadow-border-hover: 0 0 0 1px rgb(20 20 20 / 0.16), 0 8px 20px -12px rgb(20 20 20 / 0.2);
-  --shadow-lift: 0 16px 32px -20px rgb(20 20 20 / 0.22);
+  --shadow-border: 0 0 0 1px rgb(238 243 248 / 0.07);
+  --shadow-border-hover: 0 0 0 1px rgb(46 230 197 / 0.4);
+  --shadow-lift: 0 20px 40px -24px rgb(0 0 0 / 0.55);
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
@@ -66,6 +66,9 @@
   body {
     min-height: 100dvh;
     background-color: var(--color-background);
+    background-image:
+      radial-gradient(900px 420px at 12% -10%, rgb(46 230 197 / 0.09), transparent 58%),
+      radial-gradient(700px 360px at 100% 0%, rgb(125 180 255 / 0.06), transparent 50%);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     line-height: 1.55;
@@ -77,7 +80,7 @@
     text-wrap: balance;
     font-family: var(--font-display);
     letter-spacing: -0.03em;
-    line-height: 1.1;
+    line-height: 1.08;
   }
 
   p {
@@ -94,8 +97,8 @@
   }
 
   ::selection {
-    background: rgb(200 16 46 / 0.16);
-    color: var(--color-foreground);
+    background: rgb(46 230 197 / 0.24);
+    color: var(--color-primary-foreground);
   }
 }
 
@@ -127,4 +130,9 @@
 
 .tabular {
   font-variant-numeric: tabular-nums;
+}
+
+.glass {
+  background: rgb(21 29 44 / 0.72);
+  backdrop-filter: blur(16px);
 }
