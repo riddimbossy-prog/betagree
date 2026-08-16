@@ -35,7 +35,7 @@ function FixturesPage() {
         </p>
       </header>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="chip-row">
         <Button type="button" size="sm" variant={league === "all" ? "default" : "outline"} onClick={() => setLeague("all")}>
           All
         </Button>

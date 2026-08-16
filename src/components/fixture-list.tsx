@@ -27,15 +27,15 @@ export function FixtureList({
                 {" · "}
                 {f.league}
               </p>
-              <div className="mt-3 flex items-center justify-between gap-3">
-                <span className="flex min-w-0 flex-1 items-center gap-2">
+              <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2 fold:gap-3">
+                <span className="flex min-w-0 items-center gap-2">
                   <Crest logo={f.away.logo} abbr={f.away.abbr} size="sm" />
                   <span className="truncate text-sm font-medium">{f.away.name}</span>
                 </span>
-                <span className="text-xl font-bold tabular">
+                <span className="px-1 text-lg font-bold tabular fold:text-xl">
                   {f.away.score ?? "–"} : {f.home.score ?? "–"}
                 </span>
-                <span className="flex min-w-0 flex-1 items-center justify-end gap-2">
+                <span className="flex min-w-0 items-center justify-end gap-2">
                   <span className="truncate text-right text-sm font-medium">{f.home.name}</span>
                   <Crest logo={f.home.logo} abbr={f.home.abbr} size="sm" />
                 </span>

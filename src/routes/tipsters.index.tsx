@@ -28,8 +28,30 @@ function TipstersPage() {
       <BoardState loading={loading} error={error} empty={!loading && !error && rows.length === 0} />
 
       {rows.length ? (
-        <div className="overflow-x-auto bg-card shadow-border">
-          <table className="w-full min-w-3xl text-sm">
+        <>
+        <div className="flex flex-col gap-3 lg:hidden">
+          {rows.map((a) => (
+            <Link
+              key={a.tipster.id}
+              to="/tipsters/$id"
+              params={{ id: a.tipster.id }}
+              className="rounded-3xl bg-card p-4"
+            >
+              <p className="text-xs text-subtle">{a.tipster.desk}</p>
+              <p className="mt-1 font-semibold">{a.tipster.name}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                <RecordLine rec={a.overall} />
+                <span className="font-mono tabular">{formatPct(a.overall.hit)}</span>
+                <Units n={a.overall.units} />
+              </div>
+              <div className="mt-3">
+                <FormDots form={a.form} />
+              </div>
+            </Link>
+          ))}
+        </div>
+        <div className="hidden overflow-x-auto rounded-3xl bg-card lg:block">
+          <table className="w-full text-sm">
             <thead className="border-b border-border text-left text-xs tracking-wide text-subtle uppercase">
               <tr>
                 <th className="px-4 py-3 font-medium">Desk</th>
@@ -66,6 +88,7 @@ function TipstersPage() {
             </tbody>
           </table>
         </div>
+        </>
       ) : null}
     </div>
   );

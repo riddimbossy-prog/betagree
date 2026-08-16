@@ -37,7 +37,7 @@ function AccuracyPage() {
       <section>
         <p className="text-xs tracking-widest text-subtle uppercase">The pack</p>
         <h2 className="font-display mt-1 text-2xl">When the desks agreed</h2>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <div className="mt-5 grid gap-3 fold:grid-cols-3">
           <PackStat k="All consensus 1X2" rec={data.pack.overall} note="Two or more desks on the same side" />
           <PackStat k="Unanimous" rec={data.pack.strong} note="Every desk that posted" />
           <PackStat k="Split lean" rec={data.pack.lean} note="Majority, not all" />
@@ -49,7 +49,7 @@ function AccuracyPage() {
           <Link
             to="/tipsters/$id"
             params={{ id: best.tipster.id }}
-            className="block bg-card p-5 shadow-border hover:shadow-border-hover"
+            className="block rounded-3xl bg-card p-5"
           >
             <p className="text-xs tracking-widest text-subtle uppercase">Best book</p>
             <h3 className="font-display mt-1 text-xl">{best.tipster.name}</h3>
@@ -60,7 +60,7 @@ function AccuracyPage() {
           <Link
             to="/tipsters/$id"
             params={{ id: worst.tipster.id }}
-            className="block bg-card p-5 shadow-border hover:shadow-border-hover"
+            className="block rounded-3xl bg-card p-5"
           >
             <p className="text-xs tracking-widest text-subtle uppercase">Worst book</p>
             <h3 className="font-display mt-1 text-xl">{worst.tipster.name}</h3>
@@ -73,8 +73,31 @@ function AccuracyPage() {
 
       <section>
         <h2 className="font-display text-2xl">Leaderboard</h2>
-        <div className="mt-5 overflow-x-auto bg-card shadow-border">
-          <table className="w-full min-w-3xl text-sm">
+        <div className="mt-5 flex flex-col gap-3 lg:hidden">
+          {rows.map((a, i) => (
+            <Link
+              key={a.tipster.id}
+              to="/tipsters/$id"
+              params={{ id: a.tipster.id }}
+              className="rounded-3xl bg-card p-4"
+            >
+              <p className="text-xs text-subtle">
+                #{i + 1} · {a.tipster.desk}
+              </p>
+              <p className="mt-1 font-semibold">{a.tipster.name}</p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                <RecordLine rec={a.overall} />
+                <span className="font-mono tabular">{formatPct(a.overall.hit)}</span>
+                <Units n={a.overall.units} />
+              </div>
+              <div className="mt-3">
+                <FormDots form={a.form} />
+              </div>
+            </Link>
+          ))}
+        </div>
+        <div className="mt-5 hidden overflow-x-auto rounded-3xl bg-card lg:block">
+          <table className="w-full text-sm">
             <thead className="border-b border-border text-left text-xs tracking-wide text-subtle uppercase">
               <tr>
                 <th className="px-4 py-3 font-medium">#</th>
@@ -120,7 +143,7 @@ function AccuracyPage() {
 
 function PackStat({ k, rec, note }: { k: string; rec: RecordSlice; note: string }) {
   return (
-    <div className="bg-card p-5 shadow-border">
+    <div className="rounded-3xl bg-card p-5">
       <p className="text-xs text-subtle">{k}</p>
       <p className="font-display mt-2 text-3xl">{rec.n ? formatPct(rec.hit) : "—"}</p>
       <p className="mt-1 font-mono text-sm tabular">{rec.n ? formatRecord(rec) : "No sample"}</p>

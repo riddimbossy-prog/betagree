@@ -98,8 +98,45 @@ function FixturePage() {
       <section>
         <h2 className="font-display text-2xl">Desks</h2>
         <p className="mt-1 text-sm text-muted-foreground">{onDesk.length} live reads on this match.</p>
-        <div className="mt-4 overflow-x-auto bg-card shadow-border">
-          <table className="w-full min-w-3xl text-sm">
+        <div className="mt-4 flex flex-col gap-3 lg:hidden">
+          {onDesk.map((t) => {
+            const r = resultPicks.find((p) => p.tipsterId === t.id);
+            const o = totalPicks.find((p) => p.tipsterId === t.id);
+            const b = bttsPicks.find((p) => p.tipsterId === t.id);
+            const top = consensus.find((c) => c.market === "1x2");
+            const withPack = r && top && r.selection === top.selection;
+            return (
+              <Link
+                key={t.id}
+                to="/tipsters/$id"
+                params={{ id: t.id }}
+                className="rounded-3xl bg-card p-4"
+              >
+                <p className="font-semibold">{t.name}</p>
+                <p className="text-xs text-subtle">{t.desk}</p>
+                <dl className="mt-3 grid grid-cols-3 gap-2 text-sm">
+                  <div>
+                    <dt className="text-xs text-subtle">Result</dt>
+                    <dd>{r?.label ?? "—"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-subtle">Total</dt>
+                    <dd>{o?.label ?? "—"}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs text-subtle">BTTS</dt>
+                    <dd>{b?.label ?? "—"}</dd>
+                  </div>
+                </dl>
+                {r ? (
+                  <p className="mt-2 text-xs text-subtle">{withPack ? "With the pack" : "Fade"}</p>
+                ) : null}
+              </Link>
+            );
+          })}
+        </div>
+        <div className="mt-4 hidden overflow-x-auto rounded-3xl bg-card lg:block">
+          <table className="w-full text-sm">
             <thead className="border-b border-border text-left text-xs tracking-wide text-subtle uppercase">
               <tr>
                 <th className="px-4 py-3 font-medium">Desk</th>

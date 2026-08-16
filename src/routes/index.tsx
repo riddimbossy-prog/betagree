@@ -18,7 +18,7 @@ function Home() {
 
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex gap-2 overflow-x-auto pb-1">
+      <div className="chip-row">
         <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
           <CircleDot className="size-4" />
           Football
@@ -46,7 +46,7 @@ function Home() {
               View all
             </Link>
           </div>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 fold:grid-cols-2">
             {top.map((item, i) => (
               <ConsensusCard key={item.id} item={item} rank={i + 1} />
             ))}

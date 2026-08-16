@@ -47,6 +47,7 @@
   --radius-xl: 24px;
   --radius-2xl: 28px;
   --radius: 20px;
+  --breakpoint-fold: 42.5rem;
 
   --shadow-border: 0 0 0 1px rgb(255 255 255 / 0.06);
   --shadow-border-hover: 0 0 0 1px rgb(127 82 252 / 0.55);
@@ -121,6 +122,57 @@
 
 .font-serif {
   font-family: var(--font-serif);
+}
+
+.chip-row {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.chip-row::-webkit-scrollbar {
+  display: none;
+}
+
+.chip-row > * {
+  flex-shrink: 0;
+  scroll-snap-align: start;
+}
+
+.tab-dock {
+  position: fixed;
+  inset-inline: 0;
+  bottom: max(1rem, env(safe-area-inset-bottom));
+  z-index: 40;
+  margin-inline: auto;
+  display: flex;
+  width: min(92%, 26rem);
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 999px;
+  background: var(--color-card);
+  padding: 0.5rem;
+  box-shadow: var(--shadow-lift);
+}
+
+@media (min-width: 80rem) {
+  .tab-dock {
+    display: none;
+  }
+}
+
+.page-pad {
+  padding-bottom: calc(7.5rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 80rem) {
+  .page-pad {
+    padding-bottom: 2.5rem;
+  }
 }
 
 .odds-chip {

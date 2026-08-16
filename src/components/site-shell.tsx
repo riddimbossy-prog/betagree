@@ -41,14 +41,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <main id="main" className="mx-auto w-full min-w-0 max-w-5xl flex-1 px-4 py-6 pb-28 sm:px-6 xl:pb-10">
+      <main id="main" className="page-pad mx-auto w-full min-w-0 max-w-5xl flex-1 px-4 py-6 fold:px-6">
         {children}
       </main>
 
-      <nav
-        className="fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(92%,26rem)] items-center justify-between rounded-full bg-card px-2 py-2 shadow-lift xl:hidden"
-        aria-label="Tabs"
-      >
+      <nav className="tab-dock" aria-label="Tabs">
         {NAV.map((item) => {
           const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
           const Icon = item.icon;
