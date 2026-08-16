@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, ChartNoAxesColumn, Home, Menu, Shield, X } from "lucide-react";
-import { useState } from "react";
+import { Bell, ChartNoAxesColumn, Home, Shield } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
@@ -23,7 +22,6 @@ function greeting() {
 
 export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const [open, setOpen] = useState(false);
 
   return (
     <div className="flex min-h-dvh flex-col overflow-x-hidden bg-background text-foreground">
@@ -39,72 +37,16 @@ export function SiteShell({ children }: { children: ReactNode }) {
             <p className="text-sm font-semibold">{greeting()}</p>
             <p className="text-xs text-muted-foreground">Betagree · live consensus</p>
           </Link>
-          <nav className="hidden items-center gap-1 md:flex" aria-label="Primary">
-            {NAV.map((item) => {
-              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "rounded-full px-4 py-2 text-sm font-medium",
-                    active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-          <div className="flex items-center gap-2">
-            <AuthSlot />
-            <Button
-              type="button"
-              variant="secondary"
-              size="icon"
-              className="rounded-full md:hidden"
-              aria-label={open ? "Close menu" : "Open menu"}
-              onClick={() => setOpen((v) => !v)}
-            >
-              {open ? <X /> : <Menu />}
-            </Button>
-          </div>
+          <AuthSlot />
         </div>
-        {open ? (
-          <nav className="space-y-1 px-4 pb-4 md:hidden" aria-label="Mobile">
-            {NAV.map((item) => {
-              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "block rounded-2xl px-4 py-3 text-sm font-medium",
-                    active ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground",
-                  )}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-            <Link
-              to="/playbook"
-              onClick={() => setOpen(false)}
-              className="block rounded-2xl px-4 py-3 text-sm text-muted-foreground"
-            >
-              Playbook
-            </Link>
-          </nav>
-        ) : null}
       </header>
 
-      <main id="main" className="mx-auto w-full min-w-0 max-w-5xl flex-1 px-4 py-6 pb-24 sm:px-6 sm:pb-10">
+      <main id="main" className="mx-auto w-full min-w-0 max-w-5xl flex-1 px-4 py-6 pb-28 sm:px-6 xl:pb-10">
         {children}
       </main>
 
       <nav
-        className="fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(92%,22rem)] items-center justify-between rounded-full bg-card px-2 py-2 shadow-lift md:hidden"
+        className="fixed inset-x-0 bottom-4 z-40 mx-auto flex w-[min(92%,26rem)] items-center justify-between rounded-full bg-card px-2 py-2 shadow-lift xl:hidden"
         aria-label="Tabs"
       >
         {NAV.map((item) => {
@@ -126,12 +68,19 @@ export function SiteShell({ children }: { children: ReactNode }) {
         })}
       </nav>
 
-      <footer className="mt-auto hidden border-t border-hairline md:block">
-        <div className="mx-auto flex max-w-5xl justify-between gap-4 px-6 py-6 text-xs text-subtle">
+      <footer className="mt-auto hidden border-t border-hairline xl:block">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-6 text-xs text-subtle">
           <p>Betagree ranks soccer picks where the desks overlap. Not a sportsbook.</p>
-          <Link to="/playbook" className="hover:text-foreground">
-            Playbook
-          </Link>
+          <div className="flex flex-wrap gap-4">
+            {NAV.map((item) => (
+              <Link key={item.to} to={item.to} className="hover:text-foreground">
+                {item.label}
+              </Link>
+            ))}
+            <Link to="/playbook" className="hover:text-foreground">
+              Playbook
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
