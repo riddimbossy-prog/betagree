@@ -1,16 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import type { ConsensusItem } from "@/lib/types";
+import { Crest } from "@/components/crest";
 import { formatKickoff } from "@/lib/format";
 import { formatDecimal, formatPct } from "@/lib/odds";
 import { cn } from "@/lib/utils";
-
-function Crest({ label }: { label: string }) {
-  return (
-    <span className="grid size-12 shrink-0 place-items-center rounded-full bg-background/20 text-xs font-bold">
-      {label.slice(0, 3)}
-    </span>
-  );
-}
 
 export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: number }) {
   const f = item.fixture;
@@ -30,7 +23,7 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
       </p>
       <div className="mt-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col items-center gap-1.5">
-          <Crest label={f.away.abbr} />
+          <Crest logo={f.away.logo} abbr={f.away.abbr} />
           <span className="max-w-20 truncate text-center text-xs">{f.away.name}</span>
         </div>
         <div className="text-center">
@@ -42,7 +35,7 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
           </p>
         </div>
         <div className="flex min-w-0 flex-col items-center gap-1.5">
-          <Crest label={f.home.abbr} />
+          <Crest logo={f.home.logo} abbr={f.home.abbr} />
           <span className="max-w-20 truncate text-center text-xs">{f.home.name}</span>
         </div>
       </div>

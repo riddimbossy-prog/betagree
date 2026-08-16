@@ -6,6 +6,7 @@ export type FixtureTeam = {
   id: string;
   name: string;
   abbr: string;
+  logo: string | null;
   ml: number | null;
   score?: number | null;
 };

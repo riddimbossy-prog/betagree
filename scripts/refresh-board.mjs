@@ -43,6 +43,14 @@ function parseAmerican(raw) {
   return Number.isFinite(n) && n !== 0 ? n : null;
 }
 
+function teamLogo(team) {
+  if (typeof team.logo === "string" && team.logo.startsWith("http")) return team.logo;
+  const href = team.logos?.[0]?.href;
+  if (typeof href === "string" && href.startsWith("http")) return href;
+  if (team.id) return `https://a.espncdn.com/i/teamlogos/soccer/500/${team.id}.png`;
+  return null;
+}
+
 function closeOdds(side) {
   if (!side || typeof side !== "object") return null;
   return parseAmerican(side.close?.odds ?? side.odds ?? side.moneyLine);
@@ -77,6 +85,7 @@ function parseEvent(e, league, slug) {
       id: String(ht.id ?? ""),
       name: String(ht.displayName ?? "Home"),
       abbr: String(ht.abbreviation ?? ht.shortDisplayName ?? "HOM"),
+      logo: teamLogo(ht),
       ml: closeOdds(ml.home),
       score: Number.isFinite(hs) ? hs : null,
     },
@@ -84,6 +93,7 @@ function parseEvent(e, league, slug) {
       id: String(at.id ?? ""),
       name: String(at.displayName ?? "Away"),
       abbr: String(at.abbreviation ?? at.shortDisplayName ?? "AWY"),
+      logo: teamLogo(at),
       ml: closeOdds(ml.away),
       score: Number.isFinite(as) ? as : null,
     },

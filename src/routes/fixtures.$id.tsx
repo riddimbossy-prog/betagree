@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AgreeBar } from "@/components/consensus-card";
+import { Crest } from "@/components/crest";
 import { BoardState, LiveBar } from "@/components/live-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -56,18 +57,14 @@ function FixturePage() {
         </p>
         <div className="mt-5 flex items-center justify-between gap-3">
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-            <span className="grid size-14 place-items-center rounded-full bg-secondary text-sm font-bold">
-              {fixture.away.abbr.slice(0, 3)}
-            </span>
+            <Crest logo={fixture.away.logo} abbr={fixture.away.abbr} size="lg" />
             <span className="text-center text-sm font-medium">{fixture.away.name}</span>
           </div>
           <p className="text-4xl font-bold tabular">
             {fixture.away.score ?? "–"} <span className="text-subtle">:</span> {fixture.home.score ?? "–"}
           </p>
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-            <span className="grid size-14 place-items-center rounded-full bg-secondary text-sm font-bold">
-              {fixture.home.abbr.slice(0, 3)}
-            </span>
+            <Crest logo={fixture.home.logo} abbr={fixture.home.abbr} size="lg" />
             <span className="text-center text-sm font-medium">{fixture.home.name}</span>
           </div>
         </div>

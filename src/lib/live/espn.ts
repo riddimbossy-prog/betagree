@@ -12,6 +12,20 @@ function parseOdds(raw: unknown): number | null {
   return null;
 }
 
+function teamLogo(team: Record<string, unknown>): string | null {
+  if (typeof team.logo === "string" && team.logo.startsWith("http")) return team.logo;
+  const logos = team.logos;
+  if (Array.isArray(logos) && logos[0] && typeof logos[0] === "object") {
+    const href = (logos[0] as { href?: unknown }).href;
+    if (typeof href === "string" && href.startsWith("http")) return href;
+  }
+  const id = team.id;
+  if (id != null && String(id)) {
+    return `https://a.espncdn.com/i/teamlogos/soccer/500/${id}.png`;
+  }
+  return null;
+}
+
 function closeOdds(side: unknown): number | null {
   if (!side || typeof side !== "object") return null;
   const s = side as { close?: { odds?: unknown }; odds?: unknown; moneyLine?: unknown };
@@ -48,6 +62,7 @@ export function parseEspnEvent(e: Record<string, unknown>, league: string, slug:
       id: String(ht.id ?? ""),
       name: String(ht.displayName ?? "Home"),
       abbr: String(ht.abbreviation ?? ht.shortDisplayName ?? "HOM"),
+      logo: teamLogo(ht),
       ml: closeOdds(ml.home),
       score: Number.isFinite(homeScore as number) ? homeScore : null,
     },
@@ -55,6 +70,7 @@ export function parseEspnEvent(e: Record<string, unknown>, league: string, slug:
       id: String(at.id ?? ""),
       name: String(at.displayName ?? "Away"),
       abbr: String(at.abbreviation ?? at.shortDisplayName ?? "AWY"),
+      logo: teamLogo(at),
       ml: closeOdds(ml.away),
       score: Number.isFinite(awayScore as number) ? awayScore : null,
     },
