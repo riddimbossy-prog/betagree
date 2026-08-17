@@ -197,9 +197,17 @@ async function loadIndex() {
     for (const [k, v] of Object.entries(json.byName ?? {})) {
       if (typeof v === "string" && isUsablePath(v)) byName[k] = v;
     }
+    // Always re-apply PINNED so a thin or wiped index cannot drop stubborn clubs
+    for (const [k, path] of Object.entries(PINNED)) {
+      if (isUsablePath(path)) byName[k] = path;
+    }
     cache = { byName };
   } catch {
-    cache = { byName: {} };
+    const byName: Record<string, string> = {};
+    for (const [k, path] of Object.entries(PINNED)) {
+      if (isUsablePath(path)) byName[k] = path;
+    }
+    cache = { byName };
   }
   emit();
   return cache;
