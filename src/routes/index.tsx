@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { HeroTabs } from "@/components/hero-tabs";
+import { AnalysisHub } from "@/components/analysis-hub";
 import { ConsensusCard } from "@/components/consensus-card";
 import { FixtureList } from "@/components/fixture-list";
 import { BoardState } from "@/components/live-bar";
@@ -70,18 +70,68 @@ function Home() {
 
   return (
     <div className="flex flex-col gap-8">
-      <HeroTabs
-        sport="Football"
-        sportNote="Today's board"
-        tabs={[
-          { id: "fixtures", label: "fixtures", value: loading ? "—" : fixtures.length, to: "/fixtures" },
-          { id: "high", label: "high", value: highUpcoming.length, to: "/fixtures", tone: "high" },
-          { id: "live", label: "in play", value: liveCount, to: "/live", tone: liveCount ? "live" : "plain" },
-          { id: "form", label: "form", value: formHot.length || "—", to: "/form" },
-          { id: "streaks", label: "streaks", value: streakTotal || "—", to: "/streaks", tone: "or" },
-          { id: "trends", label: "at 70%+", value: trendTotal, to: "/trends", tone: "or" },
-          { id: "bankers", label: "bankers", value: bankers.length, to: "/banker" },
-          { id: "band", label: "1.20–1.55", value: band.length, to: "/odds", tone: "azure" },
+      <AnalysisHub
+        tiles={[
+          {
+            id: "high",
+            eyebrow: "Primary consensus board",
+            title: "High agreement",
+            body: "Top 1X2 and market picks where the desks cluster hardest — the final shortlist from 22 sources.",
+            badge: loading ? "—" : String(highUpcoming.length || high.length),
+            badgeHint: "final board",
+            to: "/fixtures",
+            icon: "crown",
+            size: "lg",
+            tone: "high",
+          },
+          {
+            id: "live",
+            eyebrow: "Live matches only",
+            title: liveCount ? "In play now" : "In play board",
+            body: "Board matches that are currently running. No extras — only fixtures already on Betagree.",
+            badge: String(liveCount),
+            badgeHint: liveCount ? "live" : "waiting",
+            to: "/live",
+            icon: "live",
+            size: "lg",
+            tone: liveCount ? "live" : "plain",
+          },
+          {
+            id: "form",
+            eyebrow: "High-scoring profile",
+            title: "Form",
+            body: "Season shape, venue splits and recent results distilled into specialist form rows.",
+            badge: String(formHot.length || "—"),
+            badgeHint: "specialist",
+            to: "/form",
+            icon: "flame",
+            size: "md",
+            tone: "or",
+          },
+          {
+            id: "streaks",
+            eyebrow: "Goals profile",
+            title: "Streaks",
+            body: "2+ Yes when the favourite faces a soft PPG side, plus Over 2.5 from balanced 3+ prices.",
+            badge: String(streakTotal || "—"),
+            badgeHint: "goals",
+            to: "/streaks",
+            icon: "zap",
+            size: "md",
+            tone: "purpure",
+          },
+          {
+            id: "trends",
+            eyebrow: "Qualified markets",
+            title: "Trends 70%+",
+            body: "Filtered runs at the 70%+ bar — wins, overs, GG and dual bankers in one desk.",
+            badge: String(trendTotal || bankers.length || "—"),
+            badgeHint: "qualified",
+            to: "/trends",
+            icon: "gg",
+            size: "md",
+            tone: "azure",
+          },
         ]}
       />
 
