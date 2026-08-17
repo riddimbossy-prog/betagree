@@ -27,6 +27,7 @@ function PoleChip({ rank, size, pole }: { rank: number; size: number; pole: Stre
 export function StreakCard({ pick }: { pick: StreakPick }) {
   const home = pick.table.home;
   const away = pick.table.away;
+  const sameLogo = Boolean(pick.homeLogo && pick.homeLogo === pick.awayLogo);
   const { clock, day } = formatBoardTime(null, pick.kickoff);
   return (
     <article className="glass block w-full rounded-3xl p-5 text-left">
@@ -46,7 +47,7 @@ export function StreakCard({ pick }: { pick: StreakPick }) {
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        <Crest name={pick.home} logo={pick.homeLogo} />
+        <Crest name={pick.home} logo={sameLogo ? null : pick.homeLogo} />
         <div className="flex min-w-0 flex-1 flex-col items-center gap-1">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-subtle">Kickoff</p>
           <p className="font-serif text-3xl italic tabular leading-none text-or">{clock}</p>
@@ -56,7 +57,7 @@ export function StreakCard({ pick }: { pick: StreakPick }) {
           </div>
           <span className="mt-1 max-w-full truncate text-center text-xs text-muted-foreground">{pick.league}</span>
         </div>
-        <Crest name={pick.away} logo={pick.awayLogo} />
+        <Crest name={pick.away} logo={sameLogo ? null : pick.awayLogo} />
       </div>
 
       <p className="mt-3 truncate text-center text-sm font-semibold">

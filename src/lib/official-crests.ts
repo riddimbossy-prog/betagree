@@ -27,7 +27,6 @@ const STOP = new Set([
   "do",
   "da",
   "di",
-  "club",
   "united",
   "city",
   "town",
@@ -99,6 +98,10 @@ const PINNED: Record<string, string> = {
   monza: "/crests/ac-monza.png",
   "ac monza": "/crests/ac-monza.png",
   "associazione calcio monza": "/crests/ac-monza.png",
+  "club brugge": "/crests/club-brugge.png",
+  "club brugge kv": "/crests/club-brugge.png",
+  "cercle brugge": "/crests/cercle-brugge.png",
+  "cercle brugge ksv": "/crests/cercle-brugge.png",
 };
 
 export function normTeam(name: string) {
@@ -122,11 +125,20 @@ function isUsablePath(path: string | null | undefined): path is string {
   return true;
 }
 
+export function distinctiveConflict(a: string, b: string) {
+  const ta = new Set(tokens(a));
+  const tb = new Set(tokens(b));
+  const onlyA = [...ta].filter((t) => !tb.has(t));
+  const onlyB = [...tb].filter((t) => !ta.has(t));
+  return onlyA.length > 0 && onlyB.length > 0;
+}
+
 function scoreKey(query: string, key: string) {
   const q = normTeam(query);
   const k = normTeam(key);
   if (!q || !k) return 0;
   if (q === k) return 1;
+  if (distinctiveConflict(q, k)) return 0;
   const qt = tokens(q);
   const kt = tokens(k);
   if (qt.length === 1 && qt[0].length < 6) {

@@ -9,6 +9,7 @@
  */
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import { namesMatch as matchNames } from "./lib/names-match.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
 const OUT = join(ROOT, "public/data/streaks.json");
@@ -129,24 +130,13 @@ function alias(s) {
 
 function tokens(s) {
   return alias(s)
-    .replace(/\b(fc|cf|sc|afc|cfc|fk|sk|ac|cd|the|de|do|da|di|club|football|calcio|ss|ud|sd|rcd|rc)\b/g, " ")
+    .replace(/\b(fc|cf|sc|afc|cfc|fk|sk|ac|cd|the|de|do|da|di|football|calcio|ss|ud|sd|rcd|rc|kv|ksv)\b/g, " ")
     .split(/\s+/)
     .filter((t) => t.length > 1);
 }
 
 function namesMatch(a, b) {
-  const na = alias(a);
-  const nb = alias(b);
-  if (!na || !nb) return false;
-  if (na === nb) return true;
-  if (na.length >= 4 && nb.length >= 4 && (na.includes(nb) || nb.includes(na))) return true;
-  const ta = new Set(tokens(a));
-  const tb = new Set(tokens(b));
-  if (!ta.size || !tb.size) return false;
-  let hit = 0;
-  for (const t of ta) if (tb.has(t)) hit += 1;
-  const den = Math.min(ta.size, tb.size);
-  return hit >= den && hit >= 1 && (hit / Math.max(ta.size, tb.size) >= 0.5 || hit >= 2);
+  return matchNames(a, b, alias);
 }
 
 function inBand(n, band) {
@@ -336,7 +326,11 @@ async function main() {
     const table = slug ? tables.get(slug) ?? [] : [];
     if (table.length < 6) continue;
     const homeRow = findRow(table, ev.homeTeamName);
-    const awayRow = findRow(table, ev.awayTeamName);
+    let awayRow = findRow(table, ev.awayTeamName);
+    if (homeRow && awayRow && homeRow.name === awayRow.name) {
+      awayRow = table.find((r) => alias(r.name) === alias(ev.awayTeamName) && r.name !== homeRow.name) ?? null;
+    }
+    const sameLogo = Boolean(homeRow?.logo && awayRow?.logo && homeRow.logo === awayRow.logo);
     const homePole = poleOf(homeRow, table.length);
     const awayPole = poleOf(awayRow, table.length);
     if (!homePole && !awayPole) continue;
@@ -350,8 +344,8 @@ async function main() {
       kickoff: new Date(start).toISOString(),
       home: ev.homeTeamName,
       away: ev.awayTeamName,
-      homeLogo: homeRow?.logo ?? ev.homeTeamIcon ?? null,
-      awayLogo: awayRow?.logo ?? ev.awayTeamIcon ?? null,
+      homeLogo: sameLogo ? null : (homeRow?.logo ?? ev.homeTeamIcon ?? null),
+      awayLogo: sameLogo ? null : (awayRow?.logo ?? ev.awayTeamIcon ?? null),
       favorite: fav.side === "home" ? ev.homeTeamName : ev.awayTeamName,
       favoriteSide: fav.side,
       favoriteOdds: fav.odds,

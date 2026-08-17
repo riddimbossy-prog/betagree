@@ -70,7 +70,7 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
         <SourcePills sources={pick.sources} invert={highlight} />
       </div>
       <div className="mt-4 flex items-center gap-3">
-        <Crest name={pick.home} logo={pick.homeLogo} />
+        <Crest name={pick.home} logo={pick.homeLogo && pick.homeLogo === pick.awayLogo ? null : pick.homeLogo} />
         <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
           <PriceChip value={pick.odds} />
           <TimeChip raw={pick.kickoff} iso={pick.kickoffIso} invert={highlight} />
@@ -78,7 +78,7 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
             {pick.league}
           </span>
         </div>
-        <Crest name={pick.away} logo={pick.awayLogo} />
+        <Crest name={pick.away} logo={pick.awayLogo && pick.awayLogo === pick.homeLogo ? null : pick.awayLogo} />
       </div>
       <p className="mt-3 truncate text-center text-sm font-semibold">
         {pick.home} <span className="text-subtle">vs</span> {pick.away}

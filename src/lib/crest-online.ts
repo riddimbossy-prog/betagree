@@ -31,6 +31,8 @@ const SEARCH_ALIAS: Record<string, string> = {
   "tromso w": "Tromso women",
   monza: "AC Monza",
   "ac monza": "AC Monza",
+  "club brugge": "Club Brugge KV",
+  "cercle brugge": "Cercle Brugge KSV",
 };
 
 function queryFor(name: string) {

@@ -5,7 +5,7 @@ import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 import { createFileRoute } from "@tanstack/react-router";
 import { findCrestOnline } from "@/lib/crest-online";
-import { normTeam, resolveCrestPath } from "@/lib/official-crests";
+import { distinctiveConflict, normTeam, resolveCrestPath } from "@/lib/official-crests";
 
 const ROOT = process.cwd();
 const OUT = join(ROOT, "public/crests");
@@ -62,6 +62,7 @@ function pickTeam(
     const n2 = normTeam(short);
     let score = 0;
     if (n1 === q || n2 === q) score = 1;
+    else if (distinctiveConflict(q, n1) || (n2 && distinctiveConflict(q, n2))) score = 0;
     else if (n1.startsWith(q) || q.startsWith(n1)) score = 0.9;
     else {
       const qt = q.split(" ").filter((t) => t.length > 2);
