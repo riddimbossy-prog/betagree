@@ -30,7 +30,7 @@ export function StreakCard({ pick }: { pick: StreakPick }) {
   const sameLogo = Boolean(pick.homeLogo && pick.homeLogo === pick.awayLogo);
   const { clock, day } = formatBoardTime(null, pick.kickoff);
   return (
-    <article className="glass block w-full rounded-3xl p-5 text-left">
+    <article className="glass glass-lift block w-full rounded-3xl p-5 text-left">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span
           className={cn(
@@ -74,20 +74,20 @@ export function StreakCard({ pick }: { pick: StreakPick }) {
       </div>
 
       <p className="mt-3 text-center text-sm text-muted-foreground">
-        {pick.pick === "Over" ? (
-          <>Over 2.5</>
-        ) : (
+        Favorite {pick.favorite}{" "}
+        <span className="tabular font-semibold text-foreground">{pick.favoriteOdds.toFixed(2)}</span>
+        {typeof pick.oppPpg === "number" ? (
           <>
-            Favorite {pick.favorite}{" "}
-            <span className="tabular font-semibold text-foreground">{pick.favoriteOdds.toFixed(2)}</span>
-            {typeof pick.oppPpg === "number" ? (
-              <>
-                {" "}
-                · opp <span className="tabular font-semibold text-foreground">{pick.oppPpg.toFixed(2)}</span> PPG
-              </>
-            ) : null}
+            {" "}
+            · opp <span className="tabular font-semibold text-foreground">{pick.oppPpg.toFixed(2)}</span> PPG
           </>
-        )}
+        ) : null}
+        {pick.pick === "Over" && pick.streakYes != null && pick.streakNo != null ? (
+          <>
+            {" "}
+            · 3+ {pick.streakYes.toFixed(2)}/{pick.streakNo.toFixed(2)}
+          </>
+        ) : null}
       </p>
     </article>
   );

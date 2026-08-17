@@ -1,15 +1,30 @@
 import { Crest } from "@/components/crest";
-import { briefFromForm, usePickSheet } from "@/components/pick-sheet";
-import { formBarWidth } from "@/lib/form-meta";
-import type { FormRow as FormRowData } from "@/lib/types";
+import { usePickSheet } from "@/components/pick-sheet";
+import type { FormRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
+
+function briefFromForm(row: FormRow, unit: string) {
+  return {
+    id: row.fixtureId ?? row.team,
+    home: row.team,
+    away: row.opponent ?? "—",
+    homeLogo: row.logo,
+    awayLogo: null as string | null,
+    league: row.league,
+    kickoffIso: null as string | null,
+    label: `${row.team} · ${row.display} ${unit}`,
+    odds: null as number | null,
+    sources: ["form"] as ("form" | "odds")[],
+    why: `${row.team} ranks #${row.rank} for ${unit.toLowerCase()} in ${row.league} (${row.display}).`,
+  };
+}
 
 export function FormRowCard({
   row,
   unit,
   highlight,
 }: {
-  row: FormRowData;
+  row: FormRow;
   unit: string;
   highlight?: boolean;
 }) {
@@ -19,38 +34,25 @@ export function FormRowCard({
       type="button"
       onClick={() => sheet.open(briefFromForm(row, unit))}
       className={cn(
-        "flex w-full min-w-0 items-center gap-2 overflow-hidden rounded-3xl p-3 text-left transition-[box-shadow] duration-150 hover:shadow-border-hover fold:gap-3 fold:p-4",
+        "glass-lift flex w-full min-w-0 items-center gap-2 overflow-hidden rounded-3xl p-3 text-left fold:gap-3 fold:p-4",
         highlight ? "glass-purpure text-primary-foreground" : "glass",
       )}
     >
       <span className="w-6 shrink-0 text-base font-semibold tabular text-subtle fold:w-8 fold:text-lg">{row.rank}</span>
       <Crest name={row.team} logo={row.logo} size="sm" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold">{row.team}</p>
-        <p className={cn("truncate text-sm", highlight ? "text-white/70" : "text-muted-foreground")}>
-          {row.league || "League"}
-          {row.playingToday && row.opponent ? ` · vs ${row.opponent}` : ""}
-        </p>
-        <span className="mt-2 block h-1 overflow-hidden rounded-full bg-white/10">
-          <span className="block h-full rounded-full bg-or" style={{ width: `${formBarWidth(row)}%` }} />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold fold:text-base">{row.team}</span>
+        <span className={cn("block truncate text-xs", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
+          {row.league}
+          {row.opponent ? ` · vs ${row.opponent}` : ""}
         </span>
-      </div>
-      <div className="shrink-0 text-right">
-        <p className="text-lg font-semibold tabular">{row.display || "—"}</p>
-        <p className={cn("text-xs tabular", highlight ? "text-white/70" : "text-muted-foreground")}>
-          {row.count}/{row.matches} {unit.toLowerCase()}
-        </p>
-        {row.playingToday ? (
-          <span
-            className={cn(
-              "mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase",
-              highlight ? "bg-white/20 text-white" : "bg-hot text-hot-foreground",
-            )}
-          >
-            Today
-          </span>
-        ) : null}
-      </div>
+      </span>
+      <span className="shrink-0 text-right">
+        <span className="block font-serif text-2xl italic tabular leading-none text-or">{row.display}</span>
+        <span className={cn("block text-[10px] font-semibold uppercase tracking-wide", highlight ? "text-primary-foreground/70" : "text-subtle")}>
+          {unit}
+        </span>
+      </span>
     </button>
   );
 }
