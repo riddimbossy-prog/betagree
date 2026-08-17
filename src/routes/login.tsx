@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { GROK_PROVIDERS, authEnabled, signIn } from "@/lib/auth/client";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/login")({ component: Login });
@@ -8,6 +9,7 @@ function Login() {
   return (
     <div className="mx-auto grid min-h-[60vh] max-w-md place-items-center">
       <div className="w-full rounded-2xl bg-card p-6 shadow-border sm:p-8">
+        <BrandLogo className="mb-5" />
         <p className="text-xs tracking-widest text-subtle uppercase">Account</p>
         <h1 className="font-display mt-2 text-3xl">Sign in</h1>
         <p className="mt-2 text-sm text-muted-foreground">

@@ -5,7 +5,7 @@ import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Crest } from "@/components/crest";
+import { BrandLogo } from "@/components/brand-logo";
 import { PickProvider } from "@/components/pick-sheet";
 import { PlayingTodayChip } from "@/components/playing-today";
 import { preloadOfficialCrests } from "@/lib/official-crests";
@@ -17,13 +17,6 @@ const NAV = [
   { to: "/streaks", label: "Streaks", icon: Zap },
   { to: "/trends", label: "Trends", icon: TrendingUp },
 ] as const;
-
-function greeting() {
-  const h = new Date().getUTCHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
-}
 
 export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -42,11 +35,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <header className="glass-strong sticky top-0 z-40">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
           <Link to="/" className="flex min-w-0 items-center gap-3 no-underline">
-            <Crest name="Betagree" size="md" />
-            <span className="min-w-0">
-              <p className="text-sm font-semibold">{greeting()}</p>
-              <p className="text-xs text-muted-foreground">Betagree · 22-site consensus</p>
-            </span>
+            <BrandLogo />
           </Link>
           <AuthSlot />
         </div>
