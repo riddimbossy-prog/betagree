@@ -29,7 +29,7 @@ function TrendsPage() {
       </header>
 
       <BoardState
-        loading={loading}
+        loading={loading && !data}
         error={error}
         empty={!loading && !error && total === 0}
         emptyLabel="Nothing today cleared 70% with odds 1.20–1.55."

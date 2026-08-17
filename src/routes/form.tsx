@@ -122,7 +122,7 @@ function FormPage() {
       />
 
       <BoardState
-        loading={loading}
+        loading={loading && !data}
         error={error}
         empty={!loading && !error && rows.length === 0}
         emptyLabel={todayOnly ? "Nobody on this list is playing today." : "Form table is empty for this cut."}

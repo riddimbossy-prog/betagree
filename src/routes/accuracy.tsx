@@ -10,11 +10,11 @@ export const Route = createFileRoute("/accuracy")({ component: AccuracyPage });
 
 function AccuracyPage() {
   const { data, error, loading } = useLedger();
-  if (loading || error || !data) {
+  if ((loading && !data) || error || !data) {
     return (
       <div className="flex flex-col gap-8">
         <h1 className="font-display text-4xl">Accuracy</h1>
-        <BoardState loading={loading} error={error} />
+        <BoardState loading={loading && !data} error={error} />
       </div>
     );
   }

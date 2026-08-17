@@ -13,7 +13,11 @@ const YOUTH = /\b(u1[5-9]|u2[0-3]|reserve|reserves|ii|iii|women|vrouwen|w)\b/i;
 const INTERVAL = 10_000;
 const TMP = join(tmpdir(), "board-scores.json");
 const PUBLIC = join(ROOT, "public/data/scores.json");
-const SLATE = join(ROOT, "public/data/slate.json");
+
+function slatePaths() {
+  const today = new Date().toISOString().slice(0, 10);
+  return [join(ROOT, `public/data/slate-${today}.json`), join(ROOT, "public/data/slate.json")];
+}
 
 function headers() {
   return {
@@ -80,6 +84,12 @@ function clock(ev) {
   return `${mins}'`;
 }
 
+function teamLogo(team) {
+  const id = team?.id;
+  if (!id) return null;
+  return `https://img.sofascore.com/api/v1/team/${id}/image`;
+}
+
 function toPatch(ev) {
   const home = ev.homeTeam?.name;
   const away = ev.awayTeam?.name;
@@ -89,7 +99,17 @@ function toPatch(ev) {
   const type = String(ev.status?.type ?? "");
   const live = type === "inprogress";
   const status = live ? "in" : type === "finished" ? "post" : "pre";
-  return { home, away, homeScore: hs, awayScore: as, live, status, detail: clock(ev) };
+  return {
+    home,
+    away,
+    homeScore: hs,
+    awayScore: as,
+    live,
+    status,
+    detail: clock(ev),
+    homeLogo: teamLogo(ev.homeTeam),
+    awayLogo: teamLogo(ev.awayTeam),
+  };
 }
 
 async function getJson(url) {
@@ -151,12 +171,18 @@ async function searchPatch(fixture) {
 
 async function tick() {
   const liveData = await getJson(LIVE);
-  const live = (liveData.events ?? []).map(toPatch).filter(Boolean);
+  const live = (liveData.events ?? [])
+    .map(toPatch)
+    .filter(Boolean)
+    .filter((p) => !YOUTH.test(p.home) && !YOUTH.test(p.away));
   let fixtures = [];
-  try {
-    fixtures = JSON.parse(await readFile(SLATE, "utf8")).fixtures ?? [];
-  } catch {
-    fixtures = [];
+  for (const path of slatePaths()) {
+    try {
+      fixtures = JSON.parse(await readFile(path, "utf8")).fixtures ?? [];
+      if (fixtures.length) break;
+    } catch {
+      /* try next dated slate */
+    }
   }
   const extra = [];
   for (const f of fixtures) {
@@ -173,6 +199,12 @@ async function tick() {
   const patches = [...live, ...extra];
   const board = [];
   const seen = new Set();
+  for (const patch of live) {
+    const key = `${patch.home}|${patch.away}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    board.push(patch);
+  }
   for (const f of fixtures) {
     const hit = matchPatch(f.home.name, f.away.name, patches);
     if (!hit) continue;
@@ -181,7 +213,7 @@ async function tick() {
     seen.add(key);
     board.push(hit.patch);
   }
-  const pack = { fetchedAt: new Date().toISOString(), scores: board.length ? board : patches.slice(0, 40) };
+  const pack = { fetchedAt: new Date().toISOString(), scores: board };
   const body = JSON.stringify(pack);
   await writeFile(TMP, body);
   await writeFile(PUBLIC, body);

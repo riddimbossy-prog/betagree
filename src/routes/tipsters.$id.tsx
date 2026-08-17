@@ -21,7 +21,7 @@ function TipsterPage() {
   const tipster = acc?.tipster ?? slate.data?.desks.find((d) => d.id === id);
   const today = (slate.data?.picks ?? []).filter((p) => p.tipsterId === id && p.market === "1x2");
 
-  if (ledger.loading || slate.loading) return <BoardState loading error={null} />;
+  if ((ledger.loading && !ledger.data) || (slate.loading && !slate.data)) return <BoardState loading error={null} />;
   if (!tipster) {
     return (
       <p className="text-sm text-muted-foreground">

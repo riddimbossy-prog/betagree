@@ -144,17 +144,26 @@ export function Crest({
 }) {
   const official = useOfficialCrest(name);
   const [broken, setBroken] = useState(false);
+  const [allowOfficial, setAllowOfficial] = useState(false);
+  const [logoBroken, setLogoBroken] = useState(false);
   const uid = useId().replace(/:/g, "");
   const arms = blazon(name);
   const path = CUTS[arms.cut];
   const letters = lettersOf(name);
-  const src = official || logo || null;
-  const showLogo = Boolean(src) && !broken;
+  const officialSrc = allowOfficial && official && !broken ? official : null;
+  const fallbackSrc = logo && !logoBroken ? logo : null;
+  const src = officialSrc || fallbackSrc;
+  const showLogo = Boolean(src);
   const letterFill = arms.field.metal ? arms.ink.fill : "var(--tincture-argent)";
 
   useEffect(() => {
     setBroken(false);
-  }, [src]);
+    setLogoBroken(false);
+  }, [official, logo]);
+
+  useEffect(() => {
+    setAllowOfficial(true);
+  }, []);
 
   return (
     <span className={cn("crest-plate", SIZES[size], className)} title={name} aria-hidden>
@@ -180,15 +189,20 @@ export function Crest({
           {showLogo ? null : <OrdinaryMark kind={arms.ordinary} ink={arms.ink.fill} />}
           {showLogo ? null : <ChargeMark kind={arms.charge} fill={letterFill} />}
           {showLogo ? (
-            <image
-              href={src ?? undefined}
-              x="6"
-              y="9"
-              width="68"
-              height="70"
-              preserveAspectRatio="xMidYMid meet"
-              onError={() => setBroken(true)}
-            />
+            <foreignObject x="6" y="9" width="68" height="70">
+              <div xmlns="http://www.w3.org/1999/xhtml" style={{ width: 68, height: 70 }}>
+                <img
+                  src={src ?? undefined}
+                  alt=""
+                  referrerPolicy="no-referrer"
+                  style={{ width: "68px", height: "70px", objectFit: "contain", display: "block" }}
+                  onError={() => {
+                    if (officialSrc) setBroken(true);
+                    else setLogoBroken(true);
+                  }}
+                />
+              </div>
+            </foreignObject>
           ) : null}
           <path d={path} fill={`url(#enamel-${uid})`} />
         </g>

@@ -4,11 +4,16 @@ import { FixtureList } from "@/components/fixture-list";
 import { BoardState, LiveBar } from "@/components/live-bar";
 import { Button } from "@/components/ui/button";
 import { useSlate } from "@/lib/live/use-live";
+import { loadBoardSnapshot } from "@/lib/live/snapshot.server";
 
-export const Route = createFileRoute("/fixtures/")({ component: FixturesPage });
+export const Route = createFileRoute("/fixtures/")({
+  loader: () => loadBoardSnapshot(),
+  component: FixturesPage,
+});
 
 function FixturesPage() {
-  const { data, error, loading } = useSlate();
+  const initial = Route.useLoaderData();
+  const { data, error, loading } = useSlate(initial);
   const [league, setLeague] = useState("all");
   const fixtures = useMemo(() => {
     const list = data?.fixtures ?? [];
@@ -55,7 +60,7 @@ function FixturesPage() {
         ))}
       </div>
 
-      <BoardState loading={loading} error={error} empty={!loading && !error && fixtures.length === 0} />
+      <BoardState loading={loading && !data} error={error} empty={!loading && !error && fixtures.length === 0} />
       {fixtures.length ? <FixtureList fixtures={fixtures} byFixture={byFixture} /> : null}
     </div>
   );

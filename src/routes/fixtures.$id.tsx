@@ -20,8 +20,8 @@ function FixturePage() {
   const consensus = (data?.consensus ?? []).filter((c) => c.fixture.id === id);
   const onDesk = (data?.desks ?? []).filter((t) => picks.some((p) => p.tipsterId === t.id));
 
-  if (loading || error) {
-    return <BoardState loading={loading} error={error} />;
+  if ((loading && !data) || error) {
+    return <BoardState loading={loading && !data} error={error} />;
   }
   if (!fixture) {
     return (

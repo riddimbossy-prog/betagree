@@ -3,6 +3,8 @@ import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-r
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { SiteShell } from "@/components/site-shell";
+import { SnapshotProvider } from "@/lib/live/snapshot-context";
+import { loadAppSnapshot } from "@/lib/live/snapshot.server";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Betagree";
@@ -10,6 +12,7 @@ const host = import.meta.env.VITE_PUBLIC_HOSTNAME ?? "betagree.com";
 const ogImage = `https://og.grok.me/v1/card.png?host=${encodeURIComponent(host)}&title=${encodeURIComponent(APP_NAME)}`;
 
 export const Route = createRootRoute({
+  loader: () => loadAppSnapshot(),
   notFoundComponent: AppNotFound,
   errorComponent: AppErrorComponent,
   head: () => ({
@@ -52,6 +55,7 @@ export const Route = createRootRoute({
 });
 
 function RootDocument() {
+  const snap = Route.useLoaderData();
   return (
     <html lang="en" className="antialiased" suppressHydrationWarning>
       <head>
@@ -60,9 +64,11 @@ function RootDocument() {
       <body>
         <PreviewHostBridge />
         <AuthProvider>
-          <SiteShell>
-            <Outlet />
-          </SiteShell>
+          <SnapshotProvider value={snap}>
+            <SiteShell>
+              <Outlet />
+            </SiteShell>
+          </SnapshotProvider>
         </AuthProvider>
         <Scripts />
       </body>

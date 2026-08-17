@@ -97,7 +97,15 @@ async function download(url, dest) {
 async function loadNames() {
   const names = new Set();
   const dataDir = join(ROOT, "public/data");
-  for (const file of ["slate.json", "slate-2026-08-16.json", "slate-2026-08-17.json", "form.json", "trends.json"]) {
+  for (const file of [
+    "slate.json",
+    "slate-2026-08-16.json",
+    "slate-2026-08-17.json",
+    "form.json",
+    "trends.json",
+    "streaks.json",
+    "scores.json",
+  ]) {
     let raw;
     try {
       raw = JSON.parse(await readFile(join(dataDir, file), "utf8"));
@@ -113,8 +121,16 @@ async function loadNames() {
         for (const row of board[venue] ?? []) if (row.team) names.add(row.team);
       }
     }
+    for (const s of raw.scores ?? []) {
+      if (s.home) names.add(s.home);
+      if (s.away) names.add(s.away);
+    }
+    for (const p of [...(raw.twoYes ?? []), ...(raw.threeNo ?? [])]) {
+      if (p.home) names.add(p.home);
+      if (p.away) names.add(p.away);
+    }
     for (const list of Object.values(raw.categories ?? {})) {
-      for (const p of list) {
+      for (const p of list ?? []) {
         if (p.home) names.add(p.home);
         if (p.away) names.add(p.away);
         if (p.team) names.add(p.team);

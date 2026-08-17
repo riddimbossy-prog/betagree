@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import type { DeskSource, FormPayload, LedgerPayload, SlatePayload, StreaksPayload, TrendPick, TrendsPayload } from "@/lib/types";
 import { applySlateScores, type ScorePatch } from "@/lib/live/score-apply";
+import { mergeLiveFixtures } from "@/lib/live/merge-live";
+import { useSnapshot } from "@/lib/live/snapshot-context";
 
 async function loadJson<T>(paths: string[]): Promise<T> {
   let last: unknown;
@@ -88,14 +90,16 @@ function scrubSlate(data: SlatePayload): SlatePayload {
   };
 }
 
-export function useSlate(pollMs = 15_000) {
-  const [data, setData] = useState<SlatePayload | null>(null);
+export function useSlate(initial?: SlatePayload | null, pollMs = 5_000) {
+  const snap = useSnapshot();
+  const seed = initial ?? snap?.slate ?? null;
+  const [data, setData] = useState<SlatePayload | null>(seed);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!seed);
 
   useEffect(() => {
     let dead = false;
-    let board: SlatePayload | null = null;
+    let board: SlatePayload | null = seed;
     let pending: ScorePatch[] | null = null;
 
     const paint = (next: SlatePayload) => {
@@ -105,8 +109,10 @@ export function useSlate(pollMs = 15_000) {
       setLoading(false);
     };
 
-    const withScores = (base: SlatePayload, scores?: ScorePatch[] | null) =>
-      scores?.length ? applySlateScores(base, scores) : base;
+    const withScores = (base: SlatePayload, scores?: ScorePatch[] | null) => {
+      if (!scores?.length) return base;
+      return mergeLiveFixtures(applySlateScores(base, scores), scores);
+    };
 
     const loadSnapshot = async () => {
       const today = utcDate(0);
@@ -130,7 +136,7 @@ export function useSlate(pollMs = 15_000) {
         const pack = await loadJson<{ scores: ScorePatch[] }>(["/api/scores", "/data/scores.json"]);
         pending = pack?.scores ?? null;
         if (board && pending?.length) {
-          board = applySlateScores(board, pending);
+          board = withScores(board, pending);
           paint(board);
         }
       } catch {
@@ -138,33 +144,41 @@ export function useSlate(pollMs = 15_000) {
       }
     };
 
-    void loadSnapshot().catch(() => {
-      void loadLiveBoard().catch(() => {
-        if (!dead) {
-          setError("Could not reach the live board.");
-          setLoading(false);
-        }
+    if (!seed) {
+      void loadSnapshot().catch(() => {
+        void loadLiveBoard().catch(() => {
+          if (!dead) {
+            setError("Could not reach the live board.");
+            setLoading(false);
+          }
+        });
       });
-    });
+    }
     void loadScores();
     void loadLiveBoard();
 
     const scoreId = window.setInterval(() => void loadScores(), pollMs);
-    const boardId = window.setInterval(() => void loadLiveBoard(), Math.max(pollMs * 4, 60_000));
+    const boardId = window.setInterval(() => void loadLiveBoard(), Math.max(pollMs * 6, 30_000));
     return () => {
       dead = true;
       window.clearInterval(scoreId);
       window.clearInterval(boardId);
     };
-  }, [pollMs]);
+  }, [seed, pollMs]);
 
   return { data, error, loading };
 }
 
 export function useLedger() {
-  const [data, setData] = useState<LedgerPayload | null>(null);
+  const snap = useSnapshot();
+  const seed = snap?.ledger ?? null;
+  const [data, setData] = useState<LedgerPayload | null>(
+    seed
+      ? { ...seed, desks: seed.desks.map((row) => ({ ...row, tipster: scrubDesk(row.tipster) })) }
+      : null,
+  );
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!seed);
 
   useEffect(() => {
     let dead = false;
@@ -193,9 +207,11 @@ export function useLedger() {
 }
 
 export function useTrends(pollMs = 60_000) {
-  const [data, setData] = useState<TrendsPayload | null>(null);
+  const snap = useSnapshot();
+  const seed = snap?.trends ? scrubTrends(snap.trends) : null;
+  const [data, setData] = useState<TrendsPayload | null>(seed);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!seed);
 
   useEffect(() => {
     let dead = false;
@@ -226,9 +242,11 @@ export function useTrends(pollMs = 60_000) {
 }
 
 export function useFormBoard(pollMs = 60_000) {
-  const [data, setData] = useState<FormPayload | null>(null);
+  const snap = useSnapshot();
+  const seed = snap?.form ? scrubForm(snap.form) : null;
+  const [data, setData] = useState<FormPayload | null>(seed);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!seed);
 
   useEffect(() => {
     let dead = false;
@@ -259,9 +277,11 @@ export function useFormBoard(pollMs = 60_000) {
 }
 
 export function useStreaks(pollMs = 60_000) {
-  const [data, setData] = useState<StreaksPayload | null>(null);
+  const snap = useSnapshot();
+  const seed = snap?.streaks ?? null;
+  const [data, setData] = useState<StreaksPayload | null>(seed);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!seed);
 
   useEffect(() => {
     let dead = false;

@@ -25,7 +25,7 @@ function BankerPage() {
       </header>
 
       <BoardState
-        loading={loading}
+        loading={loading && !data}
         error={error}
         empty={!loading && !error && bankers.length === 0}
         emptyLabel="No bankers today — the desks did not agree on a 70% / 1.20–1.55 pick."

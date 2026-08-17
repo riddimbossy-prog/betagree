@@ -25,7 +25,7 @@ function TipstersPage() {
         </p>
       </header>
 
-      <BoardState loading={loading} error={error} empty={!loading && !error && rows.length === 0} />
+      <BoardState loading={loading && !data} error={error} empty={!loading && !error && rows.length === 0} />
 
       {rows.length ? (
         <>

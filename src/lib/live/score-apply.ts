@@ -8,6 +8,8 @@ export type ScorePatch = {
   live: boolean;
   status: "pre" | "in" | "post";
   detail: string;
+  homeLogo?: string | null;
+  awayLogo?: string | null;
 };
 
 const YOUTH = /\b(u1[5-9]|u2[0-3]|reserve|reserves|ii|iii|women|vrouwen|w)\b/i;
@@ -80,8 +82,8 @@ export function applyPatch(fixture: Fixture, hit: { patch: ScorePatch; swap: boo
     live: patch.live,
     status: patch.status,
     detail: patch.detail,
-    home: { ...fixture.home, score: homeScore },
-    away: { ...fixture.away, score: awayScore },
+    home: { ...fixture.home, score: homeScore, logo: fixture.home.logo ?? (swap ? patch.awayLogo : patch.homeLogo) ?? null },
+    away: { ...fixture.away, score: awayScore, logo: fixture.away.logo ?? (swap ? patch.homeLogo : patch.awayLogo) ?? null },
   };
 }
 

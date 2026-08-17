@@ -32,7 +32,7 @@ function StreaksPage() {
       </header>
 
       <BoardState
-        loading={loading}
+        loading={loading && !data}
         error={error}
         empty={!loading && !error && total === 0}
         emptyLabel="Nothing this week cleared the streak bands plus a top-3 / bottom-3 favorite."

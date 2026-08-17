@@ -6,14 +6,19 @@ import { BoardState } from "@/components/live-bar";
 import { TrendCard } from "@/components/trend-card";
 import { fixturesInBand } from "@/lib/odds-band";
 import { useFormBoard, useSlate, useStreaks, useTrends } from "@/lib/live/use-live";
+import { loadBoardSnapshot } from "@/lib/live/snapshot.server";
 import { FormRowCard } from "@/components/form-row";
 import { StreakCard } from "@/components/streak-card";
 import { CATEGORY_META } from "@/lib/trend-meta";
 
-export const Route = createFileRoute("/")({ component: Home });
+export const Route = createFileRoute("/")({
+  loader: () => loadBoardSnapshot(),
+  component: Home,
+});
 
 function Home() {
-  const { data, error, loading } = useSlate();
+  const initial = Route.useLoaderData();
+  const { data, error, loading } = useSlate(initial);
   const trends = useTrends();
   const form = useFormBoard();
   const streaks = useStreaks();
@@ -21,7 +26,8 @@ function Home() {
   const consensus = data?.consensus ?? [];
   const top = consensus.filter((c) => c.market === "1x2" || c.pct >= 0.65).slice(0, 4);
   const byFixture = new Map(fixtures.map((f) => [f.id, consensus.filter((c) => c.fixture.id === f.id)]));
-  const upcoming = fixtures.filter((f) => f.status !== "post").slice(0, 6);
+  const upcoming = fixtures.filter((f) => f.status !== "post" && !f.live).slice(0, 6);
+  const liveGames = fixtures.filter((f) => f.live);
   const band = fixturesInBand(fixtures);
   const liveCount = fixtures.filter((f) => f.live).length;
   const bankers = trends.data?.bankers ?? [];
@@ -46,7 +52,21 @@ function Home() {
         ]}
       />
 
-      <BoardState loading={loading} error={error} empty={!loading && !error && fixtures.length === 0} />
+      <BoardState loading={loading && !data} error={error} empty={!loading && !error && fixtures.length === 0} />
+
+      {liveGames.length ? (
+        <section>
+          <div className="mb-4 flex items-end justify-between">
+            <h2 className="text-2xl font-semibold">
+              In <span className="font-serif italic font-normal">play</span>
+            </h2>
+            <Link to="/fixtures" className="text-sm text-muted-foreground">
+              All fixtures
+            </Link>
+          </div>
+          <FixtureList fixtures={liveGames} byFixture={byFixture} />
+        </section>
+      ) : null}
 
       {formHot.length ? (
         <section>

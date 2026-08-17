@@ -9,12 +9,17 @@ import { Input } from "@/components/ui/input";
 import { bandTeams, DEFAULT_BAND, fixturesInBand, type BandSide } from "@/lib/odds-band";
 import { formatDecimal, toDecimal } from "@/lib/odds";
 import { useSlate } from "@/lib/live/use-live";
+import { loadBoardSnapshot } from "@/lib/live/snapshot.server";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/odds")({ component: OddsFilterPage });
+export const Route = createFileRoute("/odds")({
+  loader: () => loadBoardSnapshot(),
+  component: OddsFilterPage,
+});
 
 function OddsFilterPage() {
-  const { data, error, loading } = useSlate();
+  const initial = Route.useLoaderData();
+  const { data, error, loading } = useSlate(initial);
   const sheet = usePickSheet();
   const [from, setFrom] = useState(String(DEFAULT_BAND.from));
   const [to, setTo] = useState(String(DEFAULT_BAND.to));
@@ -94,7 +99,7 @@ function OddsFilterPage() {
         </div>
       </form>
 
-      <BoardState loading={loading} error={error} empty={!loading && !error && hits.length === 0} />
+      <BoardState loading={loading && !data} error={error} empty={!loading && !error && hits.length === 0} />
 
       {hits.length ? (
         <>

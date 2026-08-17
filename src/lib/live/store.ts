@@ -1,6 +1,7 @@
 import type { Fixture, LedgerPayload, SlatePayload } from "@/lib/types";
 import { assembleSlate, gradeLedger } from "./engine";
 import { applySlateScores, peekLivePatches, scheduleFinishedLookups, getLivePatches } from "./scores";
+import { mergeLiveFixtures } from "./merge-live";
 import { setBoardPairs } from "./board-pairs";
 import { enrichOdds, fetchHistoryFixtures, fetchSlateFixtures } from "./espn";
 
@@ -38,7 +39,8 @@ export async function getSlate(force = false): Promise<SlatePayload> {
   const patches = peekLivePatches();
   if (!patches.length) void getLivePatches("fresh");
   const assembled = assembleSlate(day, fixtures, past);
-  const data = patches.length ? applySlateScores(assembled, patches) : assembled;
+  const scored = patches.length ? applySlateScores(assembled, patches) : assembled;
+  const data = mergeLiveFixtures(scored, patches);
   slateCache = { at: now, data };
   return data;
 }
