@@ -1,19 +1,10 @@
-import { useEffect } from "react";
 import { CalendarDays } from "lucide-react";
-import { readTodayOnly, useTodayFilter } from "@/lib/store";
+import { useTodayFilter } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export function PlayingTodayChip({ className }: { className?: string }) {
   const todayOnly = useTodayFilter((s) => s.todayOnly);
-  const setTodayOnly = useTodayFilter((s) => s.setTodayOnly);
   const toggleToday = useTodayFilter((s) => s.toggleToday);
-
-  useEffect(() => {
-    const stored = readTodayOnly();
-    if (stored !== todayOnly) setTodayOnly(stored);
-    // Hydrate once from session so a full reload keeps the filter.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <button
