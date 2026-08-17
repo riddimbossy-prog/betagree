@@ -108,6 +108,23 @@ export default defineConfig({
     strictPort: true,
   },
   resolve: { tsconfigPaths: true },
+  build: {
+    target: "es2022",
+    cssMinify: true,
+    modulePreload: { polyfill: false },
+    reportCompressedSize: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes("node_modules")) return;
+          if (id.includes("@tanstack")) return "tanstack";
+          if (id.includes("react-dom") || id.includes("/react/")) return "react";
+          if (id.includes("lucide-react")) return "icons";
+          if (id.includes("@radix-ui")) return "radix";
+        },
+      },
+    },
+  },
   plugins: [
     pgliteBootstrapPlugin(),
     authPopupPlugin(),
