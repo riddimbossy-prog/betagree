@@ -19,12 +19,12 @@ export function FormRowCard({
       type="button"
       onClick={() => sheet.open(briefFromForm(row, unit))}
       className={cn(
-        "flex w-full items-center gap-3 rounded-3xl p-4 text-left transition-[box-shadow] duration-150 hover:shadow-border-hover",
+        "flex w-full min-w-0 items-center gap-2 overflow-hidden rounded-3xl p-3 text-left transition-[box-shadow] duration-150 hover:shadow-border-hover fold:gap-3 fold:p-4",
         highlight ? "glass-purpure text-primary-foreground" : "glass",
       )}
     >
-      <span className="w-8 shrink-0 text-lg font-semibold tabular text-subtle">{row.rank}</span>
-      <Crest name={row.team} logo={row.logo} />
+      <span className="w-6 shrink-0 text-base font-semibold tabular text-subtle fold:w-8 fold:text-lg">{row.rank}</span>
+      <Crest name={row.team} logo={row.logo} size="sm" />
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold">{row.team}</p>
         <p className={cn("truncate text-sm", highlight ? "text-white/70" : "text-muted-foreground")}>

@@ -47,7 +47,7 @@ export function FixtureList({
                     : `${f.away.name} visit ${f.home.name} in ${f.league}. No site overlap yet.`,
                 })
               }
-              className="glass block w-full rounded-3xl p-4 text-left"
+              className="glass block w-full min-w-0 overflow-hidden rounded-3xl p-3 text-left fold:p-4"
             >
               <div className="flex flex-wrap items-center gap-2">
                 {f.live ? (
@@ -70,17 +70,17 @@ export function FixtureList({
                   </span>
                 ) : null}
               </div>
-              <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2 fold:gap-3">
-                <span className="flex min-w-0 items-center gap-2">
-                  <Crest name={f.away.name} logo={f.away.logo} />
-                  <span className="truncate text-sm font-medium">{f.away.name}</span>
+              <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5 fold:gap-3">
+                <span className="flex min-w-0 items-center gap-1.5 fold:gap-2">
+                  <Crest name={f.away.name} logo={f.away.logo} size="xs" className="fold:h-14 fold:w-11" />
+                  <span className="truncate text-xs font-medium fold:text-sm">{f.away.name}</span>
                 </span>
-                <span className="px-1 text-lg font-bold tabular fold:text-xl">
+                <span className="px-1 text-base font-bold tabular fold:text-xl">
                   {f.away.score ?? "–"} : {f.home.score ?? "–"}
                 </span>
-                <span className="flex min-w-0 items-center justify-end gap-2">
-                  <span className="truncate text-right text-sm font-medium">{f.home.name}</span>
-                  <Crest name={f.home.name} logo={f.home.logo} />
+                <span className="flex min-w-0 items-center justify-end gap-1.5 fold:gap-2">
+                  <span className="truncate text-right text-xs font-medium fold:text-sm">{f.home.name}</span>
+                  <Crest name={f.home.name} logo={f.home.logo} size="xs" className="fold:h-14 fold:w-11" />
                 </span>
               </div>
               <div className="mt-3 flex flex-wrap justify-center gap-2">

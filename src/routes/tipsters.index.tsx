@@ -15,7 +15,7 @@ function TipstersPage() {
     <div className="flex flex-col gap-8">
       <header className="max-w-2xl">
         <p className="text-xs tracking-widest text-subtle uppercase">{data?.windowLabel ?? "Live book"}</p>
-        <h1 className="font-display mt-2 text-4xl">Tip sites</h1>
+        <h1 className="font-display mt-2 text-3xl fold:text-4xl">Tip sites</h1>
         <p className="mt-3 text-muted-foreground">
           <Link to="/accuracy" className="text-foreground underline-offset-2 hover:underline">
             Accuracy

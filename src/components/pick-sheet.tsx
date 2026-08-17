@@ -107,7 +107,7 @@ export function PickProvider({ children }: { children: ReactNode }) {
       <Dialog.Root open={Boolean(brief)} onOpenChange={(next) => !next && setBrief(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-[hsl(240_16%_4%/0.45)] backdrop-blur-md" />
-          <Dialog.Content className="glass-strong fixed inset-x-3 bottom-3 z-50 max-h-[88dvh] overflow-y-auto rounded-[28px] text-card-foreground outline-none fold:inset-auto fold:top-1/2 fold:left-1/2 fold:w-[min(32rem,92vw)] fold:-translate-x-1/2 fold:-translate-y-1/2 fold:bottom-auto">
+          <Dialog.Content className="glass-strong fixed inset-x-3 z-50 max-h-[88dvh] overflow-y-auto rounded-[28px] text-card-foreground outline-none bottom-[max(0.75rem,env(safe-area-inset-bottom))] fold:inset-auto fold:top-1/2 fold:left-1/2 fold:w-[min(32rem,92vw)] fold:-translate-x-1/2 fold:-translate-y-1/2 fold:bottom-auto">
             {brief ? (
               <>
                 <div className="glass-purpure relative px-5 pt-5 pb-6 text-primary-foreground">

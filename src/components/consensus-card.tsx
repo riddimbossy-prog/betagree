@@ -45,10 +45,10 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
       <div className="mt-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col items-center gap-1.5">
           <Crest name={f.away.name} logo={f.away.logo} size="lg" />
-          <span className="max-w-24 truncate text-center text-xs">{f.away.name}</span>
+          <span className="max-w-20 truncate text-center text-xs fold:max-w-24">{f.away.name}</span>
         </div>
         <div className="text-center">
-          <p className="text-3xl font-bold tabular">
+          <p className="text-2xl font-bold tabular fold:text-3xl">
             {f.away.score ?? "–"} <span className="text-white/50">:</span> {f.home.score ?? "–"}
           </p>
           <div className="mt-2 flex justify-center">
@@ -57,7 +57,7 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
         </div>
         <div className="flex min-w-0 flex-col items-center gap-1.5">
           <Crest name={f.home.name} logo={f.home.logo} size="lg" />
-          <span className="max-w-24 truncate text-center text-xs">{f.home.name}</span>
+          <span className="max-w-20 truncate text-center text-xs fold:max-w-24">{f.home.name}</span>
         </div>
       </div>
       <div className="mt-5 flex flex-wrap items-center justify-center gap-2">

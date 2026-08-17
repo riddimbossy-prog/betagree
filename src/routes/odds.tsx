@@ -47,7 +47,7 @@ function OddsFilterPage() {
     <div className="flex flex-col gap-8">
       <header className="max-w-2xl">
         <LiveBar fetchedAt={data?.fetchedAt} liveCount={data?.fixtures.filter((f) => f.live).length} />
-        <h1 className="mt-2 text-4xl font-semibold">
+        <h1 className="mt-2 text-3xl font-semibold fold:text-4xl">
           Odds <span className="font-serif italic font-normal">filter</span>
         </h1>
       </header>

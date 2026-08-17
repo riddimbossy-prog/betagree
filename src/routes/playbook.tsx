@@ -37,7 +37,7 @@ function PlaybookPage() {
     <div className="flex flex-col gap-10">
       <header className="max-w-2xl">
         <p className="text-xs tracking-widest text-subtle uppercase">Method</p>
-        <h1 className="font-display mt-2 text-4xl">Playbook</h1>
+        <h1 className="font-display mt-2 text-3xl fold:text-4xl">Playbook</h1>
         <p className="mt-3 text-muted-foreground">
           Betagree is a live soccer consensus desk. It ranks today's fixtures by how many of{" "}
           {SITE_COUNT} tip sites land on the same pick.

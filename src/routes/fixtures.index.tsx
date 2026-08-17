@@ -88,7 +88,7 @@ function FixturesPage() {
     <div className="flex flex-col gap-8">
       <header className="max-w-2xl">
         <LiveBar fetchedAt={data?.fetchedAt} liveCount={todayBoard.filter((f) => f.live).length} />
-        <h1 className="font-display mt-2 text-4xl">Today's fixtures</h1>
+        <h1 className="font-display mt-2 text-3xl fold:text-4xl">Today's fixtures</h1>
       </header>
 
       <div className="chip-row" role="tablist" aria-label="Consensus strength">

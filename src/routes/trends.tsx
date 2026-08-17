@@ -34,7 +34,7 @@ function TrendsPage() {
     <div className="flex flex-col gap-8">
       <header className="max-w-2xl">
         <LiveBar fetchedAt={data?.fetchedAt} />
-        <h1 className="mt-2 text-4xl font-semibold">
+        <h1 className="mt-2 text-3xl font-semibold fold:text-4xl">
           Today <span className="font-serif italic font-normal">trends</span>
         </h1>
         <p className="mt-2 text-sm text-subtle">

@@ -13,7 +13,7 @@ function AccuracyPage() {
   if ((loading && !data) || error || !data) {
     return (
       <div className="flex flex-col gap-8">
-        <h1 className="font-display text-4xl">Accuracy</h1>
+        <h1 className="font-display text-3xl fold:text-4xl">Accuracy</h1>
         <BoardState loading={loading && !data} error={error} />
       </div>
     );
@@ -27,7 +27,7 @@ function AccuracyPage() {
     <div className="flex flex-col gap-12">
       <header className="max-w-2xl">
         <p className="text-xs tracking-widest text-subtle uppercase">{data.windowLabel}</p>
-        <h1 className="font-display mt-2 text-4xl">Accuracy</h1>
+        <h1 className="font-display mt-2 text-3xl fold:text-4xl">Accuracy</h1>
       </header>
 
       <section>

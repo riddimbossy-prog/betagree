@@ -33,20 +33,20 @@ export function SiteShell({ children }: { children: ReactNode }) {
         Skip to content
       </a>
       <header className="glass-strong sticky top-0 z-40">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-3 sm:px-6 fold:py-4">
           <Link to="/" className="flex min-w-0 items-center gap-3 no-underline">
             <BrandLogo />
           </Link>
           <AuthSlot />
         </div>
         {showTodayFilter ? (
-          <div className="mx-auto flex max-w-5xl items-center px-4 pb-3 sm:px-6">
+          <div className="mx-auto flex max-w-5xl items-center px-3 pb-3 sm:px-6">
             <PlayingTodayChip />
           </div>
         ) : null}
       </header>
 
-      <main id="main" className="page-pad mx-auto w-full min-w-0 max-w-5xl flex-1 px-4 py-6 fold:px-6">
+      <main id="main" className="page-pad mx-auto w-full min-w-0 max-w-5xl flex-1 px-3 py-5 fold:px-6 fold:py-6">
         {children}
       </main>
 
@@ -60,11 +60,14 @@ export function SiteShell({ children }: { children: ReactNode }) {
               to={item.to}
               aria-label={item.label}
               className={cn(
-                "grid size-11 place-items-center rounded-full",
+                "grid min-h-11 min-w-11 flex-1 place-items-center rounded-full px-1",
                 active ? "bg-primary text-primary-foreground" : "text-muted-foreground",
               )}
             >
               <Icon className="size-5" />
+              <span className="hidden text-[10px] font-semibold tracking-wide uppercase tab:inline">
+                {item.label}
+              </span>
             </Link>
           );
         })}
