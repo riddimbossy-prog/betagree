@@ -75,20 +75,51 @@ export function utcDayKey(input?: string | Date | null): string | null {
   return d ? d.toISOString().slice(0, 10) : null;
 }
 
+export function calendarTodayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export function calendarDayKey(input?: string | Date | null): string | null {
+  if (!input) return null;
+  if (input instanceof Date) {
+    if (!isValid(input)) return null;
+    return `${input.getFullYear()}-${String(input.getMonth() + 1).padStart(2, "0")}-${String(input.getDate()).padStart(2, "0")}`;
+  }
+  const text = String(input).trim();
+  if (!text) return null;
+  const dated = text.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if (dated) {
+    const [, dd, mm, yyyy] = dated;
+    return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+  }
+  const d = toDate(text);
+  if (!d) return utcDayKey(text);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export function isPlayingToday(
   iso?: string | null,
   raw?: string | null,
   boardDate?: string | null,
 ) {
-  const key = utcDayKey(iso) ?? utcDayKey(raw);
-  if (key) return key === utcTodayKey();
-  if (boardDate) return boardDate === utcTodayKey();
+  const today = calendarTodayKey();
+  const key = calendarDayKey(iso) ?? calendarDayKey(raw);
+  if (key) return key === today;
+  if (boardDate) return calendarDayKey(boardDate) === today || boardDate === today;
   return false;
 }
 
 export function fixtureIsToday(fixture: { start?: string | null; live?: boolean }) {
   if (fixture.live) return true;
   return isPlayingToday(fixture.start);
+}
+
+export function sortBoardGames<T extends { start?: string | null; live?: boolean }>(list: T[]) {
+  return [...list].sort((a, b) => {
+    if (Boolean(a.live) !== Boolean(b.live)) return a.live ? -1 : 1;
+    return String(a.start ?? "").localeCompare(String(b.start ?? ""));
+  });
 }
 
 export function marketLabel(market: string) {

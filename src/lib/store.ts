@@ -19,16 +19,4 @@ export const useDeskStore = create<DeskState>()((set) => ({
     })),
 }));
 
-type TodayFilterState = {
-  todayOnly: boolean;
-  toggleToday: () => void;
-};
-
-export const useTodayFilter = create<TodayFilterState>()((set) => ({
-  todayOnly: false,
-  toggleToday: () => set((s) => ({ todayOnly: !s.todayOnly })),
-}));
-
-export function useTodayOnly() {
-  return useTodayFilter((s) => s.todayOnly);
-}
+export { useTodayFilter, useTodayOnly, TodayFilterProvider } from "@/lib/today-filter";

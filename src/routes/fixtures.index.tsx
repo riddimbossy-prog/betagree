@@ -5,7 +5,7 @@ import { FixtureList } from "@/components/fixture-list";
 import { BoardState, LiveBar } from "@/components/live-bar";
 import { Button } from "@/components/ui/button";
 import { BAND_META, bandOf, type ConsensusBand } from "@/lib/consensus";
-import { fixtureIsToday } from "@/lib/format";
+import { fixtureIsToday, sortBoardGames } from "@/lib/format";
 import { useSlate } from "@/lib/live/use-live";
 import { loadBoardSnapshot } from "@/lib/live/snapshot";
 import { useTodayOnly } from "@/lib/store";
@@ -50,10 +50,10 @@ function FixturesPage() {
     return m;
   }, [data]);
 
-  const todayBoard = useMemo(
-    () => allFixtures.filter((f) => !todayOnly || fixtureIsToday(f)),
-    [allFixtures, todayOnly],
-  );
+  const todayBoard = useMemo(() => {
+    const list = todayOnly ? allFixtures.filter((f) => fixtureIsToday(f)) : allFixtures;
+    return todayOnly ? sortBoardGames(list) : list;
+  }, [allFixtures, todayOnly]);
 
   const bandCounts = useMemo(() => {
     const counts = { high: 0, medium: 0, low: 0, all: todayBoard.length };

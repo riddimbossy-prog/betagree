@@ -9,6 +9,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { PickProvider } from "@/components/pick-sheet";
 import { PlayingTodayChip } from "@/components/playing-today";
 import { preloadOfficialCrests } from "@/lib/official-crests";
+import { TodayFilterProvider } from "@/lib/today-filter";
 
 const NAV = [
   { to: "/", label: "Today", icon: Home },
@@ -24,6 +25,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
   const showTodayFilter = pathname !== "/login";
 
   return (
+    <TodayFilterProvider>
     <PickProvider>
     <div className="relative z-10 flex min-h-dvh flex-col overflow-x-hidden text-foreground">
       <a
@@ -102,6 +104,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       </footer>
     </div>
     </PickProvider>
+    </TodayFilterProvider>
   );
 }
 

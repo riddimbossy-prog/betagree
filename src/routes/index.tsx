@@ -4,7 +4,7 @@ import { ConsensusCard } from "@/components/consensus-card";
 import { FixtureList } from "@/components/fixture-list";
 import { BoardState } from "@/components/live-bar";
 import { TrendCard } from "@/components/trend-card";
-import { fixtureIsToday, isPlayingToday } from "@/lib/format";
+import { fixtureIsToday, isPlayingToday, sortBoardGames } from "@/lib/format";
 import { fixturesInBand } from "@/lib/odds-band";
 import { useFormBoard, useSlate, useStreaks, useTrends } from "@/lib/live/use-live";
 import { loadBoardSnapshot } from "@/lib/live/snapshot";
@@ -32,7 +32,9 @@ function Home() {
   const form = useFormBoard();
   const streaks = useStreaks();
   const todayOnly = useTodayOnly();
-  const fixtures = (data?.fixtures ?? []).filter((f) => !todayOnly || fixtureIsToday(f));
+  const fixtures = sortBoardGames(
+    (data?.fixtures ?? []).filter((f) => !todayOnly || fixtureIsToday(f)),
+  );
   const consensus = (data?.consensus ?? []).filter((c) => !todayOnly || fixtureIsToday(c.fixture));
   const high = consensus.filter((c) => (c.market === "1x2" || c.pct >= 0.65) && bandOf(c) === "high");
   const top = (high.length ? high : consensus.filter((c) => c.market === "1x2" || c.pct >= 0.65)).slice(0, 4);
