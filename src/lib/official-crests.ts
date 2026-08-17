@@ -218,19 +218,19 @@ async function askServer(name: string): Promise<string | null> {
   if (pending.has(key)) return pending.get(key)!;
   const job = (async () => {
     try {
-      const [api, remote] = await Promise.all([
-        fetch(`/api/crest?name=${encodeURIComponent(name)}`)
-          .then((res) => (res.ok ? res.json() : null))
-          .catch(() => null) as Promise<{ path?: string; remote?: string } | null>,
-        findCrestOnline(name),
-      ]);
-      const path = api?.path || remote || api?.remote || null;
+      const api = (await fetch(`/api/crest?name=${encodeURIComponent(name)}`)
+        .then((res) => (res.ok ? res.json() : null))
+        .catch(() => null)) as { path?: string; remote?: string } | null;
+      let path = api?.path || api?.remote || null;
+      if (!path && typeof window !== "undefined" && /localhost|127\.0\.0\.1/.test(window.location.hostname)) {
+        path = await findCrestOnline(name);
+      }
       if (path && isUsablePath(path)) {
         remember(name, path);
         return path;
       }
     } catch {
-      /* keep fallback */
+      /* keep heraldry fallback */
     }
     return null;
   })();
