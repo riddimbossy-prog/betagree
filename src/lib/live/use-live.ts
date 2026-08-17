@@ -4,14 +4,29 @@ import { applySlateScores, type ScorePatch } from "@/lib/live/score-apply";
 import { mergeLiveFixtures } from "@/lib/live/merge-live";
 import { useSnapshot } from "@/lib/live/snapshot-context";
 
+/** Static hosts (GitHub Pages) have no /api — skip after first miss. */
+let apiAlive: boolean | null = null;
+
+function prefersStaticData(path: string) {
+  if (!path.startsWith("/api/")) return true;
+  if (apiAlive === false) return false;
+  return true;
+}
+
 async function loadJson<T>(paths: string[]): Promise<T> {
   let last: unknown;
   for (const path of paths) {
+    if (!prefersStaticData(path)) continue;
     try {
-      const res = await fetch(path);
-      if (!res.ok) continue;
+      const res = await fetch(path, { credentials: "omit" });
+      if (!res.ok) {
+        if (path.startsWith("/api/")) apiAlive = false;
+        continue;
+      }
+      if (path.startsWith("/api/")) apiAlive = true;
       return (await res.json()) as T;
     } catch (err) {
+      if (path.startsWith("/api/")) apiAlive = false;
       last = err;
     }
   }
@@ -91,7 +106,7 @@ function scrubSlate(data: SlatePayload): SlatePayload {
   };
 }
 
-export function useSlate(initial?: SlatePayload | null, pollMs = 5_000) {
+export function useSlate(initial?: SlatePayload | null, pollMs = 15_000) {
   const snap = useSnapshot();
   const seed = initial ?? snap?.slate ?? null;
   const [data, setData] = useState<SlatePayload | null>(seed);
@@ -123,18 +138,19 @@ export function useSlate(initial?: SlatePayload | null, pollMs = 5_000) {
     };
 
     const loadLiveBoard = async () => {
+      if (apiAlive === false) return;
       try {
         const json = scrubSlate(await loadJson<SlatePayload>(["/api/slate"]));
         board = withScores(json, pending);
         paint(board);
       } catch {
-        /* snapshot is enough */
+        /* snapshot is enough on static hosts */
       }
     };
 
     const loadScores = async () => {
       try {
-        const pack = await loadJson<{ scores: ScorePatch[] }>(["/api/scores", "/data/scores.json"]);
+        const pack = await loadJson<{ scores: ScorePatch[] }>(["/data/scores.json", "/api/scores"]);
         pending = pack?.scores ?? null;
         if (board && pending?.length) {
           board = withScores(board, pending);
@@ -154,14 +170,17 @@ export function useSlate(initial?: SlatePayload | null, pollMs = 5_000) {
           }
         });
       });
+    } else {
+      setLoading(false);
     }
     void loadScores();
-    void loadLiveBoard();
+    const apiProbe = window.setTimeout(() => void loadLiveBoard(), 2_500);
 
     const scoreId = window.setInterval(() => void loadScores(), pollMs);
-    const boardId = window.setInterval(() => void loadLiveBoard(), Math.max(pollMs * 6, 30_000));
+    const boardId = window.setInterval(() => void loadLiveBoard(), Math.max(pollMs * 4, 60_000));
     return () => {
       dead = true;
+      window.clearTimeout(apiProbe);
       window.clearInterval(scoreId);
       window.clearInterval(boardId);
     };
@@ -183,7 +202,7 @@ export function useLedger() {
 
   useEffect(() => {
     let dead = false;
-    loadJson<LedgerPayload>(["/api/ledger", "/data/ledger.json"])
+    loadJson<LedgerPayload>(["/data/ledger.json", "/api/ledger"])
       .then((json) => {
         if (!dead) {
           setData({
