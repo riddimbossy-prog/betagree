@@ -61,6 +61,27 @@ jobs:
         run: node scripts/fetch-streaks.mjs
         continue-on-error: true
 
+      - name: Compact data JSON
+        run: |
+          node -e '
+            const fs = require("fs");
+            const path = require("path");
+            const dir = "public/data";
+            for (const f of fs.readdirSync(dir).filter((n) => n.endsWith(".json"))) {
+              const p = path.join(dir, f);
+              const raw = fs.readFileSync(p, "utf8");
+              try {
+                const min = JSON.stringify(JSON.parse(raw));
+                if (min.length < raw.length) {
+                  fs.writeFileSync(p, min);
+                  console.log(f, raw.length, "->", min.length);
+                }
+              } catch (e) {
+                console.warn("skip", f, e.message);
+              }
+            }
+          '
+
       - name: Build
         run: npx vite build
 
