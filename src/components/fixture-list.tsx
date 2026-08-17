@@ -57,7 +57,7 @@ export function FixtureList({
                 ) : (
                   <TimeChip raw={null} iso={f.start} />
                 )}
-                <span className="truncate text-xs text-subtle">{f.league}</span>
+                <span className="truncate text-sm text-subtle">{f.league}</span>
                 {top ? (
                   <span className="ml-auto">
                     <ConsensusChip
@@ -72,15 +72,15 @@ export function FixtureList({
               </div>
               <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5 fold:gap-3">
                 <span className="flex min-w-0 items-center gap-1.5 fold:gap-2">
-                  <Crest name={f.away.name} logo={f.away.logo} size="xs" className="fold:h-14 fold:w-11" />
-                  <span className="truncate text-xs font-medium fold:text-sm">{f.away.name}</span>
+                  <Crest name={f.away.name} logo={f.away.logo} size="sm" className="fold:h-[4.5rem] fold:w-14" />
+                  <span className="truncate text-sm font-medium fold:text-base">{f.away.name}</span>
                 </span>
                 <span className="px-1 text-base font-bold tabular fold:text-xl">
                   {f.away.score ?? "–"} : {f.home.score ?? "–"}
                 </span>
                 <span className="flex min-w-0 items-center justify-end gap-1.5 fold:gap-2">
-                  <span className="truncate text-right text-xs font-medium fold:text-sm">{f.home.name}</span>
-                  <Crest name={f.home.name} logo={f.home.logo} size="xs" className="fold:h-14 fold:w-11" />
+                  <span className="truncate text-right text-sm font-medium fold:text-base">{f.home.name}</span>
+                  <Crest name={f.home.name} logo={f.home.logo} size="sm" className="fold:h-[4.5rem] fold:w-14" />
                 </span>
               </div>
               <div className="mt-3 flex flex-wrap justify-center gap-2">
