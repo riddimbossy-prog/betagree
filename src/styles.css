@@ -365,12 +365,46 @@
 .crest-plate svg { display: block; }
 
 .analysis-hub { position: relative; }
+
+@keyframes card-bounce {
+  0%   { transform: translateY(0) scale(1); }
+  28%  { transform: translateY(-10px) scale(1.025); }
+  48%  { transform: translateY(-3px) scale(1.008); }
+  68%  { transform: translateY(-6px) scale(1.016); }
+  100% { transform: translateY(-4px) scale(1.012); }
+}
+
+@keyframes icon-bounce {
+  0%   { transform: scale(1) rotate(0deg); }
+  30%  { transform: scale(1.14) rotate(-6deg); }
+  55%  { transform: scale(1.04) rotate(2deg); }
+  75%  { transform: scale(1.1) rotate(-3deg); }
+  100% { transform: scale(1.08) rotate(-3deg); }
+}
+
+@keyframes badge-bounce {
+  0%   { transform: translateY(0) scale(1); }
+  35%  { transform: translateY(-5px) scale(1.12); }
+  55%  { transform: translateY(-1px) scale(1.02); }
+  75%  { transform: translateY(-3px) scale(1.08); }
+  100% { transform: translateY(-2px) scale(1.06); }
+}
+
+@keyframes glass-bounce {
+  0%   { transform: translateY(0); }
+  30%  { transform: translateY(-7px); }
+  50%  { transform: translateY(-2px); }
+  70%  { transform: translateY(-4px); }
+  100% { transform: translateY(-3px); }
+}
+
 .analysis-card {
   position: relative;
   overflow: hidden;
   isolation: isolate;
   box-shadow: inset 0 1px 0 hsl(40 30% 92% / 0.1), 0 0 0 1px hsl(40 40% 72% / 0.14), var(--shadow-lift);
-  transition: transform 280ms var(--ease-out-soft), box-shadow 280ms var(--ease-out-soft), background-color 280ms var(--ease-out-soft);
+  transition: box-shadow 280ms var(--ease-out-soft), background-color 280ms var(--ease-out-soft);
+  will-change: transform;
 }
 .analysis-card::before {
   content: "";
@@ -386,13 +420,22 @@
   transition: opacity 320ms var(--ease-out-soft), transform 420ms var(--ease-out-soft);
 }
 .analysis-card:hover {
-  transform: translateY(-4px) scale(1.012);
+  animation: card-bounce 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   box-shadow: inset 0 1px 0 hsl(40 50% 88% / 0.2), 0 0 0 1px hsl(40 58% 62% / 0.55), 0 28px 48px -28px rgb(0 0 0 / 0.72), 0 0 36px -12px hsl(40 58% 62% / 0.28);
+  transform: translateY(-4px) scale(1.012);
 }
 .analysis-card:hover::before { opacity: 1; transform: scale(1); }
-.analysis-card:active { transform: translateY(-1px) scale(0.995); transition-duration: 90ms; }
-.analysis-card-icon { transition: transform 320ms var(--ease-out-soft), box-shadow 280ms var(--ease-out-soft); }
+.analysis-card:active {
+  animation: none;
+  transform: translateY(-1px) scale(0.995);
+  transition: transform 90ms ease-out;
+}
+.analysis-card-icon {
+  transition: box-shadow 280ms var(--ease-out-soft);
+  will-change: transform;
+}
 .analysis-card:hover .analysis-card-icon {
+  animation: icon-bounce 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   transform: scale(1.08) rotate(-3deg);
   box-shadow: inset 0 1px 0 hsl(40 50% 88% / 0.22), 0 10px 22px -12px rgb(0 0 0 / 0.55);
 }
@@ -401,22 +444,32 @@
 .analysis-card-eyebrow, .analysis-card-body { transition: color 220ms var(--ease-out-soft), opacity 220ms var(--ease-out-soft); }
 .analysis-card:hover .analysis-card-eyebrow { color: hsl(40 30% 78%); }
 .analysis-card:hover .analysis-card-body { color: hsl(40 12% 82%); }
-.analysis-card-badge { transition: transform 320ms var(--ease-out-soft); }
-.analysis-card:hover .analysis-card-badge { transform: translateY(-2px) scale(1.06); }
+.analysis-card-badge { will-change: transform; }
+.analysis-card:hover .analysis-card-badge {
+  animation: badge-bounce 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform: translateY(-2px) scale(1.06);
+}
 
 .glass-lift {
-  transition: transform 240ms var(--ease-out-soft), box-shadow 240ms var(--ease-out-soft);
+  transition: box-shadow 240ms var(--ease-out-soft);
+  will-change: transform;
 }
 .glass-lift:hover {
+  animation: glass-bounce 480ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   transform: translateY(-3px);
   box-shadow: inset 0 1px 0 hsl(40 50% 88% / 0.16), 0 0 0 1px hsl(40 58% 62% / 0.42), 0 24px 40px -24px rgb(0 0 0 / 0.65);
 }
-.glass-lift:active { transform: translateY(-1px); transition-duration: 90ms; }
+.glass-lift:active {
+  animation: none;
+  transform: translateY(-1px);
+  transition: transform 90ms ease-out;
+}
 
 @media (prefers-reduced-motion: reduce) {
   .analysis-card, .analysis-card::before, .analysis-card-icon, .analysis-card-title,
   .analysis-card-eyebrow, .analysis-card-body, .analysis-card-badge, .glass-lift {
     transition: none !important;
+    animation: none !important;
   }
   .analysis-card:hover, .analysis-card:active, .analysis-card:hover .analysis-card-icon,
   .analysis-card:hover .analysis-card-badge, .glass-lift:hover, .glass-lift:active {
@@ -427,5 +480,8 @@
 
 @media (max-width: 41.24rem) {
   .analysis-card { padding: 1rem 1.1rem; }
-  .analysis-card:hover { transform: translateY(-2px) scale(1.006); }
+  .analysis-card:hover {
+    animation: card-bounce 480ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transform: translateY(-2px) scale(1.006);
+  }
 }
