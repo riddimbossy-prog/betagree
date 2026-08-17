@@ -50,6 +50,11 @@ jobs:
 
       - name: Guard crest index size
         run: |
+          head -c 40 public/crests/index.json || true
+          if grep -q 'PLACEHOLDER' public/crests/index.json 2>/dev/null; then
+            echo "crest index is PLACEHOLDER — restoring"
+            node scripts/restore-crests-index.mjs
+          fi
           n=$(node -e "const i=require('./public/crests/index.json'); console.log(Object.keys(i.byName||{}).length)")
           echo "crest map size=$n"
           test "$n" -ge 200
