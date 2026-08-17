@@ -1,6 +1,7 @@
 export type Market = "1x2" | "total" | "btts";
 export type OneXTwo = "home" | "draw" | "away";
 export type PickResult = "won" | "lost" | "push";
+export type ConsensusBand = "high" | "medium" | "low";
 
 export type FixtureTeam = {
   id: string;
@@ -60,6 +61,7 @@ export type ConsensusItem = {
   count: number;
   pct: number;
   rankScore: number;
+  band: ConsensusBand;
 };
 
 export type RecordSlice = {
