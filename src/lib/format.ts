@@ -54,6 +54,43 @@ export function formatBoardTimeLine(raw?: string | null, iso?: string | null) {
   return day ? `${day} · ${clock}` : clock;
 }
 
+export function utcTodayKey() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+export function utcDayKey(input?: string | Date | null): string | null {
+  if (!input) return null;
+  if (input instanceof Date) {
+    return isValid(input) ? input.toISOString().slice(0, 10) : null;
+  }
+  const text = String(input).trim();
+  if (!text) return null;
+  if (/^\d{4}-\d{2}-\d{2}/.test(text)) return text.slice(0, 10);
+  const dated = text.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if (dated) {
+    const [, dd, mm, yyyy] = dated;
+    return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
+  }
+  const d = toDate(text);
+  return d ? d.toISOString().slice(0, 10) : null;
+}
+
+export function isPlayingToday(
+  iso?: string | null,
+  raw?: string | null,
+  boardDate?: string | null,
+) {
+  const key = utcDayKey(iso) ?? utcDayKey(raw);
+  if (key) return key === utcTodayKey();
+  if (boardDate) return boardDate === utcTodayKey();
+  return false;
+}
+
+export function fixtureIsToday(fixture: { start?: string | null; live?: boolean }) {
+  if (fixture.live) return true;
+  return isPlayingToday(fixture.start);
+}
+
 export function marketLabel(market: string) {
   if (market === "1x2") return "1X2";
   if (market === "total") return "Total";

@@ -5,6 +5,7 @@ import { BoardState, LiveBar } from "@/components/live-bar";
 import { Input } from "@/components/ui/input";
 import { FORM_METRICS, FORM_VENUES, formBoardId } from "@/lib/form-meta";
 import { useFormBoard } from "@/lib/live/use-live";
+import { useTodayOnly } from "@/lib/store";
 import type { FormMetric, FormPole, FormVenue } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -15,7 +16,7 @@ function FormPage() {
   const [pole, setPole] = useState<FormPole>("most");
   const [metric, setMetric] = useState<FormMetric>("wins");
   const [venue, setVenue] = useState<FormVenue>("overall");
-  const [todayOnly, setTodayOnly] = useState(false);
+  const todayOnly = useTodayOnly();
   const [q, setQ] = useState("");
 
   const board = data?.boards[formBoardId(pole, metric)];
@@ -85,32 +86,20 @@ function FormPage() {
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="glass flex rounded-full p-1">
-          {FORM_VENUES.map((v) => (
-            <button
-              key={v.id}
-              type="button"
-              onClick={() => setVenue(v.id)}
-              className={cn(
-                "rounded-full px-3 py-2 text-sm",
-                venue === v.id ? "bg-foreground font-semibold text-background" : "text-muted-foreground",
-              )}
-            >
-              {v.label}
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => setTodayOnly((v) => !v)}
-          className={cn(
-            "rounded-full px-4 py-2 text-sm",
-            todayOnly ? "glass-gules font-semibold text-hot-foreground" : "glass text-muted-foreground",
-          )}
-        >
-          Playing today
-        </button>
+      <div className="glass flex rounded-full p-1">
+        {FORM_VENUES.map((v) => (
+          <button
+            key={v.id}
+            type="button"
+            onClick={() => setVenue(v.id)}
+            className={cn(
+              "rounded-full px-3 py-2 text-sm",
+              venue === v.id ? "bg-foreground font-semibold text-background" : "text-muted-foreground",
+            )}
+          >
+            {v.label}
+          </button>
+        ))}
       </div>
 
       <Input

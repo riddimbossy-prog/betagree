@@ -1,14 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { StreakCard } from "@/components/streak-card";
 import { BoardState, LiveBar } from "@/components/live-bar";
+import { isPlayingToday } from "@/lib/format";
 import { useStreaks } from "@/lib/live/use-live";
+import { useTodayOnly } from "@/lib/store";
 
 export const Route = createFileRoute("/streaks")({ component: StreaksPage });
 
 function StreaksPage() {
   const { data, error, loading } = useStreaks();
-  const two = data?.twoYes ?? [];
-  const three = data?.threeNo ?? [];
+  const todayOnly = useTodayOnly();
+  const two = (data?.twoYes ?? []).filter((pick) => !todayOnly || isPlayingToday(pick.kickoff));
+  const three = (data?.threeNo ?? []).filter((pick) => !todayOnly || isPlayingToday(pick.kickoff));
   const total = two.length + three.length;
   const filters = data?.filters;
 
@@ -27,7 +30,7 @@ function StreaksPage() {
         <p className="mt-2 text-sm text-subtle">
           {loading
             ? "Reading SportyBet…"
-            : `${total} listed · 2+ Yes ${filters?.twoYes.from.toFixed(2) ?? "1.20"}–${filters?.twoYes.to.toFixed(2) ?? "1.55"} · 3+ No ${filters?.threeNo.from.toFixed(2) ?? "1.40"}–${filters?.threeNo.to.toFixed(2) ?? "2.10"}`}
+            : `${total} listed${todayOnly ? " today" : ""} · 2+ Yes ${filters?.twoYes.from.toFixed(2) ?? "1.20"}–${filters?.twoYes.to.toFixed(2) ?? "1.55"} · 3+ No ${filters?.threeNo.from.toFixed(2) ?? "1.40"}–${filters?.threeNo.to.toFixed(2) ?? "2.10"}`}
         </p>
       </header>
 
@@ -35,7 +38,11 @@ function StreaksPage() {
         loading={loading && !data}
         error={error}
         empty={!loading && !error && total === 0}
-        emptyLabel="Nothing this week cleared the streak bands plus a top-3 / bottom-3 favorite."
+        emptyLabel={
+          todayOnly
+            ? "Nobody on this list is playing today."
+            : "Nothing this week cleared the streak bands plus a top-3 / bottom-3 favorite."
+        }
       />
 
       {total > 0 ? (

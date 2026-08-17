@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Crest } from "@/components/crest";
 import { PickProvider } from "@/components/pick-sheet";
+import { PlayingTodayChip } from "@/components/playing-today";
 import { preloadOfficialCrests } from "@/lib/official-crests";
 
 const NAV = [
@@ -27,6 +28,7 @@ function greeting() {
 export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   preloadOfficialCrests();
+  const showTodayFilter = pathname !== "/login";
 
   return (
     <PickProvider>
@@ -48,6 +50,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
           </Link>
           <AuthSlot />
         </div>
+        {showTodayFilter ? (
+          <div className="mx-auto flex max-w-5xl items-center px-4 pb-3 sm:px-6">
+            <PlayingTodayChip />
+          </div>
+        ) : null}
       </header>
 
       <main id="main" className="page-pad mx-auto w-full min-w-0 max-w-5xl flex-1 px-4 py-6 fold:px-6">
