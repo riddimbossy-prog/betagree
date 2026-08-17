@@ -42,8 +42,9 @@ try {
 
   await page.screenshot({ path: outPng, fullPage: false });
 
+  const spaFallback = status === 404 && hasBoard && !broken;
   const result = {
-    ok: status === 200 && hasBoard && !broken && pageErrors.length === 0,
+    ok: (status === 200 || spaFallback) && hasBoard && !broken && pageErrors.length === 0,
     url,
     status,
     title,
