@@ -1,8 +1,10 @@
 #!/bin/sh
 # Copy app files from this workspace into the betagree clone and push to GitHub.
+# After a real push, wait for Pages and verify https://betagree.com.
 set -eu
 SRC="${SRC:-/workspace}"
 DEST="${DEST:-/tmp/betagree}"
+SKIP_LIVE_CHECK="${SKIP_LIVE_CHECK:-0}"
 
 if [ ! -d "$DEST/.git" ]; then
   git clone https://github.com/riddimbossy-prog/betagree.git "$DEST"
@@ -33,3 +35,13 @@ fi
 git commit -m "${1:-Sync preview changes to Betagree.}"
 git push origin main
 git log -1 --format='%h %s'
+
+if [ "$SKIP_LIVE_CHECK" = "1" ]; then
+  echo "auto-push: live check skipped"
+  exit 0
+fi
+
+sh "$SRC/scripts/wait-and-check-live.sh" || {
+  echo "auto-push: betagree.com check failed — see /tmp/betagree-live-check.log" >&2
+  exit 2
+}
