@@ -24,7 +24,7 @@ function StreaksPage() {
         <p className="mt-2 text-sm text-subtle">
           {loading
             ? "Loading…"
-            : `${total} listed${todayOnly ? " today" : ""} · 2+ Yes 1.19–1.40 when the favorite faces under 1.2 PPG · 3+ avg 1.90–2.10 → Over 2.5`}
+            : `${total} listed${todayOnly ? " today" : ""} · 2+ Yes 1.19–1.40 favorite to win vs under 1.2 PPG · Over 2.5`}
         </p>
       </header>
 
@@ -61,7 +61,7 @@ function StreaksPage() {
             2+ streak <span className="font-serif italic font-normal">Yes</span>
           </h2>
           <p className="mt-1 text-sm text-subtle">
-            Odds 1.19–1.40 · favorite when the other side is under 1.2 points per game
+            Odds 1.19–1.40 · favorite to win when the other side is under 1.2 points per game
           </p>
           <ul className="mt-4 grid gap-3 fold:grid-cols-2">
             {two.map((pick) => (
@@ -79,7 +79,7 @@ function StreaksPage() {
             Over <span className="font-serif italic font-normal">2.5</span> goals
           </h2>
           <p className="mt-1 text-sm text-subtle">
-            From 3+ streak: (Yes + No) ÷ 2 lands between 1.90 and 2.10
+            Over 2.5 total goals
           </p>
           <ul className="mt-4 grid gap-3 fold:grid-cols-2">
             {three.map((pick) => (

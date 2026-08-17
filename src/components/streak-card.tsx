@@ -74,20 +74,20 @@ export function StreakCard({ pick }: { pick: StreakPick }) {
       </div>
 
       <p className="mt-3 text-center text-sm text-muted-foreground">
-        Favorite {pick.favorite}{" "}
-        <span className="tabular font-semibold text-foreground">{pick.favoriteOdds.toFixed(2)}</span>
-        {typeof pick.oppPpg === "number" ? (
+        {pick.pick === "Over" ? (
+          <>Over 2.5</>
+        ) : (
           <>
-            {" "}
-            · opp <span className="tabular font-semibold text-foreground">{pick.oppPpg.toFixed(2)}</span> PPG
+            Favorite {pick.favorite}{" "}
+            <span className="tabular font-semibold text-foreground">{pick.favoriteOdds.toFixed(2)}</span>
+            {typeof pick.oppPpg === "number" ? (
+              <>
+                {" "}
+                · opp <span className="tabular font-semibold text-foreground">{pick.oppPpg.toFixed(2)}</span> PPG
+              </>
+            ) : null}
           </>
-        ) : null}
-        {pick.pick === "Over" && pick.streakYes != null && pick.streakNo != null ? (
-          <>
-            {" "}
-            · 3+ {pick.streakYes.toFixed(2)}/{pick.streakNo.toFixed(2)}
-          </>
-        ) : null}
+        )}
       </p>
     </article>
   );
