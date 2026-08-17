@@ -151,9 +151,10 @@ export function Crest({
   const arms = blazon(name);
   const path = CUTS[arms.cut];
   const letters = lettersOf(name);
-  const officialSrc = allowOfficial && official && !broken ? official : null;
+  // Prefer board-provided logos (ESPN/SportyBet) so missing index entries never blank a crest
   const fallbackSrc = logo && !logoBroken ? logo : null;
-  const src = officialSrc || fallbackSrc;
+  const officialSrc = allowOfficial && official && !broken ? official : null;
+  const src = fallbackSrc || officialSrc;
   const showLogo = Boolean(src);
   const letterFill = arms.field.metal ? arms.ink.fill : "var(--tincture-argent)";
 
@@ -202,8 +203,8 @@ export function Crest({
                   referrerPolicy="no-referrer"
                   style={{ width: "68px", height: "70px", objectFit: "contain", display: "block" }}
                   onError={() => {
-                    if (officialSrc) setBroken(true);
-                    else setLogoBroken(true);
+                    if (fallbackSrc) setLogoBroken(true);
+                    else setBroken(true);
                   }}
                 />
               </div>
