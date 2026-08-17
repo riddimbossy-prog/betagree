@@ -68,8 +68,9 @@
   --radius-xl: 24px;
   --radius-2xl: 28px;
   --radius: 20px;
-  --breakpoint-fold: 42.5rem;
-  --breakpoint-tab: 48rem;
+  /* phone < 660px | fold open / large phone ≥ 660px | tablet ≥ 820px | desktop ≥ 1024px | wide ≥ 1280px */
+  --breakpoint-fold: 41.25rem;
+  --breakpoint-tab: 51.25rem;
 
   --shadow-border:
     inset 0 1px 0 hsl(40 30% 92% / 0.1),
@@ -515,9 +516,10 @@
   }
 }
 
-@media (min-width: 42.5rem) {
+@media (min-width: 41.25rem) {
+  /* Z Fold open / large phone */
   .tab-dock {
-    width: min(92%, 28rem);
+    width: min(92%, 30rem);
     padding: 0.45rem;
   }
 
@@ -527,17 +529,17 @@
   }
 
   .hero-tab {
-    flex: 1 1 5.5rem;
-    min-width: 5.25rem;
+    flex: 1 1 5.75rem;
+    min-width: 5.5rem;
   }
 
   .hero-tab-sport {
-    flex: 1 1 11rem;
-    min-width: 10rem;
+    flex: 1 1 11.5rem;
+    min-width: 10.5rem;
   }
 }
 
-@media (min-width: 48rem) {
+@media (min-width: 51.25rem) {
   .tab-dock {
     width: min(90%, 36rem);
   }
