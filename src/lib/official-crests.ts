@@ -122,7 +122,10 @@ function tokens(name: string) {
 function isUsablePath(path: string | null | undefined): path is string {
   if (!path) return false;
   if (BAD_PATH.test(path)) return false;
-  return true;
+  if (path.startsWith("/crests/")) return true;
+  // Wikipedia / TheSportsDB remote badges (official policy: Wikipedia covers all clubs)
+  if (path.startsWith("https://")) return true;
+  return false;
 }
 
 export function distinctiveConflict(a: string, b: string) {
@@ -201,6 +204,19 @@ async function loadIndex() {
     for (const [k, path] of Object.entries(PINNED)) {
       if (isUsablePath(path)) byName[k] = path;
     }
+    // Hydrate Wikipedia hits remembered in this browser
+    if (typeof localStorage !== "undefined") {
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (!k?.startsWith("crest:")) continue;
+          const v = localStorage.getItem(k);
+          if (v && isUsablePath(v)) byName[k.slice(6)] = v;
+        }
+      } catch {
+        /* ignore */
+      }
+    }
     cache = { byName };
   } catch {
     const byName: Record<string, string> = {};
@@ -226,15 +242,22 @@ async function askServer(name: string): Promise<string | null> {
   if (pending.has(key)) return pending.get(key)!;
   const job = (async () => {
     try {
+      // Prefer local API when a Node host is available (dev / future server)
       const api = (await fetch(`/api/crest?name=${encodeURIComponent(name)}`)
         .then((res) => (res.ok ? res.json() : null))
         .catch(() => null)) as { path?: string; remote?: string } | null;
       let path = api?.path || api?.remote || null;
-      if (!path && typeof window !== "undefined" && /localhost|127\.0\.0\.1/.test(window.location.hostname)) {
+      // Official source: Wikipedia (CORS-enabled) — covers every club on static Pages too
+      if (!path && typeof window !== "undefined") {
         path = await findCrestOnline(name);
       }
       if (path && isUsablePath(path)) {
         remember(name, path);
+        try {
+          localStorage.setItem(`crest:${key}`, path);
+        } catch {
+          /* private mode */
+        }
         return path;
       }
     } catch {
