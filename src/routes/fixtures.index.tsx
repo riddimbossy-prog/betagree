@@ -111,14 +111,14 @@ function FixturesPage() {
             aria-pressed={band === id}
           >
             {label}
-            <span className="tabular text-current/70">{n}</span>
+            <span className="tabular opacity-70">{n}</span>
           </Button>
         ))}
       </div>
 
       <p className="text-sm text-muted-foreground">
         {band === "all"
-          ? `${SITE_COUNT} desks post a 1X2, total, or BTTS. High is 70%+ on the same side.`
+          ? `${SITE_COUNT} desks post a 1X2, total, or BTTS. High is 70% or more on the same side.`
           : BAND_META[band].blurb}
       </p>
 

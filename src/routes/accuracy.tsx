@@ -29,7 +29,7 @@ function AccuracyPage() {
         <p className="text-xs tracking-widest text-subtle uppercase">{data.windowLabel}</p>
         <h1 className="font-display mt-2 text-4xl">Accuracy</h1>
         <p className="mt-3 text-muted-foreground">
-          Same desks, graded against {data.sample} settled matches. One unit a pick at the posted
+          Same {data.desks.length} tip sites, graded against {data.sample} settled matches. One unit a pick at the posted
           number. Form never uses the game being graded.
         </p>
       </header>
@@ -38,9 +38,9 @@ function AccuracyPage() {
         <p className="text-xs tracking-widest text-subtle uppercase">The pack</p>
         <h2 className="font-display mt-1 text-2xl">When the desks agreed</h2>
         <div className="mt-5 grid gap-3 fold:grid-cols-3">
-          <PackStat k="All consensus 1X2" rec={data.pack.overall} note="Two or more desks on the same side" />
-          <PackStat k="Unanimous" rec={data.pack.strong} note="Every desk that posted" />
-          <PackStat k="Split lean" rec={data.pack.lean} note="Majority, not all" />
+          <PackStat k="All consensus 1X2" rec={data.pack.overall} note="Two or more sites on the same side" />
+          <PackStat k="High pack" rec={data.pack.strong} note="70%+ of sites that posted" />
+          <PackStat k="Softer lean" rec={data.pack.lean} note="Consensus below 70%" />
         </div>
       </section>
 
