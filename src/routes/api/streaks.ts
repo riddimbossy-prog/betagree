@@ -1,24 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { readPublicJson } from "@/lib/read-public-json";
 
 export const Route = createFileRoute("/api/streaks")({
   server: {
     handlers: {
-      GET: async () => {
-        try {
-          const raw = await readFile(join(process.cwd(), "public/data/streaks.json"), "utf8");
-          return new Response(raw, {
-            headers: {
-              "content-type": "application/json; charset=utf-8",
-              "cache-control": "public, max-age=30",
-            },
-          });
-        } catch (err) {
-          console.error("[streaks]", err);
-          return Response.json({ error: "Failed to load streaks" }, { status: 502 });
-        }
-      },
+      GET: async () => readPublicJson("data/streaks.json"),
     },
   },
 });

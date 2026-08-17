@@ -9,12 +9,12 @@ import { formatPct } from "@/lib/odds";
 export const Route = createFileRoute("/accuracy")({ component: AccuracyPage });
 
 function AccuracyPage() {
-  const { data, error, loading } = useLedger();
+  const { data, error, loading, reload } = useLedger();
   if ((loading && !data) || error || !data) {
     return (
       <div className="flex flex-col gap-8">
         <h1 className="font-display text-3xl fold:text-4xl">Accuracy</h1>
-        <BoardState loading={loading && !data} error={error} />
+        <BoardState loading={loading && !data} error={error} onRetry={reload} />
       </div>
     );
   }

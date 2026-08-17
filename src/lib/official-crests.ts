@@ -1,45 +1,94 @@
 import { useEffect, useState } from "react";
 import { findCrestOnline } from "@/lib/crest-online";
+import { parseJsonLoose } from "@/lib/safe-fetch";
 
 type CrestIndex = { byName: Record<string, string> };
 
 let cache: CrestIndex | null = null;
 const listeners = new Set<() => void>();
 const pending = new Map<string, Promise<string | null>>();
-const asked = new Set<string>();
+const askedAt = new Map<string, number>();
+const waiters: Array<() => void> = [];
+let inFlight = 0;
+const MAX_LIVE = 4;
+const RETRY_MS = 20_000;
 
-/** Paths that came from bad Wikipedia hits (players, lists, national teams). */
+async function withCrestSlot<T>(fn: () => Promise<T>): Promise<T> {
+  if (inFlight >= MAX_LIVE) {
+    await new Promise<void>((resolve) => waiters.push(resolve));
+  }
+  inFlight += 1;
+  try {
+    return await fn();
+  } finally {
+    inFlight -= 1;
+    waiters.shift()?.();
+  }
+}
+
 const BAD_PATH =
   /footballer|list-of-|national-football-team|in-european-football|mertesacker|martens|ascacibar|gyomber|zahzu|leyes|davids|urozov|levi-footballer|silva-footballer|luciano-footballer|2025-norwegian|malawi-national/i;
 
-const STOP = new Set([
+const LEGAL = new Set([
   "fc",
   "cf",
   "sc",
+  "cs",
   "afc",
   "cfc",
+  "sfc",
+  "ifc",
   "fk",
+  "kf",
   "sk",
+  "bk",
+  "if",
+  "ff",
   "ac",
   "cd",
+  "ce",
+  "jk",
+  "bsc",
   "the",
   "de",
   "do",
   "da",
   "di",
+  "del",
+  "la",
+  "el",
+  "club",
+  "clube",
+  "futebol",
+  "football",
+  "fodbold",
+  "soccer",
   "united",
   "city",
   "town",
-  "football",
-  "soccer",
-  "sporting",
-  "sport",
-  "sports",
-  "atletico",
-  "atl",
-  "real",
   "hotspur",
 ]);
+
+const CITY_TAIL = new Set([
+  "istanbul",
+  "bern",
+  "prague",
+  "praha",
+  "doha",
+  "athens",
+  "athinon",
+  "amsterdam",
+  "eindhoven",
+  "lisbon",
+  "london",
+  "madrid",
+  "moscow",
+  "kyiv",
+  "sofia",
+  "zagreb",
+]);
+
+const STOP = new Set([...LEGAL, "sporting", "sport", "sports", "atletico", "atl", "real"]);
 
 const ALIAS: Record<string, string> = {
   "man city": "manchester city",
@@ -59,21 +108,17 @@ const ALIAS: Record<string, string> = {
   "cercle brugge": "cercle brugge ksv",
   "casa pia lisbon": "casa pia",
   "fenerbahce istanbul": "fenerbahce",
+  "besiktas istanbul": "besiktas",
   "saint etienne": "as saint etienne",
   "st etienne": "as saint etienne",
   "st mirren fc": "st mirren",
   "st johnstone fc": "st johnstone",
-  "st johnstone": "st johnstone",
   "tigres uanl": "tigres",
   "cd guadalajara": "guadalajara",
   chivas: "guadalajara",
   "club tijuana de caliente": "club tijuana",
   "santos laguna": "club santos laguna",
   "psv eindhoven": "psv",
-  "fc midtjylland": "midtjylland",
-  "grenoble foot": "grenoble",
-  "hull city": "hull city",
-  "coventry city": "coventry city",
   monza: "ac monza",
   "ac monza": "ac monza",
   rennes: "stade rennais",
@@ -83,25 +128,33 @@ const ALIAS: Record<string, string> = {
   "halmstads bk": "halmstad",
   "fc arouca": "arouca",
   benfica: "sl benfica",
-  "atlante fc": "atlante",
-  "randers fc": "randers",
   "inter miami cf": "inter miami",
   "toronto fc": "toronto",
-  "east bengal fc": "east bengal",
-  "persik kediri": "persik",
-  "ayeyawady fc": "ayeyawady",
-  "fc jurong": "jurong",
+  "young boys bern": "young boys",
+  "al hilal sfc": "al hilal",
+  "al nassr club": "al nassr",
+  "al riyadh sc": "al riyadh",
+  "khor fakkan club": "khor fakkan",
+  "alverca futebol": "alverca",
+  "cs cienciano": "cienciano",
+  "kf aegir": "aegir",
+  "cd sabadell": "ce sabadell",
+  "maxline vitebsk": "ml vitebsk",
+  "bohemians prague 1905": "bohemians 1905",
 };
 
-/** Always-on paths so a wiped index cannot drop stubborn clubs. */
 const PINNED: Record<string, string> = {
-  monza: "/crests/ac-monza.png",
-  "ac monza": "/crests/ac-monza.png",
-  "associazione calcio monza": "/crests/ac-monza.png",
-  "club brugge": "/crests/club-brugge.png",
-  "club brugge kv": "/crests/club-brugge.png",
-  "cercle brugge": "/crests/cercle-brugge.png",
-  "cercle brugge ksv": "/crests/cercle-brugge.png",
+  monza: "https://img.sofascore.com/api/v1/team/2729/image",
+  "ac monza": "https://img.sofascore.com/api/v1/team/2729/image",
+  "associazione calcio monza": "https://img.sofascore.com/api/v1/team/2729/image",
+  "club brugge": "https://img.sofascore.com/api/v1/team/2888/image",
+  "club brugge kv": "https://img.sofascore.com/api/v1/team/2888/image",
+  "cercle brugge": "https://img.sofascore.com/api/v1/team/2929/image",
+  "cercle brugge ksv": "https://img.sofascore.com/api/v1/team/2929/image",
+  "fenerbahce istanbul": "https://img.sofascore.com/api/v1/team/3052/image",
+  fenerbahce: "https://img.sofascore.com/api/v1/team/3052/image",
+  "besiktas istanbul": "https://img.sofascore.com/api/v1/team/3050/image",
+  besiktas: "https://img.sofascore.com/api/v1/team/3050/image",
 };
 
 export function normTeam(name: string) {
@@ -109,21 +162,66 @@ export function normTeam(name: string) {
     .toLowerCase()
     .normalize("NFD")
     .replace(/\p{M}/gu, "")
+    .replace(/ø/g, "o")
+    .replace(/æ/g, "ae")
+    .replace(/œ/g, "oe")
+    .replace(/ł/g, "l")
+    .replace(/đ/g, "d")
+    .replace(/ð/g, "d")
+    .replace(/þ/g, "th")
+    .replace(/ß/g, "ss")
+    .replace(/ı/g, "i")
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
+}
+
+function cleanName(name: string) {
+  return name.replace(/\s*\([^)]*\)\s*/g, " ").replace(/\s+/g, " ").trim();
+}
+
+/** Every index key a board name should hit. */
+export function nameKeys(name: string): string[] {
+  const keys = new Set<string>();
+  const n = normTeam(cleanName(name));
+  if (!n) return [];
+  keys.add(n);
+  if (ALIAS[n]) keys.add(normTeam(ALIAS[n]));
+  const parts = n.split(" ").filter((p) => p && !LEGAL.has(p) && !CITY_TAIL.has(p));
+  if (parts.length) keys.add(parts.join(" "));
+  if (parts.length >= 2) keys.add(parts.slice(-2).join(" "));
+  return [...keys];
+}
+
+/** If a local ss-ID file 404s, the SofaScore CDN still has the badge. */
+export function sofaMirror(path: string | null | undefined): string | null {
+  if (!path) return null;
+  const id = path.match(/ss-(\d+)\.png/)?.[1] ?? path.match(/\/team\/(\d+)\/image/)?.[1];
+  return id ? `https://img.sofascore.com/api/v1/team/${id}/image` : null;
+}
+
+export function crestCandidates(official: string | null | undefined, logo?: string | null): string[] {
+  const out: string[] = [];
+  const add = (s?: string | null) => {
+    if (!s || out.includes(s)) return;
+    out.push(s);
+    const mirror = sofaMirror(s);
+    if (mirror && !out.includes(mirror)) out.push(mirror);
+  };
+  add(official);
+  add(logo);
+  return out;
 }
 
 function tokens(name: string) {
   return normTeam(name)
     .split(" ")
-    .filter((t) => t.length > 1 && !STOP.has(t));
+    .filter((t) => t.length > 1 && !STOP.has(t) && !CITY_TAIL.has(t));
 }
 
 function isUsablePath(path: string | null | undefined): path is string {
   if (!path) return false;
   if (BAD_PATH.test(path)) return false;
   if (path.startsWith("/crests/")) return true;
-  // Wikipedia / TheSportsDB remote badges (official policy: Wikipedia covers all clubs)
   if (path.startsWith("https://")) return true;
   return false;
 }
@@ -136,75 +234,46 @@ export function distinctiveConflict(a: string, b: string) {
   return onlyA.length > 0 && onlyB.length > 0;
 }
 
-function scoreKey(query: string, key: string) {
-  const q = normTeam(query);
-  const k = normTeam(key);
-  if (!q || !k) return 0;
-  if (q === k) return 1;
-  if (distinctiveConflict(q, k)) return 0;
-  const qt = tokens(q);
-  const kt = tokens(k);
-  if (qt.length === 1 && qt[0].length < 6) {
-    if (kt.length === 1 && kt[0] === qt[0]) return 0.96;
-    if (k === qt[0] || k.startsWith(`${qt[0]} `)) return 0.9;
-    return 0;
-  }
-  if (k === q || q === k) return 1;
-  if (k.startsWith(`${q} `) || q.startsWith(`${k} `)) return 0.93;
-  if (qt.length && kt.length && qt.join(" ") === kt.join(" ")) return 0.94;
-  if (!qt.length || !kt.length) return 0;
-  let hit = 0;
-  for (const t of qt) if (kt.includes(t)) hit += 1;
-  const j = hit / Math.max(qt.length, kt.length);
-  if (j >= 0.99) return 0.92;
-  if (j >= 0.67 && hit === qt.length) return 0.86;
-  return j >= 0.8 ? 0.8 : 0;
-}
-
 export function resolveCrestPath(name: string, byName: Record<string, string>): string | null {
-  const q = normTeam(name);
-  if (!q) return null;
-  const pinned = PINNED[q] ?? (ALIAS[q] ? PINNED[normTeam(ALIAS[q])] : null);
-  if (isUsablePath(pinned)) return pinned;
-  const direct = byName[q];
-  if (isUsablePath(direct)) return direct;
-  const alias = ALIAS[q];
-  if (alias) {
-    const hit = byName[alias] ?? byName[normTeam(alias)];
-    if (isUsablePath(hit)) return hit;
+  if (!name) return null;
+  for (const q of nameKeys(name)) {
+    const pinned = PINNED[q];
+    if (isUsablePath(pinned)) return pinned;
+    const direct = byName[q];
+    if (isUsablePath(direct)) return direct;
   }
-  let best: { path: string; score: number } | null = null;
-  const needles = [q, alias].filter(Boolean) as string[];
-  for (const [key, path] of Object.entries(byName)) {
-    if (!isUsablePath(path)) continue;
-    let s = 0;
-    for (const n of needles) s = Math.max(s, scoreKey(n, key));
-    if (s < 0.86) continue;
-    if (!best || s > best.score || (s === best.score && path.includes("/crests/ss-"))) {
-      best = { path, score: s };
-    }
-  }
-  return best?.path ?? null;
+  return null;
 }
 
 function emit() {
   for (const fn of listeners) fn();
 }
 
+let emitQueued = false;
+function emitSoon() {
+  if (emitQueued) return;
+  emitQueued = true;
+  queueMicrotask(() => {
+    emitQueued = false;
+    emit();
+  });
+}
+
+let indexAt = 0;
+
 async function loadIndex() {
-  if (cache) return cache;
+  if (cache && Object.keys(cache.byName).length >= 200 && Date.now() - indexAt < 10 * 60_000) return cache;
   try {
-    const res = await fetch("/crests/index.json");
-    const json = res.ok ? await res.json() : { byName: {} };
+    const res = await fetch("/crests/index.json", { signal: AbortSignal.timeout(10_000) });
+    const raw = res.ok ? await res.text() : "{}";
+    const json = parseJsonLoose<{ byName?: Record<string, string> }>(raw, { byName: {} });
     const byName: Record<string, string> = {};
     for (const [k, v] of Object.entries(json.byName ?? {})) {
       if (typeof v === "string" && isUsablePath(v)) byName[k] = v;
     }
-    // Always re-apply PINNED so a thin or wiped index cannot drop stubborn clubs
     for (const [k, path] of Object.entries(PINNED)) {
       if (isUsablePath(path)) byName[k] = path;
     }
-    // Hydrate Wikipedia hits remembered in this browser
     if (typeof localStorage !== "undefined") {
       try {
         for (let i = 0; i < localStorage.length; i++) {
@@ -218,77 +287,100 @@ async function loadIndex() {
       }
     }
     cache = { byName };
+    indexAt = Date.now();
   } catch {
     const byName: Record<string, string> = {};
     for (const [k, path] of Object.entries(PINNED)) {
       if (isUsablePath(path)) byName[k] = path;
     }
     cache = { byName };
+    indexAt = Date.now();
   }
-  emit();
+  emitSoon();
   return cache;
 }
 
 function remember(name: string, path: string) {
   if (!cache || !isUsablePath(path)) return;
-  cache.byName[normTeam(name)] = path;
-  emit();
+  for (const k of nameKeys(name)) cache.byName[k] = path;
+  emitSoon();
 }
 
 async function askServer(name: string): Promise<string | null> {
   const key = normTeam(name);
-  if (!key || asked.has(key)) return officialCrestPath(name);
-  asked.add(key);
+  if (!key) return officialCrestPath(name);
+  const last = askedAt.get(key) ?? 0;
+  if (Date.now() - last < RETRY_MS && officialCrestPath(name)) return officialCrestPath(name);
+  if (Date.now() - last < RETRY_MS && pending.has(key)) return pending.get(key)!;
+  if (Date.now() - last < RETRY_MS && askedAt.has(key)) return officialCrestPath(name);
+  askedAt.set(key, Date.now());
   if (pending.has(key)) return pending.get(key)!;
   const job = (async () => {
     try {
-      // Prefer local API when a Node host is available (dev / future server)
-      const api = (await fetch(`/api/crest?name=${encodeURIComponent(name)}`)
-        .then((res) => (res.ok ? res.json() : null))
-        .catch(() => null)) as { path?: string; remote?: string } | null;
-      let path = api?.path || api?.remote || null;
-      // Official source: Wikipedia (CORS-enabled) — covers every club on static Pages too
+      const api = (await withCrestSlot(() =>
+        fetch(`/api/crest?name=${encodeURIComponent(name)}`, { signal: AbortSignal.timeout(12_000) })
+          .then((res) => (res.ok ? res.json() : null))
+          .catch(() => null),
+      )) as { path?: string; remote?: string } | null;
+      let path = api?.remote || api?.path || null;
       if (!path && typeof window !== "undefined") {
-        path = await findCrestOnline(name);
+        path = await withCrestSlot(() => findCrestOnline(name));
       }
       if (path && isUsablePath(path)) {
         remember(name, path);
         try {
-          localStorage.setItem(`crest:${key}`, path);
+          for (const k of nameKeys(name)) localStorage.setItem(`crest:${k}`, path);
         } catch {
           /* private mode */
         }
         return path;
       }
     } catch {
-      /* keep heraldry fallback */
+      askedAt.delete(key);
     }
-    return null;
+    return officialCrestPath(name);
   })();
   pending.set(key, job);
-  return job;
+  try {
+    return await job;
+  } finally {
+    pending.delete(key);
+  }
 }
 
 export function officialCrestPath(name: string): string | null {
-  return resolveCrestPath(name, cache?.byName ?? {});
+  const path = resolveCrestPath(name, cache?.byName ?? {});
+  return sofaMirror(path) ?? path;
 }
 
 export function useOfficialCrest(name: string): string | null {
-  const [, setTick] = useState(0);
+  const [path, setPath] = useState(() => officialCrestPath(name));
   useEffect(() => {
-    const unsub = () => setTick((n) => n + 1);
-    listeners.add(unsub);
-    void loadIndex();
-    return () => {
-      listeners.delete(unsub);
+    const sync = () => {
+      const next = officialCrestPath(name);
+      setPath((prev) => (prev === next ? prev : next));
     };
-  }, []);
-  useEffect(() => {
-    if (!name) return;
-    const hit = officialCrestPath(name);
-    if (!hit) void askServer(name);
+    listeners.add(sync);
+    void loadIndex().then(sync);
+    if (!officialCrestPath(name)) void askServer(name);
+    return () => {
+      listeners.delete(sync);
+    };
   }, [name]);
-  return officialCrestPath(name);
+  return path;
+}
+
+export function ensureCrests(names: string[]) {
+  if (typeof window === "undefined") return;
+  void loadIndex().then(() => {
+    let queued = 0;
+    for (const name of names) {
+      if (!name || officialCrestPath(name)) continue;
+      void askServer(name);
+      queued += 1;
+      if (queued >= 12) break;
+    }
+  });
 }
 
 export function preloadOfficialCrests() {

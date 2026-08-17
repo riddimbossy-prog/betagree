@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { type Charge, type Ordinary, blazon, CUTS, lettersOf } from "@/lib/heraldry";
-import { useOfficialCrest } from "@/lib/official-crests";
+import { useOfficialCrest, crestCandidates } from "@/lib/official-crests";
 import { cn } from "@/lib/utils";
 
 const SIZES = {
@@ -144,28 +144,25 @@ export function Crest({
   className?: string;
 }) {
   const official = useOfficialCrest(name);
-  const [broken, setBroken] = useState(false);
-  const [allowOfficial, setAllowOfficial] = useState(false);
-  const [logoBroken, setLogoBroken] = useState(false);
+  const [ready, setReady] = useState(false);
+  const [failed, setFailed] = useState<string[]>([]);
   const uid = useId().replace(/:/g, "");
   const arms = blazon(name);
   const path = CUTS[arms.cut];
   const letters = lettersOf(name);
-  // Prefer board-provided logos (ESPN/SportyBet) so missing index entries never blank a crest
-  const fallbackSrc = logo && !logoBroken ? logo : null;
-  const officialSrc = allowOfficial && official && !broken ? official : null;
-  const src = fallbackSrc || officialSrc;
+  // First paint matches SSR (board logo). After mount, SofaScore/index can take over.
+  const src =
+    crestCandidates(ready ? official : null, logo).find((s) => !failed.includes(s)) ?? null;
   const showLogo = Boolean(src);
   const letterFill = arms.field.metal ? arms.ink.fill : "var(--tincture-argent)";
 
   useEffect(() => {
-    setBroken(false);
-    setLogoBroken(false);
-  }, [official, logo]);
+    setReady(true);
+  }, []);
 
   useEffect(() => {
-    setAllowOfficial(true);
-  }, []);
+    setFailed([]);
+  }, [name, official, logo]);
 
   return (
     <span className={cn("crest-plate", SIZES[size], className)} title={name} aria-hidden>
@@ -203,8 +200,7 @@ export function Crest({
                   referrerPolicy="no-referrer"
                   style={{ width: "68px", height: "70px", objectFit: "contain", display: "block" }}
                   onError={() => {
-                    if (fallbackSrc) setLogoBroken(true);
-                    else setBroken(true);
+                    if (src) setFailed((prev) => (prev.includes(src) ? prev : [...prev, src]));
                   }}
                 />
               </div>

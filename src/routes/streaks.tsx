@@ -8,7 +8,7 @@ import { useTodayOnly } from "@/lib/store";
 export const Route = createFileRoute("/streaks")({ component: StreaksPage });
 
 function StreaksPage() {
-  const { data, error, loading } = useStreaks();
+  const { data, error, loading, reload } = useStreaks();
   const todayOnly = useTodayOnly();
   const two = (data?.twoYes ?? []).filter((pick) => !todayOnly || isPlayingToday(pick.kickoff));
   const three = (data?.threeNo ?? []).filter((pick) => !todayOnly || isPlayingToday(pick.kickoff));
@@ -22,9 +22,7 @@ function StreaksPage() {
           Goal <span className="font-serif italic font-normal">streaks</span>
         </h1>
         <p className="mt-2 text-sm text-subtle">
-          {loading
-            ? "Loading…"
-            : `${total} listed${todayOnly ? " today" : ""} · 2+ Yes 1.19–1.40 favorite to win vs under 1.2 PPG · Over 2.5`}
+          {loading ? "Loading…" : `${total} listed${todayOnly ? " today" : ""}`}
         </p>
       </header>
 
@@ -33,6 +31,7 @@ function StreaksPage() {
         error={error}
         empty={!loading && !error && total === 0}
         emptyLabel={todayOnly ? "Nobody on this list is playing today." : "No streaks listed."}
+        onRetry={reload}
       />
 
       {total > 0 ? (
@@ -45,7 +44,7 @@ function StreaksPage() {
           ) : null}
           {three.length ? (
             <a href="#three" className="glass inline-flex shrink-0 items-center rounded-full px-4 py-2 text-sm">
-              Over 2.5
+              3+ No
               <span className="ml-2 tabular text-muted-foreground">{three.length}</span>
             </a>
           ) : null}
@@ -60,9 +59,6 @@ function StreaksPage() {
           <h2 className="text-2xl font-semibold">
             2+ streak <span className="font-serif italic font-normal">Yes</span>
           </h2>
-          <p className="mt-1 text-sm text-subtle">
-            Odds 1.19–1.40 · favorite to win when the other side is under 1.2 points per game
-          </p>
           <ul className="mt-4 grid gap-3 fold:grid-cols-2">
             {two.map((pick) => (
               <li key={pick.id}>
@@ -76,11 +72,8 @@ function StreaksPage() {
       {three.length ? (
         <section id="three">
           <h2 className="text-2xl font-semibold">
-            Over <span className="font-serif italic font-normal">2.5</span> goals
+            3+ streak <span className="font-serif italic font-normal">No</span>
           </h2>
-          <p className="mt-1 text-sm text-subtle">
-            Over 2.5 total goals
-          </p>
           <ul className="mt-4 grid gap-3 fold:grid-cols-2">
             {three.map((pick) => (
               <li key={pick.id}>

@@ -99,7 +99,7 @@ function TipsterPage() {
           </section>
         </>
       ) : (
-        <BoardState loading={false} error={ledger.error} />
+        <BoardState loading={false} error={ledger.error} onRetry={ledger.reload} />
       )}
 
       <section>

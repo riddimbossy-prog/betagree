@@ -2,6 +2,7 @@ import { AppErrorComponent, AppNotFound } from "@/lib/error-component";
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
+import { ServiceWorkerGate } from "@/components/service-worker";
 import { SiteShell } from "@/components/site-shell";
 import { SnapshotProvider } from "@/lib/live/snapshot-context";
 import { loadAppSnapshot } from "@/lib/live/snapshot";
@@ -55,16 +56,17 @@ export const Route = createRootRoute({
     links: [
       { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
       { rel: "stylesheet", href: appCss },
-      { rel: "manifest", href: "/__grok/manifest.webmanifest" },
-      { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "dns-prefetch", href: "https://a.espncdn.com" },
+      { rel: "preconnect", href: "https://img.sofascore.com" },
+      { rel: "preconnect", href: "https://a.espncdn.com" },
+      { rel: "preload", href: "/crests/index.json", as: "fetch", crossOrigin: "anonymous" },
+      { rel: "manifest", href: "/__grok/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
       },
-      { rel: "preload", href: "/data/slate.json", as: "fetch", crossOrigin: "anonymous" },
     ],
   }),
   component: RootDocument,
@@ -79,6 +81,7 @@ function RootDocument() {
       </head>
       <body>
         <PreviewHostBridge />
+        <ServiceWorkerGate />
         <AuthProvider>
           <SnapshotProvider value={snap}>
             <SiteShell>

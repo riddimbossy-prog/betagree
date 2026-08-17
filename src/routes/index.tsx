@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AnalysisHub } from "@/components/analysis-hub";
 import { ConsensusCard } from "@/components/consensus-card";
@@ -28,10 +29,24 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const initial = Route.useLoaderData();
-  const { data, error, loading } = useSlate(initial);
-  const trends = useTrends();
-  const form = useFormBoard();
-  const streaks = useStreaks();
+  const { data, error, loading, reload } = useSlate(initial);
+  const [secondary, setSecondary] = useState(false);
+  useEffect(() => {
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    const id = w.requestIdleCallback
+      ? w.requestIdleCallback(() => setSecondary(true), { timeout: 600 })
+      : window.setTimeout(() => setSecondary(true), 180);
+    return () => {
+      if (w.cancelIdleCallback && typeof id === "number") w.cancelIdleCallback(id);
+      else window.clearTimeout(id);
+    };
+  }, []);
+  const trends = useTrends(90_000, secondary);
+  const form = useFormBoard(90_000, secondary);
+  const streaks = useStreaks(90_000, secondary);
   const todayOnly = useTodayOnly();
   const fixtures = sortBoardGames(
     (data?.fixtures ?? []).filter((f) => !todayOnly || fixtureIsToday(f)),
@@ -140,6 +155,7 @@ function Home() {
         error={error}
         empty={!loading && !error && fixtures.length === 0}
         emptyLabel={todayOnly ? "Nobody on this board is playing today." : undefined}
+        onRetry={reload}
       />
 
       {liveGames.length ? (

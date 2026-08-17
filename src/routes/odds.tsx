@@ -27,7 +27,7 @@ export const Route = createFileRoute("/odds")({
 
 function OddsFilterPage() {
   const initial = Route.useLoaderData();
-  const { data, error, loading } = useSlate(initial);
+  const { data, error, loading, reload } = useSlate(initial);
   const sheet = usePickSheet();
   const [from, setFrom] = useState(String(DEFAULT_BAND.from));
   const [to, setTo] = useState(String(DEFAULT_BAND.to));
@@ -109,6 +109,7 @@ function OddsFilterPage() {
         error={error}
         empty={!loading && !error && hits.length === 0}
         emptyLabel={todayOnly ? "Nobody in this band is playing today." : undefined}
+        onRetry={reload}
       />
 
       {hits.length ? (

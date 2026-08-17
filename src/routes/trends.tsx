@@ -11,7 +11,7 @@ import type { TrendCategory, TrendPick } from "@/lib/types";
 export const Route = createFileRoute("/trends")({ component: TrendsPage });
 
 function TrendsPage() {
-  const { data, error, loading } = useTrends();
+  const { data, error, loading, reload } = useTrends();
   const todayOnly = useTodayOnly();
   const cats = useMemo(() => {
     const source = data?.categories;
@@ -47,6 +47,7 @@ function TrendsPage() {
         error={error}
         empty={!loading && !error && total === 0}
         emptyLabel={todayOnly ? "Nobody on this list is playing today." : "No trends listed."}
+        onRetry={reload}
       />
 
       {total > 0 ? (

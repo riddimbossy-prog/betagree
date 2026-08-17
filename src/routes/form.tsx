@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/form")({ component: FormPage });
 
 function FormPage() {
-  const { data, error, loading } = useFormBoard();
+  const { data, error, loading, reload } = useFormBoard();
   const [pole, setPole] = useState<FormPole>("most");
   const [metric, setMetric] = useState<FormMetric>("wins");
   const [venue, setVenue] = useState<FormVenue>("overall");
@@ -111,6 +111,7 @@ function FormPage() {
         error={error}
         empty={!loading && !error && rows.length === 0}
         emptyLabel={todayOnly ? "Nobody on this list is playing today." : "Form table is empty for this cut."}
+        onRetry={reload}
       />
 
       {rows.length ? (

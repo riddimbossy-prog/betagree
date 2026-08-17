@@ -34,7 +34,7 @@ function topPick(rows: ConsensusItem[] | undefined) {
 
 function FixturesPage() {
   const initial = Route.useLoaderData();
-  const { data, error, loading } = useSlate(initial);
+  const { data, error, loading, reload } = useSlate(initial);
   const [league, setLeague] = useState("all");
   const [band, setBand] = useState<BandFilter>("all");
   const [status, setStatus] = useState<StatusFilter>("all");
@@ -163,6 +163,7 @@ function FixturesPage() {
         error={error}
         empty={!loading && !error && fixtures.length === 0}
         emptyLabel={emptyCopy(band, status, todayOnly)}
+        onRetry={reload}
       />
       {fixtures.length ? <FixtureList fixtures={fixtures} byFixture={byFixture} /> : null}
     </div>

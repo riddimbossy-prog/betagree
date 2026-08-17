@@ -21,7 +21,7 @@ export const Route = createFileRoute("/live")({
 
 function LivePage() {
   const initial = Route.useLoaderData();
-  const { data, error, loading } = useSlate(initial);
+  const { data, error, loading, reload } = useSlate(initial);
   const [league, setLeague] = useState("all");
 
   const byFixture = useMemo(() => {
@@ -84,6 +84,7 @@ function LivePage() {
         error={error}
         empty={!loading && !error && fixtures.length === 0}
         emptyLabel="Nothing from today's board is in play."
+        onRetry={reload}
       />
       {fixtures.length ? <FixtureList fixtures={fixtures} byFixture={byFixture} /> : null}
 

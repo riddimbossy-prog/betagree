@@ -16,14 +16,14 @@ export const Route = createFileRoute("/fixtures/$id")({
 
 function FixturePage() {
   const { id } = Route.useParams();
-  const { data, error, loading } = useSlate();
+  const { data, error, loading, reload } = useSlate();
   const fixture = data?.fixtures.find((f) => f.id === id);
   const picks = (data?.picks ?? []).filter((p) => p.fixtureId === id);
   const consensus = (data?.consensus ?? []).filter((c) => c.fixture.id === id);
   const onDesk = (data?.desks ?? []).filter((t) => picks.some((p) => p.tipsterId === t.id));
 
   if ((loading && !data) || error) {
-    return <BoardState loading={loading && !data} error={error} />;
+    return <BoardState loading={loading && !data} error={error} onRetry={reload} />;
   }
   if (!fixture) {
     return (

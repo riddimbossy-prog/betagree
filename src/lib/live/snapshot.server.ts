@@ -1,13 +1,17 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import type { FormPayload, LedgerPayload, SlatePayload, StreaksPayload, TrendsPayload } from "../types";
+import type { SlatePayload, StreaksPayload, TrendsPayload } from "../types";
 import { applySlateScores, type ScorePatch } from "./score-apply";
 import { mergeLiveFixtures } from "./merge-live";
 import type { AppSnapshot } from "./snapshot-context";
 
+import { parseJsonLoose } from "../safe-fetch";
+
 async function readJson<T>(path: string): Promise<T | null> {
   try {
-    return JSON.parse(await readFile(path, "utf8")) as T;
+    const raw = await readFile(path, "utf8");
+    const parsed = parseJsonLoose<T | null>(raw, null);
+    return parsed;
   } catch {
     return null;
   }
@@ -40,13 +44,10 @@ export async function loadBoardSnapshot(): Promise<SlatePayload> {
 }
 
 export async function loadAppSnapshot(): Promise<AppSnapshot> {
-  const root = process.cwd();
-  const [slate, form, trends, streaks, ledger] = await Promise.all([
+  const [slate, trends, streaks] = await Promise.all([
     loadBoardSnapshot(),
-    readJson<FormPayload>(join(root, "public/data/form.json")),
-    readJson<TrendsPayload>(join(root, "public/data/trends.json")),
-    readJson<StreaksPayload>(join(root, "public/data/streaks.json")),
-    readJson<LedgerPayload>(join(root, "public/data/ledger.json")),
+    readJson<TrendsPayload>(join(process.cwd(), "public/data/trends.json")),
+    readJson<StreaksPayload>(join(process.cwd(), "public/data/streaks.json")),
   ]);
-  return { slate, form, trends, streaks, ledger };
+  return { slate, form: null, trends, streaks, ledger: null };
 }

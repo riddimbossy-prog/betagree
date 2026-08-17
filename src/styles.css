@@ -5,7 +5,7 @@
   --font-sans: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
   --font-display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
   --font-serif: "Instrument Serif", "Times New Roman", Georgia, serif;
-  --font-mono: "IBM Plex Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
 
   --color-background: hsl(240 16% 5%);
   --color-foreground: hsl(40 22% 95%);

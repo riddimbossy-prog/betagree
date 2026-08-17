@@ -8,7 +8,7 @@ import { formatPct } from "@/lib/odds";
 export const Route = createFileRoute("/tipsters/")({ component: TipstersPage });
 
 function TipstersPage() {
-  const { data, error, loading } = useLedger();
+  const { data, error, loading, reload } = useLedger();
   const rows = data?.desks ?? [];
 
   return (
@@ -23,7 +23,7 @@ function TipstersPage() {
         </p>
       </header>
 
-      <BoardState loading={loading && !data} error={error} empty={!loading && !error && rows.length === 0} />
+      <BoardState loading={loading && !data} error={error} empty={!loading && !error && rows.length === 0} onRetry={reload} />
 
       {rows.length ? (
         <>

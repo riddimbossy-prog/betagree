@@ -8,7 +8,7 @@ import { useTodayOnly } from "@/lib/store";
 export const Route = createFileRoute("/banker")({ component: BankerPage });
 
 function BankerPage() {
-  const { data, error, loading } = useTrends();
+  const { data, error, loading, reload } = useTrends();
   const todayOnly = useTodayOnly();
   const bankers = (data?.bankers ?? []).filter(
     (pick) => !todayOnly || isPlayingToday(pick.kickoffIso, pick.kickoff, data?.date),
@@ -28,6 +28,7 @@ function BankerPage() {
         error={error}
         empty={!loading && !error && bankers.length === 0}
         emptyLabel={todayOnly ? "No bankers playing today." : "No bankers listed."}
+        onRetry={reload}
       />
 
       {bankers.length ? (

@@ -3,34 +3,27 @@ import type { DeskSource, FormPayload, LedgerPayload, SlatePayload, StreaksPaylo
 import { applySlateScores, type ScorePatch } from "@/lib/live/score-apply";
 import { mergeLiveFixtures } from "@/lib/live/merge-live";
 import { useSnapshot } from "@/lib/live/snapshot-context";
-
-/** Static hosts (GitHub Pages) have no /api — skip after first miss. */
-let apiAlive: boolean | null = null;
-
-function prefersStaticData(path: string) {
-  if (!path.startsWith("/api/")) return true;
-  if (apiAlive === false) return false;
-  return true;
-}
+import { fetchJson } from "@/lib/safe-fetch";
+import { listenForBoardSync, requestBoardSync } from "@/lib/background-sync";
 
 async function loadJson<T>(paths: string[]): Promise<T> {
   let last: unknown;
   for (const path of paths) {
-    if (!prefersStaticData(path)) continue;
     try {
-      const res = await fetch(path, { credentials: "omit" });
-      if (!res.ok) {
-        if (path.startsWith("/api/")) apiAlive = false;
-        continue;
-      }
-      if (path.startsWith("/api/")) apiAlive = true;
-      return (await res.json()) as T;
+      return await fetchJson<T>(path, { timeoutMs: 10_000, retries: 1 });
     } catch (err) {
-      if (path.startsWith("/api/")) apiAlive = false;
       last = err;
     }
   }
+  void requestBoardSync();
   throw last ?? new Error("unavailable");
+}
+
+function useReload() {
+  const [tick, setTick] = useState(0);
+  const reload = () => setTick((n) => n + 1);
+  useEffect(() => listenForBoardSync(reload), []);
+  return { tick, reload };
 }
 
 function utcDate(offsetDays = 0) {
@@ -106,9 +99,10 @@ function scrubSlate(data: SlatePayload): SlatePayload {
   };
 }
 
-export function useSlate(initial?: SlatePayload | null, pollMs = 15_000) {
+export function useSlate(initial?: SlatePayload | null, pollMs = 10_000) {
   const snap = useSnapshot();
   const seed = initial ?? snap?.slate ?? null;
+  const { tick, reload } = useReload();
   const [data, setData] = useState<SlatePayload | null>(seed);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(!seed);
@@ -138,19 +132,18 @@ export function useSlate(initial?: SlatePayload | null, pollMs = 15_000) {
     };
 
     const loadLiveBoard = async () => {
-      if (apiAlive === false) return;
       try {
         const json = scrubSlate(await loadJson<SlatePayload>(["/api/slate"]));
         board = withScores(json, pending);
         paint(board);
       } catch {
-        /* snapshot is enough on static hosts */
+        /* snapshot is enough */
       }
     };
 
     const loadScores = async () => {
       try {
-        const pack = await loadJson<{ scores: ScorePatch[] }>(["/data/scores.json", "/api/scores"]);
+        const pack = await loadJson<{ scores: ScorePatch[] }>(["/api/scores", "/data/scores.json"]);
         pending = pack?.scores ?? null;
         if (board && pending?.length) {
           board = withScores(board, pending);
@@ -170,28 +163,32 @@ export function useSlate(initial?: SlatePayload | null, pollMs = 15_000) {
           }
         });
       });
-    } else {
-      setLoading(false);
     }
-    void loadScores();
-    const apiProbe = window.setTimeout(() => void loadLiveBoard(), 2_500);
+    void loadScores().catch(() => {
+      /* keep last scores */
+    });
+    if (!seed) {
+      void loadLiveBoard().catch(() => {
+        /* snapshot is enough */
+      });
+    }
 
-    const scoreId = window.setInterval(() => void loadScores(), pollMs);
-    const boardId = window.setInterval(() => void loadLiveBoard(), Math.max(pollMs * 4, 60_000));
+    const scoreId = window.setInterval(() => void loadScores(), Math.max(pollMs, 8_000));
+    const boardId = window.setInterval(() => void loadLiveBoard(), Math.max(pollMs * 4, 40_000));
     return () => {
       dead = true;
-      window.clearTimeout(apiProbe);
       window.clearInterval(scoreId);
       window.clearInterval(boardId);
     };
-  }, [seed, pollMs]);
+  }, [seed, pollMs, tick]);
 
-  return { data, error, loading };
+  return { data, error, loading, reload };
 }
 
 export function useLedger() {
   const snap = useSnapshot();
   const seed = snap?.ledger ?? null;
+  const { tick, reload } = useReload();
   const [data, setData] = useState<LedgerPayload | null>(
     seed
       ? { ...seed, desks: seed.desks.map((row) => ({ ...row, tipster: scrubDesk(row.tipster) })) }
@@ -202,7 +199,7 @@ export function useLedger() {
 
   useEffect(() => {
     let dead = false;
-    loadJson<LedgerPayload>(["/data/ledger.json", "/api/ledger"])
+    loadJson<LedgerPayload>(["/api/ledger", "/data/ledger.json"])
       .then((json) => {
         if (!dead) {
           setData({
@@ -214,26 +211,31 @@ export function useLedger() {
       })
       .catch(() => {
         if (!dead) {
-          setError("Could not reach the accuracy book.");
           setLoading(false);
+          setData((cur) => {
+            if (!cur) setError("Could not reach the accuracy book.");
+            return cur;
+          });
         }
       });
     return () => {
       dead = true;
     };
-  }, []);
+  }, [tick]);
 
-  return { data, error, loading };
+  return { data, error, loading, reload };
 }
 
-export function useTrends(pollMs = 60_000) {
+export function useTrends(pollMs = 90_000, enabled = true) {
   const snap = useSnapshot();
   const seed = snap?.trends ? scrubTrends(snap.trends) : null;
+  const { tick, reload } = useReload();
   const [data, setData] = useState<TrendsPayload | null>(seed);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(!seed);
 
   useEffect(() => {
+    if (!enabled) return;
     let dead = false;
     const load = async () => {
       try {
@@ -245,8 +247,11 @@ export function useTrends(pollMs = 60_000) {
         }
       } catch {
         if (!dead) {
-          setError("Could not reach the trends board.");
           setLoading(false);
+          setData((cur) => {
+            if (!cur) setError("Could not reach the trends board.");
+            return cur;
+          });
         }
       }
     };
@@ -256,19 +261,21 @@ export function useTrends(pollMs = 60_000) {
       dead = true;
       window.clearInterval(id);
     };
-  }, [pollMs]);
+  }, [pollMs, tick, enabled]);
 
-  return { data, error, loading };
+  return { data, error, loading, reload };
 }
 
-export function useFormBoard(pollMs = 60_000) {
+export function useFormBoard(pollMs = 90_000, enabled = true) {
   const snap = useSnapshot();
   const seed = snap?.form ? scrubForm(snap.form) : null;
+  const { tick, reload } = useReload();
   const [data, setData] = useState<FormPayload | null>(seed);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(!seed);
 
   useEffect(() => {
+    if (!enabled) return;
     let dead = false;
     const load = async () => {
       try {
@@ -280,8 +287,11 @@ export function useFormBoard(pollMs = 60_000) {
         }
       } catch {
         if (!dead) {
-          setError("Could not reach the form board.");
           setLoading(false);
+          setData((cur) => {
+            if (!cur) setError("Could not reach the form board.");
+            return cur;
+          });
         }
       }
     };
@@ -291,19 +301,21 @@ export function useFormBoard(pollMs = 60_000) {
       dead = true;
       window.clearInterval(id);
     };
-  }, [pollMs]);
+  }, [pollMs, tick, enabled]);
 
-  return { data, error, loading };
+  return { data, error, loading, reload };
 }
 
-export function useStreaks(pollMs = 60_000) {
+export function useStreaks(pollMs = 90_000, enabled = true) {
   const snap = useSnapshot();
   const seed = snap?.streaks ?? null;
+  const { tick, reload } = useReload();
   const [data, setData] = useState<StreaksPayload | null>(seed);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(!seed);
 
   useEffect(() => {
+    if (!enabled) return;
     let dead = false;
     const load = async () => {
       try {
@@ -315,8 +327,11 @@ export function useStreaks(pollMs = 60_000) {
         }
       } catch {
         if (!dead) {
-          setError("Could not reach the streak board.");
           setLoading(false);
+          setData((cur) => {
+            if (!cur) setError("Could not reach the streak board.");
+            return cur;
+          });
         }
       }
     };
@@ -326,7 +341,7 @@ export function useStreaks(pollMs = 60_000) {
       dead = true;
       window.clearInterval(id);
     };
-  }, [pollMs]);
+  }, [pollMs, tick, enabled]);
 
-  return { data, error, loading };
+  return { data, error, loading, reload };
 }

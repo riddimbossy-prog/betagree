@@ -1,49 +1,102 @@
 import { createWriteStream } from "node:fs";
-import { readFile, stat, writeFile } from "node:fs/promises";
+import { readdir, readFile, rename, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 import { createFileRoute } from "@tanstack/react-router";
 import { findCrestOnline } from "@/lib/crest-online";
-import { distinctiveConflict, normTeam, resolveCrestPath } from "@/lib/official-crests";
+import { nameKeys, normTeam, resolveCrestPath, sofaMirror } from "@/lib/official-crests";
 
 const ROOT = process.cwd();
 const OUT = join(ROOT, "public/crests");
 const INDEX = join(OUT, "index.json");
-const BASE = "https://img.sofascore.com";
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 const jobs = new Map<string, Promise<{ path: string | null; remote: string | null }>>();
+let writeChain: Promise<void> = Promise.resolve();
+
+function parseIndex(raw: string): { byName: Record<string, string>; files?: Record<string, string> } {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    // Recover a raced append: first complete object only
+    const start = raw.indexOf("{");
+    if (start < 0) return { byName: {} };
+    let depth = 0;
+    let inStr = false;
+    let esc = false;
+    for (let i = start; i < raw.length; i++) {
+      const ch = raw[i];
+      if (inStr) {
+        if (esc) esc = false;
+        else if (ch === "\\") esc = true;
+        else if (ch === '"') inStr = false;
+        continue;
+      }
+      if (ch === '"') inStr = true;
+      else if (ch === "{") depth += 1;
+      else if (ch === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          try {
+            return JSON.parse(raw.slice(start, i + 1));
+          } catch {
+            break;
+          }
+        }
+      }
+    }
+    return { byName: {} };
+  }
+}
 
 async function loadIndex(): Promise<{ byName: Record<string, string>; files?: Record<string, string> }> {
   try {
-    return JSON.parse(await readFile(INDEX, "utf8"));
+    return parseIndex(await readFile(INDEX, "utf8"));
   } catch {
     return { byName: {} };
   }
 }
 
-/** Merge-only write. Never replace a fat index with a near-empty one. */
+/** Merge-only write. Atomic + serialized so two crest jobs cannot corrupt the file. */
 async function saveIndex(index: { byName: Record<string, string>; files?: Record<string, string> }) {
+  writeChain = writeChain.then(() => persistIndex(index)).catch((err) => {
+    console.error("[crest] saveIndex", err);
+  });
+  await writeChain;
+}
+
+async function persistIndex(index: { byName: Record<string, string>; files?: Record<string, string> }) {
   const disk = await loadIndex();
   const byName = { ...(disk.byName ?? {}), ...(index.byName ?? {}) };
   const files = { ...(disk.files ?? {}), ...(index.files ?? {}) };
   const diskN = Object.keys(disk.byName ?? {}).length;
   const nextN = Object.keys(byName).length;
-  if (diskN >= 50 && nextN < Math.floor(diskN * 0.5)) {
-    console.error("[crest] refuse shrink index", diskN, "->", nextN);
+  let pngs = 0;
+  try {
+    pngs = (await readdir(OUT)).filter((f) => f.endsWith(".png")).length;
+  } catch {
+    pngs = 0;
+  }
+  if ((diskN >= 10 && nextN < diskN) || (pngs >= 200 && nextN < 200)) {
+    console.error("[crest] refuse shrink index", { diskN, nextN, pngs });
     return;
   }
-  await writeFile(
-    INDEX,
-    JSON.stringify({ byName, files, mapped: nextN, updatedAt: new Date().toISOString() }),
-  );
+  const body = JSON.stringify({ byName, files, mapped: nextN, updatedAt: new Date().toISOString() });
+  JSON.parse(body);
+  const tmp = `${INDEX}.tmp`;
+  await writeFile(tmp, body);
+  await rename(tmp, INDEX);
 }
 
 async function download(url: string, dest: string) {
   const res = await fetch(url, {
-    headers: { "User-Agent": UA, Accept: "image/png,image/*,*/*", Referer: "https://en.wikipedia.org/" },
+    headers: {
+      "User-Agent": UA,
+      Accept: "image/png,image/*,*/*",
+      Referer: url.includes("sofascore") ? "https://www.sofascore.com/" : "https://en.wikipedia.org/",
+    },
     signal: AbortSignal.timeout(16_000),
   });
   if (!res.ok || !res.body) throw new Error(`dl ${res.status}`);
@@ -52,80 +105,18 @@ async function download(url: string, dest: string) {
   if (st.size < 250) throw new Error("tiny");
 }
 
-function pickTeam(
-  name: string,
-  results: {
-    type?: string;
-    entity?: {
-      id?: number;
-      name?: string;
-      shortName?: string;
-      sport?: { slug?: string; id?: number };
-      gender?: string;
-      userCount?: number;
-    };
-  }[],
-) {
-  const q = normTeam(name);
-  let best: { id: number; name: string; score: number; users: number } | null = null;
-  for (const item of results ?? []) {
-    if (item.type !== "team") continue;
-    const e = item.entity ?? {};
-    if (e.sport?.slug && e.sport.slug !== "football") continue;
-    if (e.sport?.id && e.sport.id !== 1) continue;
-    const label = String(e.name ?? "");
-    const short = String(e.shortName ?? "");
-    const n1 = normTeam(label);
-    const n2 = normTeam(short);
-    let score = 0;
-    if (n1 === q || n2 === q) score = 1;
-    else if (distinctiveConflict(q, n1) || (n2 && distinctiveConflict(q, n2))) score = 0;
-    else if (n1.startsWith(q) || q.startsWith(n1)) score = 0.9;
-    else {
-      const qt = q.split(" ").filter((t) => t.length > 2);
-      const rt = n1.split(" ").filter((t) => t.length > 2);
-      if (qt.length && rt.length) {
-        let hit = 0;
-        for (const t of qt) if (rt.includes(t)) hit += 1;
-        score = hit / Math.max(qt.length, rt.length);
-      }
-    }
-    if (score < 0.62 || !e.id) continue;
-    const users = e.userCount ?? 0;
-    if (!best || score > best.score || (score === best.score && users > best.users)) {
-      best = { id: e.id, name: label, score, users };
-    }
-  }
-  return best;
-}
-
-async function sofascoreUrl(name: string): Promise<string | null> {
-  const data = await fetch(`${BASE}/api/v1/search/all?q=${encodeURIComponent(name)}`, {
-    headers: {
-      "User-Agent": UA,
-      Accept: "application/json",
-      Origin: "https://www.sofascore.com",
-      Referer: "https://www.sofascore.com/",
-    },
-    signal: AbortSignal.timeout(12_000),
-  }).then((r) => (r.ok ? r.json() : { results: [] }));
-  const picked = pickTeam(name, data.results ?? []);
-  if (!picked) return null;
-  return `${BASE}/api/v1/team/${picked.id}/image`;
-}
-
 function slug(name: string) {
   return normTeam(name).replace(/\s+/g, "-").slice(0, 48) || "club";
 }
 
 async function resolveName(name: string): Promise<{ path: string | null; remote: string | null }> {
-  const key = normTeam(name);
   const index = await loadIndex();
   const existing = resolveCrestPath(name, index.byName ?? {});
-  if (existing) return { path: existing, remote: existing.startsWith("http") ? existing : null };
+  if (existing) {
+    return { path: existing, remote: sofaMirror(existing) ?? (existing.startsWith("http") ? existing : null) };
+  }
 
-  // Official policy: Wikipedia first (covers all clubs), then SofaScore badges
-  const remote = (await findCrestOnline(name)) ?? (await sofascoreUrl(name));
+  const remote = await findCrestOnline(name);
   if (!remote) return { path: null, remote: null };
 
   const file = remote.includes("/team/")
@@ -138,13 +129,15 @@ async function resolveName(name: string): Promise<{ path: string | null; remote:
     try {
       await download(remote, dest);
     } catch {
-      // Still return the remote Wikipedia URL so the client can show it
-      return { path: null, remote };
+      index.byName ??= {};
+      for (const k of nameKeys(name)) index.byName[k] = remote;
+      await saveIndex(index);
+      return { path: remote, remote };
     }
   }
   const path = `/crests/${file}`;
   index.byName ??= {};
-  index.byName[key] = path;
+  for (const k of nameKeys(name)) index.byName[k] = remote;
   await saveIndex(index);
   return { path, remote };
 }

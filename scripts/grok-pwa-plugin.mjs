@@ -19,6 +19,7 @@ import {
 } from "./grok-pwa-shared.mjs";
 
 const INSTALL_PAGE_PATH = join(dirname(fileURLToPath(import.meta.url)), "install-page.html");
+const SW_PATH = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "sw.js");
 
 function requestHost(req) {
   const forwarded = req.headers["x-forwarded-host"];
@@ -47,6 +48,21 @@ function serveGrokPwa(middlewares) {
     const method = (req.method ?? "GET").toUpperCase();
     if (method !== "GET") {
       next();
+      return;
+    }
+
+    if (pathOnly === "/sw.js") {
+      try {
+        const body = readFileSync(SW_PATH);
+        res.statusCode = 200;
+        res.setHeader("content-type", "application/javascript; charset=utf-8");
+        res.setHeader("cache-control", "no-cache");
+        res.setHeader("service-worker-allowed", "/");
+        res.setHeader("content-length", String(body.byteLength));
+        res.end(body);
+      } catch {
+        next();
+      }
       return;
     }
 
