@@ -139,7 +139,7 @@ function pickTeam(name, results) {
     if (wantWomen && e.gender === "M") continue;
     if (!wantWomen && e.gender === "F") continue;
     const s = Math.max(scoreName(name, label), scoreName(searchQuery(name), label), scoreName(name, e.shortName || ""));
-    if (s < 0.5) continue;
+    if (s < 0.55) continue;
     candidates.push({ e, s, users: e.userCount || 0 });
   }
   candidates.sort((a, b) => b.s - a.s || b.users - a.users);
@@ -155,6 +155,7 @@ async function main() {
   let hit = 0;
   let miss = 0;
   let skip = 0;
+  let upgraded = 0;
 
   for (const name of names) {
     const key = norm(name);
@@ -182,6 +183,7 @@ async function main() {
         await download(`${BASE}/api/v1/team/${id}/image`, dest);
       }
       const path = `/crests/${file}`;
+      if (existing && !existing.includes("/crests/ss-")) upgraded += 1;
       index.byName[key] = path;
       index.byName[norm(picked.e.name)] = path;
       index.files[file] = picked.e.name;
@@ -196,7 +198,15 @@ async function main() {
     await new Promise((r) => setTimeout(r, 140));
   }
 
-  index.counts = { names: names.length, hit, miss, skip, mapped: Object.keys(index.byName).length, source: "official" };
+  index.counts = {
+    names: names.length,
+    hit,
+    miss,
+    skip,
+    upgraded,
+    mapped: Object.keys(index.byName).length,
+    source: "sofascore",
+  };
   await saveIndex(index);
   console.log(index.counts);
 }
