@@ -43,7 +43,7 @@ async function saveIndex(index: { byName: Record<string, string>; files?: Record
 
 async function download(url: string, dest: string) {
   const res = await fetch(url, {
-    headers: { "User-Agent": UA, Accept: "image/png,image/*,*/*", Referer: "https://www.sofascore.com/" },
+    headers: { "User-Agent": UA, Accept: "image/png,image/*,*/*", Referer: "https://en.wikipedia.org/" },
     signal: AbortSignal.timeout(16_000),
   });
   if (!res.ok || !res.body) throw new Error(`dl ${res.status}`);
@@ -124,7 +124,8 @@ async function resolveName(name: string): Promise<{ path: string | null; remote:
   const existing = resolveCrestPath(name, index.byName ?? {});
   if (existing) return { path: existing, remote: existing.startsWith("http") ? existing : null };
 
-  const remote = (await sofascoreUrl(name)) ?? (await findCrestOnline(name));
+  // Official policy: Wikipedia first (covers all clubs), then SofaScore badges
+  const remote = (await findCrestOnline(name)) ?? (await sofascoreUrl(name));
   if (!remote) return { path: null, remote: null };
 
   const file = remote.includes("/team/")
@@ -137,6 +138,7 @@ async function resolveName(name: string): Promise<{ path: string | null; remote:
     try {
       await download(remote, dest);
     } catch {
+      // Still return the remote Wikipedia URL so the client can show it
       return { path: null, remote };
     }
   }
