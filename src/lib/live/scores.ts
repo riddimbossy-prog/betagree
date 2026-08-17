@@ -16,6 +16,7 @@ const UA =
 
 const FRESH_MS = 8_000;
 const STALE_MS = 45_000;
+const BOARD_PATHS = [join(tmpdir(), "board-scores.json"), join(process.cwd(), "public/data/scores.json")];
 
 type FeedEvent = {
   id?: number;
@@ -71,6 +72,39 @@ function writeDisk(all: ScorePatch[], at: number) {
   } catch {
     /* ignore */
   }
+}
+
+function readBoardScores(): ScorePatch[] {
+  for (const path of BOARD_PATHS) {
+    try {
+      const raw = JSON.parse(readFileSync(path, "utf8")) as { scores?: ScorePatch[] };
+      if (raw.scores?.length) return raw.scores;
+    } catch {
+      /* try next */
+    }
+  }
+  return [];
+}
+
+function patchKey(p: ScorePatch) {
+  return `${norm(p.home)}|${norm(p.away)}`;
+}
+
+function mergeScorePatches(primary: ScorePatch[], secondary: ScorePatch[]): ScorePatch[] {
+  const out: ScorePatch[] = [];
+  const seen = new Set<string>();
+  for (const p of [...primary, ...secondary]) {
+    const key = patchKey(p);
+    const swap = `${norm(p.away)}|${norm(p.home)}`;
+    if (seen.has(key) || seen.has(swap)) continue;
+    seen.add(key);
+    out.push(p);
+  }
+  return out;
+}
+
+function withBoard(live: ScorePatch[]) {
+  return mergeScorePatches(readBoardScores(), live);
 }
 
 function headers() {
@@ -157,7 +191,8 @@ function cacheKey(home: string, away: string, day: string) {
 }
 
 export function peekLivePatches(): ScorePatch[] {
-  return cache.all.length ? mergeFinished(cache.all) : [];
+  const live = cache.all.length ? mergeFinished(cache.all) : [];
+  return withBoard(live);
 }
 
 function mergeFinished(live: ScorePatch[]) {
@@ -202,19 +237,19 @@ async function refreshLive(): Promise<ScorePatch[]> {
 export async function getLivePatches(mode: "fresh" | "fast" = "fast"): Promise<ScorePatch[]> {
   if (!cache.all.length) readDisk();
   const age = Date.now() - cache.at;
-  if (cache.all.length && age < FRESH_MS) return mergeFinished(cache.all);
+  if (cache.all.length && age < FRESH_MS) return withBoard(mergeFinished(cache.all));
   if (mode === "fast" && cache.all.length && age < STALE_MS) {
     void refreshLive();
-    return mergeFinished(cache.all);
+    return withBoard(mergeFinished(cache.all));
   }
   if (cache.all.length) {
     try {
-      return await refreshLive();
+      return withBoard(await refreshLive());
     } catch {
-      return mergeFinished(cache.all);
+      return withBoard(mergeFinished(cache.all));
     }
   }
-  return refreshLive();
+  return withBoard(await refreshLive());
 }
 
 export async function lookupStartedPatches(fixtures: Fixture[]): Promise<ScorePatch[]> {

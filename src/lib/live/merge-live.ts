@@ -1,8 +1,19 @@
 import type { Fixture, SlatePayload } from "../types";
 import { matchPatch, type ScorePatch } from "./score-apply";
 
+const YOUTH = /\b(u1[5-9]|u2[0-3]|reserve|reserves)\b/i;
+
 function slug(home: string, away: string) {
   return `live-${home}-${away}`
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/\p{M}/gu, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function teamId(name: string) {
+  return `live-${name}`
     .toLowerCase()
     .normalize("NFD")
     .replace(/\p{M}/gu, "")
@@ -21,7 +32,7 @@ export function fixtureFromPatch(patch: ScorePatch): Fixture {
     detail: patch.detail,
     live: patch.live,
     home: {
-      id: "",
+      id: teamId(patch.home),
       name: patch.home,
       abbr: patch.home.slice(0, 3).toUpperCase(),
       logo: patch.homeLogo ?? null,
@@ -29,7 +40,7 @@ export function fixtureFromPatch(patch: ScorePatch): Fixture {
       score: patch.homeScore,
     },
     away: {
-      id: "",
+      id: teamId(patch.away),
       name: patch.away,
       abbr: patch.away.slice(0, 3).toUpperCase(),
       logo: patch.awayLogo ?? null,
@@ -47,6 +58,7 @@ export function extraLiveFixtures(fixtures: Fixture[], patches: ScorePatch[]): F
   const extras: Fixture[] = [];
   for (const patch of patches) {
     if (!patch.live) continue;
+    if (YOUTH.test(patch.home) || YOUTH.test(patch.away)) continue;
     const already = fixtures.some((f) => matchPatch(f.home.name, f.away.name, [patch]));
     if (already) continue;
     extras.push(fixtureFromPatch(patch));

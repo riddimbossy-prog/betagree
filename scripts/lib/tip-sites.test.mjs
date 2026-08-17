@@ -101,4 +101,6 @@ test("every fixture gets a 1x2 from all 22 sites even without history", () => {
   const top = slate.consensus.find((c) => c.market === "1x2");
   assert.ok(top);
   assert.equal(top.coverage, 22);
+  assert.equal(top.band, "low");
+  assert.ok(top.pct < 0.5, `expected split board, got ${top.pct}`);
 });

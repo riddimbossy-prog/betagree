@@ -107,6 +107,7 @@ function toPatch(ev) {
     live,
     status,
     detail: clock(ev),
+    league: ev.tournament?.name ?? null,
     homeLogo: teamLogo(ev.homeTeam),
     awayLogo: teamLogo(ev.awayTeam),
   };

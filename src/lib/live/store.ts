@@ -34,9 +34,10 @@ export async function getSlate(force = false): Promise<SlatePayload> {
   if (!force && slateCache && now - slateCache.at < SLATE_TTL) return slateCache.data;
   const day = todayUtc();
   const [espn, past] = await Promise.all([fetchSlateFixtures(day), history(day, false)]);
-  let patches = peekLivePatches();
-  if (!patches.length) patches = await getLivePatches("fresh");
+  let patches = await getLivePatches("fresh");
+  if (!patches.length) patches = peekLivePatches();
   const extras = extraLiveFixtures(espn, patches);
+  // Assemble after extras so worldwide live games get the same 22-desk sheet.
   const fixtures = extras.length ? [...extras, ...espn] : espn;
   setBoardPairs(fixtures.map((f) => ({ home: f.home.name, away: f.away.name })));
   scheduleFinishedLookups(fixtures);
