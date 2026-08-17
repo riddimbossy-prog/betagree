@@ -2,7 +2,9 @@ import type { ConsensusItem, Fixture } from "@/lib/types";
 import { formatDecimal, formatPct } from "@/lib/odds";
 import { Crest } from "@/components/crest";
 import { TimeChip } from "@/components/trend-card";
+import { ConsensusChip } from "@/components/consensus-chip";
 import { usePickSheet } from "@/components/pick-sheet";
+import { bandOf } from "@/lib/consensus";
 
 export function FixtureList({
   fixtures,
@@ -15,7 +17,9 @@ export function FixtureList({
   return (
     <ul className="flex flex-col gap-3">
       {fixtures.map((f) => {
-        const top = (byFixture.get(f.id) ?? []).find((c) => c.market === "1x2");
+        const rows = byFixture.get(f.id) ?? [];
+        const top = rows.find((c) => c.market === "1x2") ?? rows[0];
+        const band = top ? bandOf(top) : null;
         return (
           <li key={f.id}>
             <button
@@ -39,8 +43,8 @@ export function FixtureList({
                     : f.home.ml,
                   sources: ["form", "odds"],
                   why: top
-                    ? `${top.label}. ${top.count} of ${top.coverage} desks agree (${formatPct(top.pct)}). The sheet stays here — no hop off Betagree.`
-                    : `${f.away.name} visit ${f.home.name} in ${f.league}. No desk overlap yet.`,
+                    ? `${top.label}. ${top.count} of ${top.coverage} tip sites land here (${formatPct(top.pct)}). ${bandOf(top) === "high" ? "High consensus." : bandOf(top) === "medium" ? "Medium consensus." : "Low consensus — the sites are split."} The sheet stays here.`
+                    : `${f.away.name} visit ${f.home.name} in ${f.league}. No site overlap yet.`,
                 })
               }
               className="glass block w-full rounded-3xl p-4 text-left"
@@ -54,6 +58,17 @@ export function FixtureList({
                   <TimeChip raw={null} iso={f.start} />
                 )}
                 <span className="truncate text-xs text-subtle">{f.league}</span>
+                {top ? (
+                  <span className="ml-auto">
+                    <ConsensusChip
+                      pct={top.pct}
+                      count={top.count}
+                      coverage={top.coverage}
+                      band={band}
+                      compact
+                    />
+                  </span>
+                ) : null}
               </div>
               <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2 fold:gap-3">
                 <span className="flex min-w-0 items-center gap-2">

@@ -12,6 +12,7 @@ import { FormRowCard } from "@/components/form-row";
 import { StreakCard } from "@/components/streak-card";
 import { useTodayOnly } from "@/lib/store";
 import { CATEGORY_META } from "@/lib/trend-meta";
+import { SITE_COUNT, bandOf } from "@/lib/consensus";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -33,12 +34,18 @@ function Home() {
   const todayOnly = useTodayOnly();
   const fixtures = (data?.fixtures ?? []).filter((f) => !todayOnly || fixtureIsToday(f));
   const consensus = (data?.consensus ?? []).filter((c) => !todayOnly || fixtureIsToday(c.fixture));
-  const top = consensus.filter((c) => c.market === "1x2" || c.pct >= 0.65).slice(0, 4);
+  const high = consensus.filter((c) => (c.market === "1x2" || c.pct >= 0.65) && bandOf(c) === "high");
+  const top = (high.length ? high : consensus.filter((c) => c.market === "1x2" || c.pct >= 0.65)).slice(0, 4);
   const byFixture = new Map(fixtures.map((f) => [f.id, consensus.filter((c) => c.fixture.id === f.id)]));
-  const upcoming = fixtures.filter((f) => f.status !== "post" && !f.live).slice(0, 6);
+  const upcoming = fixtures.filter((f) => f.status !== "post" && !f.live);
   const liveGames = fixtures.filter((f) => f.live);
   const band = fixturesInBand(fixtures);
-  const liveCount = fixtures.filter((f) => f.live).length;
+  const liveCount = liveGames.length;
+  const highUpcoming = upcoming.filter((f) => {
+    const rows = byFixture.get(f.id) ?? [];
+    const pick = rows.find((c) => c.market === "1x2") ?? rows[0];
+    return pick ? bandOf(pick) === "high" : false;
+  });
   const bankers = (trends.data?.bankers ?? []).filter(
     (pick) => !todayOnly || isPlayingToday(pick.kickoffIso, pick.kickoff, trends.data?.date),
   );
@@ -57,6 +64,7 @@ function Home() {
   const streakTotal = [...(streaks.data?.twoYes ?? []), ...(streaks.data?.threeNo ?? [])].filter(
     (pick) => !todayOnly || isPlayingToday(pick.kickoff),
   ).length;
+  const siteN = data?.desks.length ?? SITE_COUNT;
 
   return (
     <div className="flex flex-col gap-8">
@@ -65,6 +73,7 @@ function Home() {
         sportNote="Today's board"
         tabs={[
           { id: "fixtures", label: "fixtures", value: loading ? "—" : fixtures.length, to: "/fixtures" },
+          { id: "high", label: "high", value: highUpcoming.length, to: "/fixtures", tone: "or" },
           { id: "live", label: "live", value: liveCount, to: "/fixtures", tone: liveCount ? "live" : "plain" },
           { id: "form", label: "form", value: formHot.length || "—", to: "/form" },
           { id: "streaks", label: "streaks", value: streakTotal || "—", to: "/streaks", tone: "or" },
@@ -92,6 +101,23 @@ function Home() {
             </Link>
           </div>
           <FixtureList fixtures={liveGames} byFixture={byFixture} />
+        </section>
+      ) : null}
+
+      {highUpcoming.length ? (
+        <section>
+          <div className="mb-4 flex items-end justify-between">
+            <h2 className="text-2xl font-semibold">
+              High <span className="font-serif italic font-normal">consensus</span>
+            </h2>
+            <Link to="/fixtures" className="text-sm text-muted-foreground">
+              Filter the board
+            </Link>
+          </div>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Upcoming matches where 70%+ of {siteN} tip sites land on the same pick.
+          </p>
+          <FixtureList fixtures={highUpcoming.slice(0, 6)} byFixture={byFixture} />
         </section>
       ) : null}
 
@@ -213,7 +239,7 @@ function Home() {
           <h2 className="mb-4 text-2xl font-semibold">
             Next <span className="font-serif italic font-normal">Kickoff</span>
           </h2>
-          <FixtureList fixtures={upcoming} byFixture={byFixture} />
+          <FixtureList fixtures={upcoming.slice(0, 6)} byFixture={byFixture} />
         </section>
       ) : null}
     </div>

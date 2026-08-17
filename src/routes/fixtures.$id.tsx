@@ -1,9 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AgreeBar } from "@/components/consensus-card";
+import { ConsensusChip } from "@/components/consensus-chip";
 import { Crest } from "@/components/crest";
 import { BoardState, LiveBar } from "@/components/live-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { bandOf } from "@/lib/consensus";
 import { formatKickoffLong, marketLabel } from "@/lib/format";
 import { useSlate } from "@/lib/live/use-live";
 import { formatDecimal } from "@/lib/odds";
@@ -82,10 +84,8 @@ function FixturePage() {
               <CardContent className="p-5">
                 <p className="text-xs tracking-widest text-subtle uppercase">{marketLabel(c.market)}</p>
                 <h2 className="font-display mt-1 text-2xl">{c.label}</h2>
-                <div className="mt-2 flex items-center gap-2">
-                  <Badge variant={c.pct >= 0.7 ? "win" : "info"}>
-                    {c.count}/{c.coverage}
-                  </Badge>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <ConsensusChip pct={c.pct} count={c.count} coverage={c.coverage} band={bandOf(c)} />
                   {c.fade.length === 0 ? <Badge variant="win">Unanimous</Badge> : null}
                 </div>
                 <AgreeBar pct={c.pct} />
@@ -96,7 +96,7 @@ function FixturePage() {
       ) : null}
 
       <section>
-        <h2 className="font-display text-2xl">Desks</h2>
+        <h2 className="font-display text-2xl">Tip sites</h2>
         <p className="mt-1 text-sm text-muted-foreground">{onDesk.length} live reads on this match.</p>
         <div className="mt-4 flex flex-col gap-3 lg:hidden">
           {onDesk.map((t) => {
@@ -139,7 +139,7 @@ function FixturePage() {
           <table className="w-full text-sm">
             <thead className="border-b border-border text-left text-xs tracking-wide text-subtle uppercase">
               <tr>
-                <th className="px-4 py-3 font-medium">Desk</th>
+                <th className="px-4 py-3 font-medium">Site</th>
                 <th className="px-4 py-3 font-medium">1X2</th>
                 <th className="px-4 py-3 font-medium">Total</th>
                 <th className="px-4 py-3 font-medium">BTTS</th>

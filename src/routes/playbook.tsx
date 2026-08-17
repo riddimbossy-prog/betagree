@@ -1,23 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
+import { SITE_COUNT } from "@/lib/consensus";
 
 export const Route = createFileRoute("/playbook")({ component: PlaybookPage });
 
 const STEPS = [
   {
     n: "01",
-    title: "Today's card",
-    body: "Every fixture, score, and price for the day sits on one board. Open a match to see how the desks lined up.",
+    title: "Today's fixtures",
+    body: "Every upcoming match, score, and price for the day sits on one board. Open a row to see how the sites lined up.",
   },
   {
     n: "02",
-    title: "Three desks",
-    body: "Market follows the posted 1X2 and total. Form uses the last five settled results. Attack compares recent goals for and against.",
+    title: "Twenty-two sites",
+    body: "Each desk is a public tip method — price, form, Poisson, Elo, home bias, fade, and sixteen more. Together they read like twenty-odd tip sites.",
   },
   {
     n: "03",
-    title: "Count the pack",
-    body: "A consensus pick is the leading selection when at least two desks post the same side. Unanimous means they all landed together.",
+    title: "High, medium, low",
+    body: "High is 70%+ of sites on the same pick. Medium is 50–69%. Low is a split board. Filter the fixtures list by that band.",
   },
   {
     n: "04",
@@ -38,8 +39,8 @@ function PlaybookPage() {
         <p className="text-xs tracking-widest text-subtle uppercase">Method</p>
         <h1 className="font-display mt-2 text-4xl">Playbook</h1>
         <p className="mt-3 text-muted-foreground">
-          Betagree is a live soccer consensus desk. It does not invent tipsters. It tells you where
-          the price and the recent numbers overlap on today's fixtures.
+          Betagree is a live soccer consensus desk. It ranks today's fixtures by how many of{" "}
+          {SITE_COUNT} tip sites land on the same pick.
         </p>
       </header>
 
@@ -58,9 +59,9 @@ function PlaybookPage() {
           <CardContent className="p-6">
             <h2 className="font-display text-2xl">What the number means</h2>
             <dl className="mt-4 divide-y divide-border text-sm">
-              <Row k="3/3" v="Market, form, and attack all on the same side." />
-              <Row k="2/3" v="A real lean. Check who faded — often the market vs the form." />
-              <Row k="Split" v="No consensus. The fixture stays on the board; it does not make the card." />
+              <Row k="High" v="70% or more of the sites that posted this market land on the same side." />
+              <Row k="Medium" v="A real lean — half to two-thirds of the sites. Check who faded." />
+              <Row k="Low" v="Split board. The fixture stays listed; it is not a pack pick." />
             </dl>
           </CardContent>
         </Card>
@@ -80,8 +81,8 @@ function PlaybookPage() {
 
 function Row({ k, v }: { k: string; v: string }) {
   return (
-    <div className="grid gap-1 py-3 sm:grid-cols-[80px_1fr] sm:gap-4">
-      <dt className="font-medium">{k}</dt>
+    <div className="flex flex-col gap-1 py-3 sm:flex-row sm:items-baseline sm:gap-6">
+      <dt className="w-24 shrink-0 font-semibold">{k}</dt>
       <dd className="text-muted-foreground">{v}</dd>
     </div>
   );

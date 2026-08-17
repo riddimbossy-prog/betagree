@@ -1,7 +1,9 @@
 import type { ConsensusItem } from "@/lib/types";
 import { Crest } from "@/components/crest";
 import { TimeChip } from "@/components/trend-card";
+import { ConsensusChip } from "@/components/consensus-chip";
 import { usePickSheet } from "@/components/pick-sheet";
+import { bandOf } from "@/lib/consensus";
 import { formatDecimal, formatPct } from "@/lib/odds";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +11,7 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
   const f = item.fixture;
   const hot = (rank ?? 0) % 2 === 0;
   const sheet = usePickSheet();
+  const band = bandOf(item);
   return (
     <button
       type="button"
@@ -24,7 +27,7 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
           label: item.label,
           odds: item.market === "1x2" ? (item.selection === "home" ? f.home.ml : item.selection === "away" ? f.away.ml : f.drawMl) : null,
           sources: ["form", "odds"],
-          why: `${item.label}. ${item.count} of ${item.coverage} desks land here (${formatPct(item.pct)}). This is our read — the sheet stays on Betagree.`,
+          why: `${item.label}. ${item.count} of ${item.coverage} tip sites land here (${formatPct(item.pct)}). ${band === "high" ? "High consensus." : band === "medium" ? "Medium consensus." : "Low consensus."} This is our read — the sheet stays on Betagree.`,
         })
       }
       className={cn(
@@ -32,10 +35,13 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
         hot ? "glass-gules" : "glass-purpure",
       )}
     >
-      <p className="text-xs font-medium tracking-wide text-white/70">
-        {item.market === "1x2" ? "Match result" : item.market === "total" ? "Total" : "BTTS"}
-        {rank !== undefined ? ` · 0${rank}` : ""}
-      </p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-xs font-medium tracking-wide text-white/70">
+          {item.market === "1x2" ? "Match result" : item.market === "total" ? "Total" : "BTTS"}
+          {rank !== undefined ? ` · 0${rank}` : ""}
+        </p>
+        <ConsensusChip pct={item.pct} count={item.count} coverage={item.coverage} band={band} compact />
+      </div>
       <div className="mt-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col items-center gap-1.5">
           <Crest name={f.away.name} logo={f.away.logo} size="lg" />
@@ -60,9 +66,6 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
         <span className="odds-chip">{formatDecimal(f.home.ml)}</span>
       </div>
       <p className="mt-4 text-center text-sm font-semibold">{item.label}</p>
-      <p className="mt-1 text-center text-xs text-white/70">
-        {item.count}/{item.coverage} desks · {formatPct(item.pct)}
-      </p>
     </button>
   );
 }

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, Flame, Home, Landmark, TrendingUp, Zap } from "lucide-react";
+import { Bell, CalendarDays, Flame, Home, TrendingUp, Zap } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
@@ -12,10 +12,10 @@ import { preloadOfficialCrests } from "@/lib/official-crests";
 
 const NAV = [
   { to: "/", label: "Today", icon: Home },
+  { to: "/fixtures", label: "Fixtures", icon: CalendarDays },
   { to: "/form", label: "Form", icon: Flame },
   { to: "/streaks", label: "Streaks", icon: Zap },
   { to: "/trends", label: "Trends", icon: TrendingUp },
-  { to: "/banker", label: "Banker", icon: Landmark },
 ] as const;
 
 function greeting() {
@@ -45,7 +45,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
             <Crest name="Betagree" size="md" />
             <span className="min-w-0">
               <p className="text-sm font-semibold">{greeting()}</p>
-              <p className="text-xs text-muted-foreground">Betagree · live consensus</p>
+              <p className="text-xs text-muted-foreground">Betagree · 22-site consensus</p>
             </span>
           </Link>
           <AuthSlot />
@@ -83,24 +83,24 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
       <footer className="glass mt-auto hidden xl:block">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-6 text-xs text-subtle">
-          <p>Betagree ranks soccer picks where the desks overlap. Not a sportsbook.</p>
+          <p>Betagree ranks soccer tips where 22 sites overlap. Not a sportsbook.</p>
           <div className="flex flex-wrap gap-4">
             {NAV.map((item) => (
               <Link key={item.to} to={item.to} className="hover:text-foreground">
                 {item.label}
               </Link>
             ))}
+            <Link to="/banker" className="hover:text-foreground">
+              Banker
+            </Link>
             <Link to="/odds" className="hover:text-foreground">
               Filter
-            </Link>
-            <Link to="/fixtures" className="hover:text-foreground">
-              Fixtures
             </Link>
             <Link to="/accuracy" className="hover:text-foreground">
               Accuracy
             </Link>
             <Link to="/tipsters" className="hover:text-foreground">
-              Desks
+              Sites
             </Link>
             <Link to="/playbook" className="hover:text-foreground">
               Playbook

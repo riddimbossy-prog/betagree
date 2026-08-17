@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { BoardState } from "@/components/live-bar";
 import { FormDots, RecordLine, Units } from "@/components/record-line";
 import { Badge } from "@/components/ui/badge";
+import { SITE_COUNT } from "@/lib/consensus";
 import { useLedger } from "@/lib/live/use-live";
 import { formatPct } from "@/lib/odds";
 
@@ -15,10 +16,10 @@ function TipstersPage() {
     <div className="flex flex-col gap-8">
       <header className="max-w-2xl">
         <p className="text-xs tracking-widest text-subtle uppercase">{data?.windowLabel ?? "Live book"}</p>
-        <h1 className="font-display mt-2 text-4xl">Desks</h1>
+        <h1 className="font-display mt-2 text-4xl">Tip sites</h1>
         <p className="mt-3 text-muted-foreground">
-          Three live reads — the posted market, last-five form, and a goals lean. Graded on settled
-          matches from this board.{" "}
+          {rows.length || SITE_COUNT} desks — price, form, Poisson, Elo, fade, and the rest. Graded
+          on settled matches from this board.{" "}
           <Link to="/accuracy" className="text-foreground underline-offset-2 hover:underline">
             Accuracy
           </Link>
@@ -54,7 +55,7 @@ function TipstersPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-border text-left text-xs tracking-wide text-subtle uppercase">
               <tr>
-                <th className="px-4 py-3 font-medium">Desk</th>
+                <th className="px-4 py-3 font-medium">Site</th>
                 <th className="px-4 py-3 text-right font-medium">Record</th>
                 <th className="px-4 py-3 text-right font-medium">Hit</th>
                 <th className="px-4 py-3 text-right font-medium">Units</th>

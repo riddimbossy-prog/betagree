@@ -86,6 +86,7 @@ function scrubSlate(data: SlatePayload): SlatePayload {
       ...c,
       agree: (c.agree ?? []).map((d) => scrubDesk(d)),
       fade: (c.fade ?? []).map((d) => scrubDesk(d)),
+      band: c.band ?? (c.pct >= 0.7 ? "high" : c.pct >= 0.5 ? "medium" : "low"),
     })),
   };
 }
