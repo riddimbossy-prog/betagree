@@ -46,6 +46,7 @@ const LEAGUES = [
   ["bra.1", ["brazil brasileiro serie a", "brazil serie a", "brasileiro serie a"]],
   ["arg.1", ["argentina liga profesional", "argentina primera division"]],
   ["chi.1", ["chile primera", "chile liga de primera"]],
+  ["chn.1", ["chinese super league", "china super league"]],
   ["col.1", ["colombia primera a", "colombia liga"]],
   ["ned.2", ["netherlands eerste divisie"]],
   ["swe.1", ["sweden allsvenskan"]],
@@ -154,7 +155,9 @@ async function pullMarket(marketId) {
 
 function isSenior(ev) {
   const key = leagueKey(ev);
-  return !/\b(women|ladies|femenil|feminine|u1[5-9]|u2[0-3]|reserve|reserves|youth|junior|ii|iii)\b/.test(key);
+  const teams = norm(`${ev?.homeTeamName ?? ""} ${ev?.awayTeamName ?? ""}`);
+  const bad = /\b(women|ladies|femenil|feminine|u1[5-9]|u2[0-3]|reserve|reserves|youth|junior|ii|iii|next pro)\b/;
+  return !bad.test(key) && !bad.test(teams);
 }
 
 function leagueKey(ev) {
@@ -289,9 +292,9 @@ async function main() {
 
     const slug = mapSlug(leagueKey(ev));
     const table = slug ? tables.get(slug) ?? [] : [];
-    if (table.length < 6) continue;
-    const homeRow = findRow(table, ev.homeTeamName);
-    let awayRow = findRow(table, ev.awayTeamName);
+    // Table is only required for 2+ PPG gate — never drop 3+ Over picks for missing standings
+    const homeRow = table.length ? findRow(table, ev.homeTeamName) : null;
+    let awayRow = table.length ? findRow(table, ev.awayTeamName) : null;
     if (homeRow && awayRow && homeRow.name === awayRow.name) {
       awayRow =
         table.find((r) => alias(r.name) === alias(ev.awayTeamName) && r.name !== homeRow.name) ?? null;
@@ -299,6 +302,10 @@ async function main() {
     const sameLogo = Boolean(homeRow?.logo && awayRow?.logo && homeRow.logo === awayRow.logo);
     const homePole = poleOf(homeRow, table.length);
     const awayPole = poleOf(awayRow, table.length);
+
+    // Prefer live event icons (SportyBet) so crests never go blank on cups / unmapped leagues
+    const homeLogo = sameLogo ? null : (ev.homeTeamIcon || homeRow?.logo || null);
+    const awayLogo = sameLogo ? null : (ev.awayTeamIcon || awayRow?.logo || null);
 
     const league = ev.sport?.category?.tournament?.name ?? ev.sport?.category?.name ?? "Football";
     const base = {
@@ -309,8 +316,8 @@ async function main() {
       kickoff: new Date(start).toISOString(),
       home: ev.homeTeamName,
       away: ev.awayTeamName,
-      homeLogo: sameLogo ? null : (homeRow?.logo ?? ev.homeTeamIcon ?? null),
-      awayLogo: sameLogo ? null : (awayRow?.logo ?? ev.awayTeamIcon ?? null),
+      homeLogo,
+      awayLogo,
       favorite:
         fav.side === "home"
           ? ev.homeTeamName
@@ -330,7 +337,8 @@ async function main() {
     };
 
     // 2+ Yes @ 1.19–1.40 + favorite's opponent averages under 1.2 PPG
-    if (inBand(yes2price, TWO_YES) && fav.side) {
+    // Require a real standings row so PPG is meaningful; skip when table is missing.
+    if (inBand(yes2price, TWO_YES) && fav.side && table.length >= 6) {
       const oppRow = fav.side === "home" ? awayRow : homeRow;
       const oppPpg = ppg(oppRow);
       if (oppPpg != null && oppPpg < OPP_PPG_MAX) {
@@ -347,7 +355,7 @@ async function main() {
       }
     }
 
-    // 3+ streak: (Yes + No) / 2 in 1.90–2.10 → Over 2.5 goals
+    // 3+ streak: (Yes + No) / 2 in 1.90–2.10 → Over 2.5 goals (no table required)
     if (Number.isFinite(yes3) && Number.isFinite(no3price)) {
       const avg = (yes3 + no3price) / 2;
       if (inBand(avg, THREE_AVG)) {
