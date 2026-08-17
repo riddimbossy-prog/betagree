@@ -76,6 +76,7 @@ const ALIAS: Record<string, string> = {
   "hull city": "hull city",
   "coventry city": "coventry city",
   monza: "ac monza",
+  "ac monza": "ac monza",
   rennes: "stade rennais",
   "sc cambuur": "cambuur",
   "bk hacken": "hacken",
@@ -91,6 +92,13 @@ const ALIAS: Record<string, string> = {
   "persik kediri": "persik",
   "ayeyawady fc": "ayeyawady",
   "fc jurong": "jurong",
+};
+
+/** Always-on paths so a wiped index cannot drop stubborn clubs. */
+const PINNED: Record<string, string> = {
+  monza: "/crests/ac-monza.png",
+  "ac monza": "/crests/ac-monza.png",
+  "associazione calcio monza": "/crests/ac-monza.png",
 };
 
 export function normTeam(name: string) {
@@ -141,6 +149,8 @@ function scoreKey(query: string, key: string) {
 export function resolveCrestPath(name: string, byName: Record<string, string>): string | null {
   const q = normTeam(name);
   if (!q) return null;
+  const pinned = PINNED[q] ?? (ALIAS[q] ? PINNED[normTeam(ALIAS[q])] : null);
+  if (isUsablePath(pinned)) return pinned;
   const direct = byName[q];
   if (isUsablePath(direct)) return direct;
   const alias = ALIAS[q];
@@ -217,8 +227,7 @@ async function askServer(name: string): Promise<string | null> {
 }
 
 export function officialCrestPath(name: string): string | null {
-  if (!cache) return null;
-  return resolveCrestPath(name, cache.byName);
+  return resolveCrestPath(name, cache?.byName ?? {});
 }
 
 export function useOfficialCrest(name: string): string | null {

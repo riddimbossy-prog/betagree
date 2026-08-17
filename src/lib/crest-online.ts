@@ -29,6 +29,8 @@ const SEARCH_ALIAS: Record<string, string> = {
   "stjordals blink": "Stjordals-Blink",
   "utc cajamarca": "UTC Cajamarca",
   "tromso w": "Tromso women",
+  monza: "AC Monza",
+  "ac monza": "AC Monza",
 };
 
 function queryFor(name: string) {
