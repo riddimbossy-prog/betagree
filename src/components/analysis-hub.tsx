@@ -38,7 +38,7 @@ function TileIcon({ name, tone }: { name: AnalysisTile["icon"]; tone?: AnalysisT
   return (
     <span
       className={cn(
-        "grid size-12 shrink-0 place-items-center rounded-2xl",
+        "analysis-card-icon grid size-12 shrink-0 place-items-center rounded-2xl",
         tone === "high" && "glass-high text-band-high-foreground",
         tone === "live" && "glass-gules text-primary-foreground",
         tone === "or" && "glass-or text-or",
@@ -57,22 +57,22 @@ function AnalysisCard({ tile }: { tile: AnalysisTile }) {
     <Link
       to={tile.to}
       className={cn(
-        "analysis-card group glass block rounded-3xl p-5 no-underline transition",
+        "analysis-card group glass block rounded-3xl p-5 no-underline",
         tile.size === "lg" && "fold:min-h-[9.5rem]",
       )}
     >
       <div className="flex items-start gap-4">
         <TileIcon name={tile.icon} tone={tile.tone} />
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-subtle">
+          <p className="analysis-card-eyebrow text-[10px] font-semibold uppercase tracking-[0.16em] text-subtle">
             {tile.eyebrow}
           </p>
-          <h3 className="mt-1 text-xl font-semibold text-foreground group-hover:text-or">
+          <h3 className="analysis-card-title mt-1 text-xl font-semibold text-foreground">
             {tile.title}
           </h3>
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{tile.body}</p>
+          <p className="analysis-card-body mt-2 text-sm leading-relaxed text-muted-foreground">{tile.body}</p>
         </div>
-        <div className="shrink-0 text-right">
+        <div className="analysis-card-badge shrink-0 text-right">
           <p
             className={cn(
               "font-serif text-2xl italic leading-none tabular",
