@@ -88,7 +88,7 @@ function FixturePage() {
                   <ConsensusChip pct={c.pct} count={c.count} coverage={c.coverage} band={bandOf(c)} />
                   {c.fade.length === 0 ? <Badge variant="win">Unanimous</Badge> : null}
                 </div>
-                <AgreeBar pct={c.pct} />
+                <AgreeBar pct={c.pct} band={bandOf(c)} />
               </CardContent>
             </Card>
           ))}

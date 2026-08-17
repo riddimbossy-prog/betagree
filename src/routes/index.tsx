@@ -73,7 +73,7 @@ function Home() {
         sportNote="Today's board"
         tabs={[
           { id: "fixtures", label: "fixtures", value: loading ? "—" : fixtures.length, to: "/fixtures" },
-          { id: "high", label: "high", value: highUpcoming.length, to: "/fixtures", tone: "or" },
+          { id: "high", label: "high", value: highUpcoming.length, to: "/fixtures", tone: "high" },
           { id: "live", label: "live", value: liveCount, to: "/fixtures", tone: liveCount ? "live" : "plain" },
           { id: "form", label: "form", value: formHot.length || "—", to: "/form" },
           { id: "streaks", label: "streaks", value: streakTotal || "—", to: "/streaks", tone: "or" },

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { BAND_OUTLINE, BAND_TONE } from "@/components/consensus-chip";
 import { FixtureList } from "@/components/fixture-list";
 import { BoardState, LiveBar } from "@/components/live-bar";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { fixtureIsToday } from "@/lib/format";
 import { useSlate } from "@/lib/live/use-live";
 import { loadBoardSnapshot } from "@/lib/live/snapshot";
 import { useTodayOnly } from "@/lib/store";
+import { cn } from "@/lib/utils";
 import type { ConsensusItem } from "@/lib/types";
 
 export const Route = createFileRoute("/fixtures/")({
@@ -94,25 +96,30 @@ function FixturesPage() {
       </header>
 
       <div className="chip-row" role="tablist" aria-label="Consensus strength">
-        {(
-          [
-            ["all", "All", bandCounts.all],
-            ["high", BAND_META.high.label, bandCounts.high],
-            ["medium", BAND_META.medium.label, bandCounts.medium],
-            ["low", BAND_META.low.label, bandCounts.low],
-          ] as const
-        ).map(([id, label, n]) => (
-          <Button
+        <Button
+          type="button"
+          size="sm"
+          variant={band === "all" ? "default" : "outline"}
+          onClick={() => setBand("all")}
+          aria-pressed={band === "all"}
+        >
+          All
+          <span className="tabular opacity-70">{bandCounts.all}</span>
+        </Button>
+        {(["high", "medium", "low"] as const).map((id) => (
+          <button
             key={id}
             type="button"
-            size="sm"
-            variant={band === id ? "default" : "outline"}
             onClick={() => setBand(id)}
             aria-pressed={band === id}
+            className={cn(
+              "inline-flex h-9 min-h-9 shrink-0 items-center gap-2 rounded-full px-4 text-xs font-semibold",
+              band === id ? BAND_TONE[id] : BAND_OUTLINE[id],
+            )}
           >
-            {label}
-            <span className="tabular opacity-70">{n}</span>
-          </Button>
+            {BAND_META[id].label}
+            <span className="tabular opacity-80">{bandCounts[id]}</span>
+          </button>
         ))}
       </div>
 

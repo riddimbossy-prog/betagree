@@ -8,7 +8,7 @@ export type HeroTab = {
   value?: string | number;
   to?: string;
   hash?: string;
-  tone?: "sport" | "live" | "or" | "azure" | "plain";
+  tone?: "sport" | "live" | "or" | "azure" | "plain" | "high";
   active?: boolean;
 };
 
@@ -37,6 +37,7 @@ export function HeroTabs({
           "hero-tab",
           tab.tone === "live" && "hero-tab-live",
           tab.tone === "or" && "hero-tab-or",
+          tab.tone === "high" && "hero-tab-high",
           tab.tone === "azure" && "hero-tab-azure",
           tab.active && "hero-tab-active",
         );

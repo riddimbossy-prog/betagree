@@ -70,7 +70,17 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
   );
 }
 
-export function AgreeBar({ pct, className }: { pct: number; className?: string }) {
+export function AgreeBar({
+  pct,
+  className,
+  band,
+}: {
+  pct: number;
+  className?: string;
+  band?: "high" | "medium" | "low";
+}) {
+  const fill =
+    band === "high" ? "bg-band-high" : band === "medium" ? "bg-band-medium" : band === "low" ? "bg-band-low" : "bg-primary";
   return (
     <div className={cn("mt-4 w-full max-w-full", className)}>
       <div className="flex items-center justify-between text-xs text-subtle">
@@ -78,7 +88,7 @@ export function AgreeBar({ pct, className }: { pct: number; className?: string }
         <span className="tabular">{formatPct(pct)}</span>
       </div>
       <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
-        <div className="h-full rounded-full bg-primary" style={{ width: `${Math.round(pct * 100)}%` }} />
+        <div className={cn("h-full rounded-full", fill)} style={{ width: `${Math.round(pct * 100)}%` }} />
       </div>
     </div>
   );

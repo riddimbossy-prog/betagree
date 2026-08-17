@@ -45,6 +45,12 @@
   --color-azure: hsl(214 52% 52%);
   --color-vert: hsl(148 36% 38%);
   --color-purpure: hsl(262 52% 46%);
+  --color-band-high: hsl(111 100% 50%);
+  --color-band-high-foreground: hsl(140 48% 6%);
+  --color-band-medium: hsl(34 100% 54%);
+  --color-band-medium-foreground: hsl(24 58% 8%);
+  --color-band-low: hsl(328 100% 56%);
+  --color-band-low-foreground: hsl(330 40% 98%);
   --tincture-or: hsl(40 58% 62%);
   --tincture-or-bright: hsl(44 82% 76%);
   --tincture-or-deep: hsl(34 58% 36%);
@@ -208,6 +214,39 @@
     0 0 0 1px hsl(40 58% 62% / 0.28);
 }
 
+@utility glass-high {
+  background-color: hsl(111 100% 48% / 0.92);
+  color: var(--color-band-high-foreground);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.6);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.6);
+  box-shadow:
+    inset 0 1px 0 hsl(111 100% 82% / 0.55),
+    0 0 0 1px hsl(111 100% 62% / 0.7),
+    0 0 22px hsl(111 100% 50% / 0.42);
+}
+
+@utility glass-medium {
+  background-color: hsl(34 100% 52% / 0.92);
+  color: var(--color-band-medium-foreground);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
+  box-shadow:
+    inset 0 1px 0 hsl(42 100% 82% / 0.5),
+    0 0 0 1px hsl(34 100% 64% / 0.65),
+    0 0 22px hsl(28 100% 52% / 0.34);
+}
+
+@utility glass-low {
+  background-color: hsl(328 100% 52% / 0.9);
+  color: var(--color-band-low-foreground);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
+  box-shadow:
+    inset 0 1px 0 hsl(328 100% 82% / 0.4),
+    0 0 0 1px hsl(328 100% 70% / 0.6),
+    0 0 22px hsl(328 100% 56% / 0.38);
+}
+
 @layer components {
   .bg-card {
     background-color: hsl(240 18% 16% / 0.4);
@@ -244,6 +283,15 @@
   }
   .glass-gules {
     background-color: hsl(354 62% 36%);
+  }
+  .glass-high {
+    background-color: hsl(111 92% 46%);
+  }
+  .glass-medium {
+    background-color: hsl(34 96% 50%);
+  }
+  .glass-low {
+    background-color: hsl(328 92% 50%);
   }
 }
 
@@ -413,6 +461,17 @@
 
 .hero-tab-or .hero-tab-value {
   color: var(--color-or);
+}
+
+.hero-tab-high {
+  background: hsl(111 100% 42% / 0.22);
+  box-shadow:
+    inset 0 1px 0 hsl(111 100% 80% / 0.18),
+    0 0 0 1px hsl(111 100% 55% / 0.35);
+}
+
+.hero-tab-high .hero-tab-value {
+  color: var(--color-band-high);
 }
 
 .hero-tab-azure .hero-tab-value {
