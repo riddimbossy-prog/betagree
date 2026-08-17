@@ -52,10 +52,11 @@ function TileIcon({ name, tone }: { name: AnalysisTile["icon"]; tone?: AnalysisT
   );
 }
 
-function AnalysisCard({ tile }: { tile: AnalysisTile }) {
+function AnalysisCard({ tile, index = 0 }: { tile: AnalysisTile; index?: number }) {
   return (
     <Link
       to={tile.to}
+      style={{ ["--enter-i" as string]: index }}
       className={cn(
         "analysis-card group glass block rounded-3xl p-5 no-underline",
         tile.size === "lg" && "fold:min-h-[9.5rem]",
@@ -115,7 +116,7 @@ export function AnalysisHub({
 
   return (
     <section className="analysis-hub">
-      <div className="flex flex-wrap items-start justify-between gap-4">
+      <div className="enter-up flex flex-wrap items-start justify-between gap-4" style={{ ["--enter-i" as string]: 0 }}>
         <div className="max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-or">{kicker}</p>
           <h1 className="mt-2 text-3xl font-semibold fold:text-4xl">
@@ -136,15 +137,15 @@ export function AnalysisHub({
       </div>
 
       <div className="mt-6 grid gap-3 fold:grid-cols-2">
-        {large.map((tile) => (
-          <AnalysisCard key={tile.id} tile={tile} />
+        {large.map((tile, i) => (
+          <AnalysisCard key={tile.id} tile={tile} index={i} />
         ))}
       </div>
 
       {medium.length ? (
         <div className="mt-3 grid gap-3 fold:grid-cols-3">
-          {medium.map((tile) => (
-            <AnalysisCard key={tile.id} tile={tile} />
+          {medium.map((tile, i) => (
+            <AnalysisCard key={tile.id} tile={tile} index={large.length + i} />
           ))}
         </div>
       ) : null}
