@@ -21,6 +21,7 @@ export type Fixture = {
   status: string;
   detail: string;
   live: boolean;
+  source?: "board" | "extra";
   home: FixtureTeam;
   away: FixtureTeam;
   drawMl: number | null;

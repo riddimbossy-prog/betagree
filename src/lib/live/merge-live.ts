@@ -31,6 +31,7 @@ export function fixtureFromPatch(patch: ScorePatch): Fixture {
     status: patch.status,
     detail: patch.detail,
     live: patch.live,
+    source: "extra",
     home: {
       id: teamId(patch.home),
       name: patch.home,

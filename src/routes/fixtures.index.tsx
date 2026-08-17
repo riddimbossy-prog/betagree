@@ -5,6 +5,7 @@ import { FixtureList } from "@/components/fixture-list";
 import { BoardState, LiveBar } from "@/components/live-bar";
 import { Button } from "@/components/ui/button";
 import { BAND_META, bandOf, type ConsensusBand } from "@/lib/consensus";
+import { isBoardMatch } from "@/lib/board-match";
 import { fixtureIsToday, sortBoardGames } from "@/lib/format";
 import { useSlate } from "@/lib/live/use-live";
 import { loadBoardSnapshot } from "@/lib/live/snapshot";
@@ -72,6 +73,7 @@ function FixturesPage() {
     return todayBoard.filter((f) => {
       if (league !== "all" && f.league !== league) return false;
       if (status === "live" && !f.live) return false;
+      if (status === "live" && !isBoardMatch(f)) return false;
       if (status === "upcoming" && f.status === "post") return false;
       if (band !== "all") {
         const top = topPick(byFixture.get(f.id));

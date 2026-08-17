@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, CalendarDays, Flame, Home, TrendingUp, Zap } from "lucide-react";
+import { Bell, CalendarDays, Flame, Home, Radio, Zap } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
@@ -13,10 +13,10 @@ import { TodayFilterProvider } from "@/lib/today-filter";
 
 const NAV = [
   { to: "/", label: "Today", icon: Home },
+  { to: "/live", label: "In play", icon: Radio },
   { to: "/fixtures", label: "Fixtures", icon: CalendarDays },
   { to: "/form", label: "Form", icon: Flame },
   { to: "/streaks", label: "Streaks", icon: Zap },
-  { to: "/trends", label: "Trends", icon: TrendingUp },
 ] as const;
 
 export function SiteShell({ children }: { children: ReactNode }) {
@@ -54,7 +54,12 @@ export function SiteShell({ children }: { children: ReactNode }) {
 
       <nav className="tab-dock" aria-label="Tabs">
         {NAV.map((item) => {
-          const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+          const active =
+            item.to === "/"
+              ? pathname === "/"
+              : item.to === "/live"
+                ? pathname === "/live" || pathname.startsWith("/live/")
+                : pathname.startsWith(item.to);
           const Icon = item.icon;
           return (
             <Link
@@ -84,6 +89,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
                 {item.label}
               </Link>
             ))}
+            <Link to="/trends" className="hover:text-foreground">
+              Trends
+            </Link>
             <Link to="/banker" className="hover:text-foreground">
               Banker
             </Link>

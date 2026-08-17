@@ -4,6 +4,7 @@ import { ConsensusCard } from "@/components/consensus-card";
 import { FixtureList } from "@/components/fixture-list";
 import { BoardState } from "@/components/live-bar";
 import { TrendCard } from "@/components/trend-card";
+import { isLiveBoardMatch } from "@/lib/board-match";
 import { fixtureIsToday, isPlayingToday, sortBoardGames } from "@/lib/format";
 import { fixturesInBand } from "@/lib/odds-band";
 import { useFormBoard, useSlate, useStreaks, useTrends } from "@/lib/live/use-live";
@@ -40,7 +41,7 @@ function Home() {
   const top = (high.length ? high : consensus.filter((c) => c.market === "1x2" || c.pct >= 0.65)).slice(0, 4);
   const byFixture = new Map(fixtures.map((f) => [f.id, consensus.filter((c) => c.fixture.id === f.id)]));
   const upcoming = fixtures.filter((f) => f.status !== "post" && !f.live);
-  const liveGames = fixtures.filter((f) => f.live);
+  const liveGames = fixtures.filter(isLiveBoardMatch);
   const band = fixturesInBand(fixtures);
   const liveCount = liveGames.length;
   const highUpcoming = upcoming.filter((f) => {
@@ -75,7 +76,7 @@ function Home() {
         tabs={[
           { id: "fixtures", label: "fixtures", value: loading ? "—" : fixtures.length, to: "/fixtures" },
           { id: "high", label: "high", value: highUpcoming.length, to: "/fixtures", tone: "high" },
-          { id: "live", label: "live", value: liveCount, to: "/fixtures", tone: liveCount ? "live" : "plain" },
+          { id: "live", label: "in play", value: liveCount, to: "/live", tone: liveCount ? "live" : "plain" },
           { id: "form", label: "form", value: formHot.length || "—", to: "/form" },
           { id: "streaks", label: "streaks", value: streakTotal || "—", to: "/streaks", tone: "or" },
           { id: "trends", label: "at 70%+", value: trendTotal, to: "/trends", tone: "or" },
@@ -97,8 +98,8 @@ function Home() {
             <h2 className="text-2xl font-semibold">
               In <span className="font-serif italic font-normal">play</span>
             </h2>
-            <Link to="/fixtures" className="text-sm text-muted-foreground">
-              All fixtures
+            <Link to="/live" className="text-sm text-muted-foreground">
+              In play
             </Link>
           </div>
           <FixtureList fixtures={liveGames} byFixture={byFixture} />
