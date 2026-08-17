@@ -1,7 +1,7 @@
 import type { Fixture, LedgerPayload, SlatePayload } from "@/lib/types";
 import { assembleSlate, gradeLedger } from "./engine";
+import { extraLiveFixtures } from "./merge-live";
 import { applySlateScores, peekLivePatches, scheduleFinishedLookups, getLivePatches } from "./scores";
-import { mergeLiveFixtures } from "./merge-live";
 import { setBoardPairs } from "./board-pairs";
 import { enrichOdds, fetchHistoryFixtures, fetchSlateFixtures } from "./espn";
 
@@ -33,14 +33,15 @@ export async function getSlate(force = false): Promise<SlatePayload> {
   const now = Date.now();
   if (!force && slateCache && now - slateCache.at < SLATE_TTL) return slateCache.data;
   const day = todayUtc();
-  const [fixtures, past] = await Promise.all([fetchSlateFixtures(day), history(day, false)]);
+  const [espn, past] = await Promise.all([fetchSlateFixtures(day), history(day, false)]);
+  let patches = peekLivePatches();
+  if (!patches.length) patches = await getLivePatches("fresh");
+  const extras = extraLiveFixtures(espn, patches);
+  const fixtures = extras.length ? [...extras, ...espn] : espn;
   setBoardPairs(fixtures.map((f) => ({ home: f.home.name, away: f.away.name })));
   scheduleFinishedLookups(fixtures);
-  const patches = peekLivePatches();
-  if (!patches.length) void getLivePatches("fresh");
   const assembled = assembleSlate(day, fixtures, past);
-  const scored = patches.length ? applySlateScores(assembled, patches) : assembled;
-  const data = mergeLiveFixtures(scored, patches);
+  const data = patches.length ? applySlateScores(assembled, patches) : assembled;
   slateCache = { at: now, data };
   return data;
 }

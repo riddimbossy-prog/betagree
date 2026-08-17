@@ -36,7 +36,7 @@ function FixturesPage() {
   const { data, error, loading } = useSlate(initial);
   const [league, setLeague] = useState("all");
   const [band, setBand] = useState<BandFilter>("all");
-  const [status, setStatus] = useState<StatusFilter>("upcoming");
+  const [status, setStatus] = useState<StatusFilter>("all");
   const todayOnly = useTodayOnly();
 
   const allFixtures = data?.fixtures ?? [];
@@ -72,7 +72,7 @@ function FixturesPage() {
     return todayBoard.filter((f) => {
       if (league !== "all" && f.league !== league) return false;
       if (status === "live" && !f.live) return false;
-      if (status === "upcoming" && (f.live || f.status === "post")) return false;
+      if (status === "upcoming" && f.status === "post") return false;
       if (band !== "all") {
         const top = topPick(byFixture.get(f.id));
         const resolved = top ? bandOf(top) : "low";
@@ -132,7 +132,7 @@ function FixturesPage() {
       <div className="chip-row" aria-label="Kickoff status">
         {(
           [
-            ["upcoming", "Upcoming"],
+            ["upcoming", "Open"],
             ["live", "Live"],
             ["all", "All kickoffs"],
           ] as const

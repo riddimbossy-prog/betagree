@@ -10,6 +10,7 @@ export type ScorePatch = {
   detail: string;
   homeLogo?: string | null;
   awayLogo?: string | null;
+  league?: string | null;
 };
 
 const YOUTH = /\b(u1[5-9]|u2[0-3]|reserve|reserves|ii|iii|women|vrouwen|w)\b/i;

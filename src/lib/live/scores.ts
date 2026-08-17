@@ -28,6 +28,7 @@ type FeedEvent = {
   statusTime?: { currentPeriodStartTimestamp?: number; initial?: number; timestamp?: number };
   startTimestamp?: number;
   currentPeriodStartTimestamp?: number;
+  tournament?: { name?: string };
 };
 
 type LiveCache = {
@@ -119,7 +120,16 @@ function toPatch(ev: FeedEvent): ScorePatch | null {
   const type = String(ev.status?.type ?? "");
   const live = type === "inprogress";
   const status: ScorePatch["status"] = live ? "in" : type === "finished" ? "post" : "pre";
-  return { home, away, homeScore: hs, awayScore: as, live, status, detail: clock(ev) };
+  return {
+    home,
+    away,
+    homeScore: hs,
+    awayScore: as,
+    live,
+    status,
+    detail: clock(ev),
+    league: ev.tournament?.name ?? null,
+  };
 }
 
 async function getJson<T>(url: string): Promise<T | null> {

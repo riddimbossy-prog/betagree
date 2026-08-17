@@ -13,7 +13,7 @@ function slug(home: string, away: string) {
 export function fixtureFromPatch(patch: ScorePatch): Fixture {
   return {
     id: slug(patch.home, patch.away),
-    league: "Live",
+    league: patch.league || "Live",
     leagueSlug: "live",
     start: new Date().toISOString(),
     venue: "",
@@ -43,15 +43,20 @@ export function fixtureFromPatch(patch: ScorePatch): Fixture {
   };
 }
 
-/** Keep SofaScore in-play games on the board even when they are not on the ESPN slate. */
-export function mergeLiveFixtures(slate: SlatePayload, patches: ScorePatch[]): SlatePayload {
+export function extraLiveFixtures(fixtures: Fixture[], patches: ScorePatch[]): Fixture[] {
   const extras: Fixture[] = [];
   for (const patch of patches) {
     if (!patch.live) continue;
-    const already = slate.fixtures.some((f) => matchPatch(f.home.name, f.away.name, [patch]));
+    const already = fixtures.some((f) => matchPatch(f.home.name, f.away.name, [patch]));
     if (already) continue;
     extras.push(fixtureFromPatch(patch));
   }
+  return extras;
+}
+
+/** Keep SofaScore in-play games on the board even when they are not on the ESPN slate. */
+export function mergeLiveFixtures(slate: SlatePayload, patches: ScorePatch[]): SlatePayload {
+  const extras = extraLiveFixtures(slate.fixtures, patches);
   if (!extras.length) return slate;
   return { ...slate, fixtures: [...extras, ...slate.fixtures] };
 }

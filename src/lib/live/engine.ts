@@ -488,8 +488,7 @@ function pickFor(id: string, c: Ctx): Pick[] {
   const { f } = c;
   switch (id) {
     case "market": {
-      const made: Made[] = [];
-      if (f.home.ml != null || f.away.ml != null) made.push(oneX(c, c.fav, "strong"));
+      const made: Made[] = [oneX(c, c.hi || c.ai || c.di ? c.fav : "home", "strong")];
       if (f.total != null) {
         const over = parseAmerican(f.overOdds);
         const under = parseAmerican(f.underOdds);
@@ -499,27 +498,20 @@ function pickFor(id: string, c: Ctx): Pick[] {
       return emit(id, f, made);
     }
     case "form":
-      if (!c.hasForm) return [];
       return emit(id, f, [oneX(c, formSide(c), Math.abs(c.hr - c.ar) > 0.6 ? "strong" : "play")]);
-    case "attack": {
-      if (!c.hasForm) return [];
+    case "attack":
       return emit(id, f, [
         oneX(c, attackSide(c)),
         ou(c, c.totalExp > c.line ? "over" : "under"),
         btts(c.hSc >= 0.6 && c.aSc >= 0.6),
       ]);
-    }
     case "shield":
-      if (!c.hasForm) return [];
       return emit(id, f, [oneX(c, rateSide(-c.hga, -c.aga, 0.15))]);
     case "pulse":
-      if (!c.hasForm) return [];
       return emit(id, f, [oneX(c, rateSide(c.h3, c.a3, 0.2), "play")]);
     case "poisson":
-      if (!c.hasForm) return [];
       return emit(id, f, [oneX(c, poissonSide(c.homeExp, c.awayExp), "play")]);
     case "elo": {
-      if (!c.hasForm) return [];
       const homeR = c.hr * 3 + (c.hgf - c.hga) + 0.28;
       const awayR = c.ar * 3 + (c.agf - c.aga);
       return emit(id, f, [oneX(c, rateSide(homeR, awayR, 0.35))]);
@@ -527,70 +519,61 @@ function pickFor(id: string, c: Ctx): Pick[] {
     case "fortress":
       return emit(id, f, [oneX(c, c.ai > 0.48 ? "away" : "home", "play")]);
     case "road":
-      if (!c.hasForm) return emit(id, f, [oneX(c, c.fav === "home" ? "away" : c.fav)]);
+      if (!c.hasForm) return emit(id, f, [oneX(c, "away")]);
       return emit(id, f, [oneX(c, c.ar >= c.hr - 0.12 ? "away" : "home")]);
     case "value": {
       const heavy = Math.max(c.hi, c.ai, c.di) > 0.62;
-      const close = Math.abs(c.hr - c.ar) < 0.4;
+      const close = !c.hasForm || Math.abs(c.hr - c.ar) < 0.4;
       const side = heavy && close ? secondSide(f) : c.fav;
       return emit(id, f, [oneX(c, side)]);
     }
     case "contrarian":
       return emit(id, f, [oneX(c, fadeSide(c.fav), "lean")]);
-    case "line": {
-      if (!c.hasForm) return [];
+    case "line":
       return emit(id, f, [oneX(c, attackSide(c)), ou(c, c.totalExp > c.line ? "over" : "under")]);
-    }
-    case "clean": {
-      if (!c.hasForm) return [];
+    case "clean":
       return emit(id, f, [
         oneX(c, rateSide(-c.hga, -c.aga, 0.12)),
         btts(!(c.hga < 1.1 && c.aga < 1.1)),
       ]);
-    }
     case "fire": {
-      if (!c.hasForm) return [];
       const made: Made[] = [oneX(c, rateSide(c.hgf, c.agf, 0.2))];
       if (f.total != null) made.push(ou(c, c.hgf > 1.15 && c.agf > 1.15 ? "over" : "under"));
       return emit(id, f, made);
     }
     case "grit":
-      if (!c.hasForm) return [];
       return emit(id, f, [oneX(c, rateSide(c.hUnb, c.aUnb, 0.12))]);
     case "split":
       return emit(id, f, [oneX(c, Math.abs(c.hi - c.ai) < 0.1 ? "draw" : c.fav)]);
     case "banker": {
       const p = Math.max(c.hi, c.ai, c.di);
-      if (p < 0.55) return [];
+      if (p < 0.55) return emit(id, f, [oneX(c, c.fav, "lean")]);
       return emit(id, f, [oneX(c, c.fav, "strong")]);
     }
     case "blend": {
       const votes = [c.fav, formSide(c), attackSide(c)];
       const tally = { home: 0, draw: 0, away: 0 };
       for (const v of votes) tally[v] += 1;
-      const side: Side = tally.home >= tally.away && tally.home >= tally.draw
-        ? "home"
-        : tally.away >= tally.draw
-          ? "away"
-          : "draw";
+      const side: Side =
+        tally.home >= tally.away && tally.home >= tally.draw
+          ? "home"
+          : tally.away >= tally.draw
+            ? "away"
+            : "draw";
       return emit(id, f, [oneX(c, side, "play")]);
     }
-    case "both": {
-      if (!c.hasForm) return [];
+    case "both":
       return emit(id, f, [oneX(c, formSide(c)), btts(c.hSc >= 0.55 && c.aSc >= 0.55)]);
-    }
     case "run":
-      if (!c.hasForm) return [];
       return emit(id, f, [oneX(c, rateSide(c.hWins, c.aWins, 0.12))]);
     case "bounce":
-      if (!c.hasForm) return [];
       return emit(id, f, [oneX(c, rateSide(-c.hr, -c.ar, 0.15), "lean")]);
     case "cut": {
       const p = Math.max(c.hi, c.ai, c.di);
       return emit(id, f, [oneX(c, p > 0.48 ? c.fav : "draw")]);
     }
     default:
-      return [];
+      return emit(id, f, [oneX(c, c.fav)]);
   }
 }
 
