@@ -4,11 +4,13 @@ import { ConsensusCard } from "@/components/consensus-card";
 import { FixtureList } from "@/components/fixture-list";
 import { BoardState } from "@/components/live-bar";
 import { TrendCard } from "@/components/trend-card";
+import { fixtureIsToday, isPlayingToday } from "@/lib/format";
 import { fixturesInBand } from "@/lib/odds-band";
 import { useFormBoard, useSlate, useStreaks, useTrends } from "@/lib/live/use-live";
 import { loadBoardSnapshot } from "@/lib/live/snapshot";
 import { FormRowCard } from "@/components/form-row";
 import { StreakCard } from "@/components/streak-card";
+import { useTodayOnly } from "@/lib/store";
 import { CATEGORY_META } from "@/lib/trend-meta";
 
 export const Route = createFileRoute("/")({
@@ -28,19 +30,33 @@ function Home() {
   const trends = useTrends();
   const form = useFormBoard();
   const streaks = useStreaks();
-  const fixtures = data?.fixtures ?? [];
-  const consensus = data?.consensus ?? [];
+  const todayOnly = useTodayOnly();
+  const fixtures = (data?.fixtures ?? []).filter((f) => !todayOnly || fixtureIsToday(f));
+  const consensus = (data?.consensus ?? []).filter((c) => !todayOnly || fixtureIsToday(c.fixture));
   const top = consensus.filter((c) => c.market === "1x2" || c.pct >= 0.65).slice(0, 4);
   const byFixture = new Map(fixtures.map((f) => [f.id, consensus.filter((c) => c.fixture.id === f.id)]));
   const upcoming = fixtures.filter((f) => f.status !== "post" && !f.live).slice(0, 6);
   const liveGames = fixtures.filter((f) => f.live);
   const band = fixturesInBand(fixtures);
   const liveCount = fixtures.filter((f) => f.live).length;
-  const bankers = trends.data?.bankers ?? [];
-  const trendTotal = trends.data ? Object.values(trends.data.counts).reduce((a, b) => a + b, 0) : 0;
+  const bankers = (trends.data?.bankers ?? []).filter(
+    (pick) => !todayOnly || isPlayingToday(pick.kickoffIso, pick.kickoff, trends.data?.date),
+  );
+  const trendCats = trends.data?.categories;
+  const trendTotal = trendCats
+    ? Object.values(trendCats).reduce(
+        (sum, list) =>
+          sum + list.filter((pick) => !todayOnly || isPlayingToday(pick.kickoffIso, pick.kickoff, trends.data?.date)).length,
+        0,
+      )
+    : 0;
   const formHot = (form.data?.boards["most-wins"]?.overall ?? []).filter((r) => r.playingToday).slice(0, 4);
-  const streakPreview = [...(streaks.data?.twoYes ?? []), ...(streaks.data?.threeNo ?? [])].slice(0, 4);
-  const streakTotal = (streaks.data?.counts.twoYes ?? 0) + (streaks.data?.counts.threeNo ?? 0);
+  const streakPreview = [...(streaks.data?.twoYes ?? []), ...(streaks.data?.threeNo ?? [])]
+    .filter((pick) => !todayOnly || isPlayingToday(pick.kickoff))
+    .slice(0, 4);
+  const streakTotal = [...(streaks.data?.twoYes ?? []), ...(streaks.data?.threeNo ?? [])].filter(
+    (pick) => !todayOnly || isPlayingToday(pick.kickoff),
+  ).length;
 
   return (
     <div className="flex flex-col gap-8">
@@ -58,7 +74,12 @@ function Home() {
         ]}
       />
 
-      <BoardState loading={loading && !data} error={error} empty={!loading && !error && fixtures.length === 0} />
+      <BoardState
+        loading={loading && !data}
+        error={error}
+        empty={!loading && !error && fixtures.length === 0}
+        emptyLabel={todayOnly ? "Nobody on this board is playing today." : undefined}
+      />
 
       {liveGames.length ? (
         <section>
@@ -149,7 +170,9 @@ function Home() {
           </div>
           <div className="chip-row">
             {CATEGORY_META.map((c) => {
-              const n = trends.data?.counts[c.id] ?? 0;
+              const n = (trendCats?.[c.id] ?? []).filter(
+                (pick) => !todayOnly || isPlayingToday(pick.kickoffIso, pick.kickoff, trends.data?.date),
+              ).length;
               if (!n) return null;
               return (
                 <Link

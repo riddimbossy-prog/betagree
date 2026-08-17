@@ -1,14 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { TrendCard } from "@/components/trend-card";
 import { BoardState, LiveBar } from "@/components/live-bar";
+import { isPlayingToday } from "@/lib/format";
 import { useTrends } from "@/lib/live/use-live";
+import { useTodayOnly } from "@/lib/store";
 import { CATEGORY_META } from "@/lib/trend-meta";
 
 export const Route = createFileRoute("/banker")({ component: BankerPage });
 
 function BankerPage() {
   const { data, error, loading } = useTrends();
-  const bankers = data?.bankers ?? [];
+  const todayOnly = useTodayOnly();
+  const bankers = (data?.bankers ?? []).filter(
+    (pick) => !todayOnly || isPlayingToday(pick.kickoffIso, pick.kickoff, data?.date),
+  );
 
   return (
     <div className="flex flex-col gap-8">
@@ -28,7 +33,11 @@ function BankerPage() {
         loading={loading && !data}
         error={error}
         empty={!loading && !error && bankers.length === 0}
-        emptyLabel="No bankers today — the desks did not agree on a 70% / 1.20–1.55 pick."
+        emptyLabel={
+          todayOnly
+            ? "No bankers playing today."
+            : "No bankers today — the desks did not agree on a 70% / 1.20–1.55 pick."
+        }
       />
 
       {bankers.length ? (

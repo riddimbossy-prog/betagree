@@ -4,9 +4,10 @@ import { Crest } from "@/components/crest";
 import { BoardState } from "@/components/live-bar";
 import { FormDots, RecordLine, Units, formatRecord } from "@/components/record-line";
 import { Badge } from "@/components/ui/badge";
-import { formatKickoff } from "@/lib/format";
+import { fixtureIsToday, formatKickoff } from "@/lib/format";
 import { useLedger, useSlate } from "@/lib/live/use-live";
 import { formatPct } from "@/lib/odds";
+import { useTodayOnly } from "@/lib/store";
 import type { RecordSlice } from "@/lib/types";
 
 export const Route = createFileRoute("/tipsters/$id")({
@@ -17,9 +18,15 @@ function TipsterPage() {
   const { id } = Route.useParams();
   const ledger = useLedger();
   const slate = useSlate();
+  const todayOnly = useTodayOnly();
   const acc = ledger.data?.desks.find((d) => d.tipster.id === id);
   const tipster = acc?.tipster ?? slate.data?.desks.find((d) => d.id === id);
-  const today = (slate.data?.picks ?? []).filter((p) => p.tipsterId === id && p.market === "1x2");
+  const today = (slate.data?.picks ?? []).filter((p) => {
+    if (p.tipsterId !== id || p.market !== "1x2") return false;
+    if (!todayOnly) return true;
+    const fixture = slate.data?.fixtures.find((f) => f.id === p.fixtureId);
+    return fixture ? fixtureIsToday(fixture) : false;
+  });
 
   if ((ledger.loading && !ledger.data) || (slate.loading && !slate.data)) return <BoardState loading error={null} />;
   if (!tipster) {

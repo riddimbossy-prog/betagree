@@ -6,10 +6,12 @@ import { TimeChip } from "@/components/trend-card";
 import { usePickSheet } from "@/components/pick-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { fixtureIsToday } from "@/lib/format";
 import { bandTeams, DEFAULT_BAND, fixturesInBand, type BandSide } from "@/lib/odds-band";
 import { formatDecimal, toDecimal } from "@/lib/odds";
 import { useSlate } from "@/lib/live/use-live";
 import { loadBoardSnapshot } from "@/lib/live/snapshot";
+import { useTodayOnly } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/odds")({
@@ -30,14 +32,15 @@ function OddsFilterPage() {
   const [from, setFrom] = useState(String(DEFAULT_BAND.from));
   const [to, setTo] = useState(String(DEFAULT_BAND.to));
   const [side, setSide] = useState<BandSide>("any");
+  const todayOnly = useTodayOnly();
 
   const fromN = Number(from) || DEFAULT_BAND.from;
   const toN = Number(to) || DEFAULT_BAND.to;
 
-  const hits = useMemo(
-    () => fixturesInBand(data?.fixtures ?? [], fromN, toN, side),
-    [data, fromN, toN, side],
-  );
+  const hits = useMemo(() => {
+    const list = fixturesInBand(data?.fixtures ?? [], fromN, toN, side);
+    return todayOnly ? list.filter((hit) => fixtureIsToday(hit.fixture)) : list;
+  }, [data, fromN, toN, side, todayOnly]);
   const { best, worst } = useMemo(() => bandTeams(hits), [hits]);
 
   return (
@@ -105,7 +108,12 @@ function OddsFilterPage() {
         </div>
       </form>
 
-      <BoardState loading={loading && !data} error={error} empty={!loading && !error && hits.length === 0} />
+      <BoardState
+        loading={loading && !data}
+        error={error}
+        empty={!loading && !error && hits.length === 0}
+        emptyLabel={todayOnly ? "Nobody in this band is playing today." : undefined}
+      />
 
       {hits.length ? (
         <>

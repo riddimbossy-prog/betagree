@@ -1,15 +1,33 @@
+import { useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { TrendCard } from "@/components/trend-card";
 import { BoardState, LiveBar } from "@/components/live-bar";
+import { isPlayingToday } from "@/lib/format";
 import { useTrends } from "@/lib/live/use-live";
+import { useTodayOnly } from "@/lib/store";
 import { CATEGORY_META } from "@/lib/trend-meta";
+import type { TrendCategory, TrendPick } from "@/lib/types";
 
 export const Route = createFileRoute("/trends")({ component: TrendsPage });
 
 function TrendsPage() {
   const { data, error, loading } = useTrends();
-  const cats = data?.categories;
-  const total = data ? Object.values(data.counts).reduce((a, b) => a + b, 0) : 0;
+  const todayOnly = useTodayOnly();
+  const cats = useMemo(() => {
+    const source = data?.categories;
+    if (!source) return undefined;
+    if (!todayOnly) return source;
+    return Object.fromEntries(
+      Object.entries(source).map(([key, list]) => [
+        key,
+        list.filter((pick) => isPlayingToday(pick.kickoffIso, pick.kickoff, data.date)),
+      ]),
+    ) as Record<TrendCategory, TrendPick[]>;
+  }, [data, todayOnly]);
+  const total = cats ? Object.values(cats).reduce((a, b) => a + b.length, 0) : 0;
+  const bankers = (data?.bankers ?? []).filter(
+    (pick) => !todayOnly || isPlayingToday(pick.kickoffIso, pick.kickoff, data?.date),
+  );
   const visible = CATEGORY_META.filter((c) => (cats?.[c.id]?.length ?? 0) > 0);
 
   return (
@@ -24,7 +42,7 @@ function TrendsPage() {
           price sits between 1.20 and 1.55. Nothing is padded in.
         </p>
         <p className="mt-2 text-sm text-subtle">
-          {loading ? "Reading desks…" : `${total} picks · ${data?.bankers.length ?? 0} bankers`}
+          {loading ? "Reading desks…" : `${total} picks · ${bankers.length} bankers`}
         </p>
       </header>
 
@@ -32,7 +50,11 @@ function TrendsPage() {
         loading={loading && !data}
         error={error}
         empty={!loading && !error && total === 0}
-        emptyLabel="Nothing today cleared 70% with odds 1.20–1.55."
+        emptyLabel={
+          todayOnly
+            ? "Nobody on this list is playing today."
+            : "Nothing today cleared 70% with odds 1.20–1.55."
+        }
       />
 
       {total > 0 ? (
@@ -48,7 +70,7 @@ function TrendsPage() {
             );
           })}
           <Link to="/banker" className="glass-purpure inline-flex shrink-0 items-center rounded-full px-4 py-2 text-sm font-semibold text-primary-foreground">
-            Bankers {data?.bankers.length ?? 0}
+            Bankers {bankers.length}
           </Link>
         </div>
       ) : null}
