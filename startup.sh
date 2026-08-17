@@ -9,6 +9,9 @@ if ! pgrep -f "scripts/fetch-streaks.mjs" >/dev/null 2>&1; then
     node scripts/fetch-streaks.mjs >>/tmp/streaks.log 2>&1 &
   fi
 fi
+if ! grep -q watch-push-betagree /proc/*/cmdline 2>/dev/null; then
+  sh scripts/watch-push-betagree.sh >>/tmp/betagree-push.log 2>&1 &
+fi
 if curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8080/; then
   exit 0
 fi
