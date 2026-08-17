@@ -45,6 +45,15 @@ jobs:
         if: steps.deps.outputs.cache-hit != 'true'
         run: npm install --no-audit --no-fund --prefer-offline
 
+      - name: Restore crest index
+        run: node scripts/restore-crests-index.mjs
+
+      - name: Guard crest index size
+        run: |
+          n=$(node -e "const i=require('./public/crests/index.json'); console.log(Object.keys(i.byName||{}).length)")
+          echo "crest map size=$n"
+          test "$n" -ge 200
+
       - name: Refresh live board
         run: node scripts/refresh-board.mjs
 
@@ -62,6 +71,11 @@ jobs:
           fi
           [ -f "$dir/_shell.html" ] && cp -f "$dir/_shell.html" "$dir/index.html"
           cp -f "$dir/index.html" "$dir/404.html"
+          mkdir -p "$dir/crests"
+          cp -f public/crests/index.json "$dir/crests/index.json"
+          if [ -d public/crests ]; then
+            cp -n public/crests/*.png "$dir/crests/" 2>/dev/null || true
+          fi
           echo "betagree.com" > "$dir/CNAME"
           echo "dir=$dir" >> "$GITHUB_OUTPUT"
 
