@@ -62,7 +62,7 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
       type="button"
       onClick={() => sheet.open(briefFromTrend(pick))}
       className={cn(
-        "block w-full rounded-3xl p-5 text-left transition-[box-shadow] duration-150 hover:shadow-border-hover",
+        "glass-lift block w-full rounded-3xl p-5 text-left",
         highlight ? "glass-purpure text-primary-foreground" : "glass",
       )}
     >
