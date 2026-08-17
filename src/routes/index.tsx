@@ -6,13 +6,19 @@ import { BoardState } from "@/components/live-bar";
 import { TrendCard } from "@/components/trend-card";
 import { fixturesInBand } from "@/lib/odds-band";
 import { useFormBoard, useSlate, useStreaks, useTrends } from "@/lib/live/use-live";
-import { loadBoardSnapshot } from "@/lib/live/snapshot.server";
+import { loadBoardSnapshot } from "@/lib/live/snapshot";
 import { FormRowCard } from "@/components/form-row";
 import { StreakCard } from "@/components/streak-card";
 import { CATEGORY_META } from "@/lib/trend-meta";
 
 export const Route = createFileRoute("/")({
-  loader: () => loadBoardSnapshot(),
+  loader: async () => {
+    try {
+      return await loadBoardSnapshot();
+    } catch {
+      return null;
+    }
+  },
   component: Home,
 });
 

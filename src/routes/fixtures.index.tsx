@@ -4,10 +4,16 @@ import { FixtureList } from "@/components/fixture-list";
 import { BoardState, LiveBar } from "@/components/live-bar";
 import { Button } from "@/components/ui/button";
 import { useSlate } from "@/lib/live/use-live";
-import { loadBoardSnapshot } from "@/lib/live/snapshot.server";
+import { loadBoardSnapshot } from "@/lib/live/snapshot";
 
 export const Route = createFileRoute("/fixtures/")({
-  loader: () => loadBoardSnapshot(),
+  loader: async () => {
+    try {
+      return await loadBoardSnapshot();
+    } catch {
+      return null;
+    }
+  },
   component: FixturesPage,
 });
 

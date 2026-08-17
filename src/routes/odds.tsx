@@ -9,11 +9,17 @@ import { Input } from "@/components/ui/input";
 import { bandTeams, DEFAULT_BAND, fixturesInBand, type BandSide } from "@/lib/odds-band";
 import { formatDecimal, toDecimal } from "@/lib/odds";
 import { useSlate } from "@/lib/live/use-live";
-import { loadBoardSnapshot } from "@/lib/live/snapshot.server";
+import { loadBoardSnapshot } from "@/lib/live/snapshot";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/odds")({
-  loader: () => loadBoardSnapshot(),
+  loader: async () => {
+    try {
+      return await loadBoardSnapshot();
+    } catch {
+      return null;
+    }
+  },
   component: OddsFilterPage,
 });
 
