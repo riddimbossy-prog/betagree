@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, ChartNoAxesColumn, Flame, Home, Landmark, TrendingUp } from "lucide-react";
+import { Bell, Flame, Home, Landmark, TrendingUp, Zap } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
@@ -12,8 +12,8 @@ import { preloadOfficialCrests } from "@/lib/official-crests";
 const NAV = [
   { to: "/", label: "Today", icon: Home },
   { to: "/form", label: "Form", icon: Flame },
+  { to: "/streaks", label: "Streaks", icon: Zap },
   { to: "/trends", label: "Trends", icon: TrendingUp },
-  { to: "/fixtures", label: "Fixtures", icon: ChartNoAxesColumn },
   { to: "/banker", label: "Banker", icon: Landmark },
 ] as const;
 
@@ -85,6 +85,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
             ))}
             <Link to="/odds" className="hover:text-foreground">
               Filter
+            </Link>
+            <Link to="/fixtures" className="hover:text-foreground">
+              Fixtures
             </Link>
             <Link to="/accuracy" className="hover:text-foreground">
               Accuracy

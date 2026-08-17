@@ -218,3 +218,59 @@ export type FormPayload = {
   playingToday: number;
   boards: Record<string, FormBoard>;
 };
+
+export type StreakPole = "top" | "bottom";
+
+export type StreakTableSide = {
+  rank: number;
+  pole: StreakPole | null;
+  pts: number | null;
+  gp: number | null;
+};
+
+export type StreakPick = {
+  id: string;
+  gameId: string | null;
+  league: string;
+  category: string;
+  kickoff: string;
+  home: string;
+  away: string;
+  homeLogo: string | null;
+  awayLogo: string | null;
+  favorite: string;
+  favoriteSide: "home" | "away" | null;
+  favoriteOdds: number;
+  homeOdds: number | null;
+  awayOdds: number | null;
+  drawOdds: number | null;
+  table: {
+    size: number;
+    home: StreakTableSide | null;
+    away: StreakTableSide | null;
+  };
+  market: "2+" | "3+";
+  pick: "Yes" | "No";
+  label: string;
+  odds: number;
+  otherOdds: number | null;
+};
+
+export type StreaksPayload = {
+  date: string;
+  dateLabel: string;
+  fetchedAt: string;
+  source: "sportybet";
+  filters: {
+    twoYes: { from: number; to: number };
+    threeNo: { from: number; to: number };
+    favorite: { from: number; to: number };
+    table: string;
+    horizonDays: number;
+  };
+  scanned: number;
+  withStreaks: number;
+  counts: { twoYes: number; threeNo: number };
+  twoYes: StreakPick[];
+  threeNo: StreakPick[];
+};

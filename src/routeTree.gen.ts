@@ -18,12 +18,14 @@ import { Route as FormRouteImport } from './routes/form'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OddsRouteImport } from './routes/odds'
 import { Route as PlaybookRouteImport } from './routes/playbook'
+import { Route as StreaksRouteImport } from './routes/streaks'
 import { Route as TipstersRouteImport } from './routes/tipsters'
 import { Route as TrendsRouteImport } from './routes/trends'
 import { Route as ApiFormRouteImport } from './routes/api/form'
 import { Route as ApiLedgerRouteImport } from './routes/api/ledger'
 import { Route as ApiScoresRouteImport } from './routes/api/scores'
 import { Route as ApiSlateRouteImport } from './routes/api/slate'
+import { Route as ApiStreaksRouteImport } from './routes/api/streaks'
 import { Route as ApiTrendsRouteImport } from './routes/api/trends'
 import { Route as FixturesIndexRouteImport } from './routes/fixtures.index'
 import { Route as FixturesIdRouteImport } from './routes/fixtures.$id'
@@ -76,6 +78,11 @@ const PlaybookRoute = PlaybookRouteImport.update({
   path: '/playbook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StreaksRoute = StreaksRouteImport.update({
+  id: '/streaks',
+  path: '/streaks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TipstersRoute = TipstersRouteImport.update({
   id: '/tipsters',
   path: '/tipsters',
@@ -104,6 +111,11 @@ const ApiScoresRoute = ApiScoresRouteImport.update({
 const ApiSlateRoute = ApiSlateRouteImport.update({
   id: '/api/slate',
   path: '/api/slate',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiStreaksRoute = ApiStreaksRouteImport.update({
+  id: '/api/streaks',
+  path: '/api/streaks',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTrendsRoute = ApiTrendsRouteImport.update({
@@ -147,12 +159,14 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
+  '/streaks': typeof StreaksRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/trends': typeof TrendsRoute
   '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
   '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
+  '/api/streaks': typeof ApiStreaksRoute
   '/api/trends': typeof ApiTrendsRoute
   '/fixtures/$id': typeof FixturesIdRoute
   '/tipsters/$id': typeof TipstersIdRoute
@@ -169,11 +183,13 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
+  '/streaks': typeof StreaksRoute
   '/trends': typeof TrendsRoute
   '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
   '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
+  '/api/streaks': typeof ApiStreaksRoute
   '/api/trends': typeof ApiTrendsRoute
   '/fixtures/$id': typeof FixturesIdRoute
   '/tipsters/$id': typeof TipstersIdRoute
@@ -192,12 +208,14 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
+  '/streaks': typeof StreaksRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/trends': typeof TrendsRoute
   '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
   '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
+  '/api/streaks': typeof ApiStreaksRoute
   '/api/trends': typeof ApiTrendsRoute
   '/fixtures/$id': typeof FixturesIdRoute
   '/tipsters/$id': typeof TipstersIdRoute
@@ -217,12 +235,14 @@ export interface FileRouteTypes {
     | '/login'
     | '/odds'
     | '/playbook'
+    | '/streaks'
     | '/tipsters'
     | '/trends'
     | '/api/form'
     | '/api/ledger'
     | '/api/scores'
     | '/api/slate'
+    | '/api/streaks'
     | '/api/trends'
     | '/fixtures/$id'
     | '/tipsters/$id'
@@ -239,11 +259,13 @@ export interface FileRouteTypes {
     | '/login'
     | '/odds'
     | '/playbook'
+    | '/streaks'
     | '/trends'
     | '/api/form'
     | '/api/ledger'
     | '/api/scores'
     | '/api/slate'
+    | '/api/streaks'
     | '/api/trends'
     | '/fixtures/$id'
     | '/tipsters/$id'
@@ -261,12 +283,14 @@ export interface FileRouteTypes {
     | '/login'
     | '/odds'
     | '/playbook'
+    | '/streaks'
     | '/tipsters'
     | '/trends'
     | '/api/form'
     | '/api/ledger'
     | '/api/scores'
     | '/api/slate'
+    | '/api/streaks'
     | '/api/trends'
     | '/fixtures/$id'
     | '/tipsters/$id'
@@ -285,12 +309,14 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OddsRoute: typeof OddsRoute
   PlaybookRoute: typeof PlaybookRoute
+  StreaksRoute: typeof StreaksRoute
   TipstersRoute: typeof TipstersRouteWithChildren
   TrendsRoute: typeof TrendsRoute
   ApiFormRoute: typeof ApiFormRoute
   ApiLedgerRoute: typeof ApiLedgerRoute
   ApiScoresRoute: typeof ApiScoresRoute
   ApiSlateRoute: typeof ApiSlateRoute
+  ApiStreaksRoute: typeof ApiStreaksRoute
   ApiTrendsRoute: typeof ApiTrendsRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -360,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PlaybookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/streaks': {
+      id: '/streaks'
+      path: '/streaks'
+      fullPath: '/streaks'
+      preLoaderRoute: typeof StreaksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tipsters': {
       id: '/tipsters'
       path: '/tipsters'
@@ -400,6 +433,13 @@ declare module '@tanstack/react-router' {
       path: '/api/slate'
       fullPath: '/api/slate'
       preLoaderRoute: typeof ApiSlateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/streaks': {
+      id: '/api/streaks'
+      path: '/api/streaks'
+      fullPath: '/api/streaks'
+      preLoaderRoute: typeof ApiStreaksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/trends': {
@@ -485,12 +525,14 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OddsRoute: OddsRoute,
   PlaybookRoute: PlaybookRoute,
+  StreaksRoute: StreaksRoute,
   TipstersRoute: TipstersRouteWithChildren,
   TrendsRoute: TrendsRoute,
   ApiFormRoute: ApiFormRoute,
   ApiLedgerRoute: ApiLedgerRoute,
   ApiScoresRoute: ApiScoresRoute,
   ApiSlateRoute: ApiSlateRoute,
+  ApiStreaksRoute: ApiStreaksRoute,
   ApiTrendsRoute: ApiTrendsRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }

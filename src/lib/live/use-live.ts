@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { DeskSource, FormPayload, LedgerPayload, SlatePayload, TrendPick, TrendsPayload } from "@/lib/types";
+import type { DeskSource, FormPayload, LedgerPayload, SlatePayload, StreaksPayload, TrendPick, TrendsPayload } from "@/lib/types";
 import { applySlateScores, type ScorePatch } from "@/lib/live/score-apply";
 
 async function loadJson<T>(paths: string[]): Promise<T> {
@@ -243,6 +243,39 @@ export function useFormBoard(pollMs = 60_000) {
       } catch {
         if (!dead) {
           setError("Could not reach the form board.");
+          setLoading(false);
+        }
+      }
+    };
+    void load();
+    const id = window.setInterval(() => void load(), pollMs);
+    return () => {
+      dead = true;
+      window.clearInterval(id);
+    };
+  }, [pollMs]);
+
+  return { data, error, loading };
+}
+
+export function useStreaks(pollMs = 60_000) {
+  const [data, setData] = useState<StreaksPayload | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let dead = false;
+    const load = async () => {
+      try {
+        const json = await loadJson<StreaksPayload>(["/data/streaks.json", "/api/streaks"]);
+        if (!dead) {
+          setData(json);
+          setError(null);
+          setLoading(false);
+        }
+      } catch {
+        if (!dead) {
+          setError("Could not reach the streak board.");
           setLoading(false);
         }
       }

@@ -46,6 +46,8 @@
   --color-vert: hsl(148 36% 38%);
   --color-purpure: hsl(262 52% 46%);
   --tincture-or: hsl(40 58% 62%);
+  --tincture-or-bright: hsl(44 82% 76%);
+  --tincture-or-deep: hsl(34 58% 36%);
   --tincture-argent: hsl(40 22% 92%);
   --tincture-gules: hsl(354 68% 40%);
   --tincture-azure: hsl(214 52% 34%);
@@ -69,7 +71,7 @@
     inset 0 1px 0 hsl(40 50% 88% / 0.18),
     0 0 0 1px hsl(40 58% 62% / 0.55);
   --shadow-lift: 0 22px 48px -24px rgb(0 0 0 / 0.65);
-  --shadow-crest: 0 0 0 1px hsl(40 58% 62% / 0.55), 0 8px 16px -8px rgb(0 0 0 / 0.5);
+  --shadow-crest: 0 0 0 1px hsl(40 72% 58% / 0.7), 0 8px 16px -8px rgb(0 0 0 / 0.5);
   --shadow-glass:
     inset 0 1px 0 hsl(40 30% 92% / 0.12),
     0 0 0 1px hsl(40 40% 72% / 0.18),

@@ -168,6 +168,12 @@ export function Crest({
             <stop offset="38%" stopColor="white" stopOpacity="0" />
             <stop offset="100%" stopColor="black" stopOpacity="0.22" />
           </linearGradient>
+          <linearGradient id={`gold-${uid}`} x1="0.12" y1="0" x2="0.88" y2="1">
+            <stop offset="0%" stopColor="var(--tincture-or-bright)" />
+            <stop offset="28%" stopColor="var(--tincture-or)" />
+            <stop offset="62%" stopColor="var(--tincture-or-deep)" />
+            <stop offset="100%" stopColor="var(--tincture-or-bright)" />
+          </linearGradient>
         </defs>
         <g clipPath={`url(#shield-${uid})`}>
           <path d={path} fill={showLogo ? "var(--tincture-argent)" : arms.field.fill} />
@@ -176,23 +182,36 @@ export function Crest({
           {showLogo ? (
             <image
               href={src ?? undefined}
-              x="12"
-              y="14"
-              width="56"
-              height="58"
+              x="6"
+              y="9"
+              width="68"
+              height="70"
               preserveAspectRatio="xMidYMid meet"
               onError={() => setBroken(true)}
             />
           ) : null}
           <path d={path} fill={`url(#enamel-${uid})`} />
         </g>
-        <path d={path} fill="none" stroke="var(--tincture-or)" strokeWidth="2.6" strokeLinejoin="round" />
         <path
           d={path}
           fill="none"
           stroke="var(--tincture-sable)"
-          strokeWidth="0.7"
-          strokeOpacity="0.45"
+          strokeWidth="5.4"
+          strokeLinejoin="round"
+        />
+        <path
+          d={path}
+          fill="none"
+          stroke={`url(#gold-${uid})`}
+          strokeWidth="3.6"
+          strokeLinejoin="round"
+        />
+        <path
+          d={path}
+          fill="none"
+          stroke="var(--tincture-or-bright)"
+          strokeWidth="0.9"
+          strokeOpacity="0.7"
           strokeLinejoin="round"
         />
         {showLogo ? null : (

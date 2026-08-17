@@ -5,8 +5,9 @@ import { FixtureList } from "@/components/fixture-list";
 import { BoardState } from "@/components/live-bar";
 import { TrendCard } from "@/components/trend-card";
 import { fixturesInBand } from "@/lib/odds-band";
-import { useFormBoard, useSlate, useTrends } from "@/lib/live/use-live";
+import { useFormBoard, useSlate, useStreaks, useTrends } from "@/lib/live/use-live";
 import { FormRowCard } from "@/components/form-row";
+import { StreakCard } from "@/components/streak-card";
 import { CATEGORY_META } from "@/lib/trend-meta";
 
 export const Route = createFileRoute("/")({ component: Home });
@@ -15,6 +16,7 @@ function Home() {
   const { data, error, loading } = useSlate();
   const trends = useTrends();
   const form = useFormBoard();
+  const streaks = useStreaks();
   const fixtures = data?.fixtures ?? [];
   const consensus = data?.consensus ?? [];
   const top = consensus.filter((c) => c.market === "1x2" || c.pct >= 0.65).slice(0, 4);
@@ -25,6 +27,8 @@ function Home() {
   const bankers = trends.data?.bankers ?? [];
   const trendTotal = trends.data ? Object.values(trends.data.counts).reduce((a, b) => a + b, 0) : 0;
   const formHot = (form.data?.boards["most-wins"]?.overall ?? []).filter((r) => r.playingToday).slice(0, 4);
+  const streakPreview = [...(streaks.data?.twoYes ?? []), ...(streaks.data?.threeNo ?? [])].slice(0, 4);
+  const streakTotal = (streaks.data?.counts.twoYes ?? 0) + (streaks.data?.counts.threeNo ?? 0);
 
   return (
     <div className="flex flex-col gap-8">
@@ -35,6 +39,7 @@ function Home() {
           { id: "fixtures", label: "fixtures", value: loading ? "—" : fixtures.length, to: "/fixtures" },
           { id: "live", label: "live", value: liveCount, to: "/fixtures", tone: liveCount ? "live" : "plain" },
           { id: "form", label: "form", value: formHot.length || "—", to: "/form" },
+          { id: "streaks", label: "streaks", value: streakTotal || "—", to: "/streaks", tone: "or" },
           { id: "trends", label: "at 70%+", value: trendTotal, to: "/trends", tone: "or" },
           { id: "bankers", label: "bankers", value: bankers.length, to: "/banker" },
           { id: "band", label: "1.20–1.55", value: band.length, to: "/odds", tone: "azure" },
@@ -59,6 +64,27 @@ function Home() {
           <div className="flex flex-col gap-3">
             {formHot.map((row) => (
               <FormRowCard key={`${row.team}-${row.league}`} row={row} unit="Wins" highlight={row.rank === 1} />
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {streakPreview.length ? (
+        <section>
+          <div className="mb-4 flex items-end justify-between">
+            <h2 className="text-2xl font-semibold">
+              Goal <span className="font-serif italic font-normal">streaks</span>
+            </h2>
+            <Link to="/streaks" className="text-sm text-muted-foreground">
+              Full list
+            </Link>
+          </div>
+          <p className="mb-4 text-sm text-muted-foreground">
+            SportyBet 2+ Yes / 3+ No, only when a top-3 or bottom-3 side is the 1.19–1.55 favorite.
+          </p>
+          <div className="grid gap-3 fold:grid-cols-2">
+            {streakPreview.map((pick) => (
+              <StreakCard key={pick.id} pick={pick} />
             ))}
           </div>
         </section>
