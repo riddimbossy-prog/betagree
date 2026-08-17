@@ -37,12 +37,8 @@ function TrendsPage() {
         <h1 className="mt-2 text-4xl font-semibold">
           Today <span className="font-serif italic font-normal">trends</span>
         </h1>
-        <p className="mt-3 text-muted-foreground">
-          Today only. A row appears when the stat is 70% or higher and the
-          price sits between 1.20 and 1.55. Nothing is padded in.
-        </p>
         <p className="mt-2 text-sm text-subtle">
-          {loading ? "Reading desks…" : `${total} picks · ${bankers.length} bankers`}
+          {loading ? "Loading…" : `${total} picks · ${bankers.length} bankers`}
         </p>
       </header>
 
@@ -50,11 +46,7 @@ function TrendsPage() {
         loading={loading && !data}
         error={error}
         empty={!loading && !error && total === 0}
-        emptyLabel={
-          todayOnly
-            ? "Nobody on this list is playing today."
-            : "Nothing today cleared 70% with odds 1.20–1.55."
-        }
+        emptyLabel={todayOnly ? "Nobody on this list is playing today." : "No trends listed."}
       />
 
       {total > 0 ? (
@@ -81,7 +73,6 @@ function TrendsPage() {
             {c.label.split(" ")[0]}{" "}
             <span className="font-serif italic font-normal">{c.label.split(" ").slice(1).join(" ") || "run"}</span>
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">{c.blurb}</p>
           <ul className="mt-4 grid gap-3 fold:grid-cols-2">
             {cats?.[c.id].map((pick) => (
               <li key={pick.id}>

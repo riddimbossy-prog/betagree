@@ -50,10 +50,6 @@ function OddsFilterPage() {
         <h1 className="mt-2 text-4xl font-semibold">
           Odds <span className="font-serif italic font-normal">filter</span>
         </h1>
-        <p className="mt-3 text-muted-foreground">
-          1X2 price band. Default is {DEFAULT_BAND.from.toFixed(2)}–{DEFAULT_BAND.to.toFixed(2)} —
-          short favorites and the teams they sit on.
-        </p>
       </header>
 
       <form
@@ -121,9 +117,6 @@ function OddsFilterPage() {
             <h2 className="text-2xl font-semibold">
               Best <span className="font-serif italic font-normal">teams</span>
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Favorites priced inside the band.
-            </p>
             <ul className="mt-4 grid gap-3 fold:grid-cols-2">
               {best.map((row) => (
                 <TeamTile key={`${row.team.id}-${row.fixture.id}`} row={row} />
@@ -135,9 +128,6 @@ function OddsFilterPage() {
             <h2 className="text-2xl font-semibold">
               Worst <span className="font-serif italic font-normal">teams</span>
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
-              The other side of those shorts.
-            </p>
             <ul className="mt-4 grid gap-3 fold:grid-cols-2">
               {worst.map((row) => (
                 <TeamTile key={`${row.team.id}-${row.fixture.id}`} row={row} />

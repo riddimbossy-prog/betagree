@@ -4,7 +4,7 @@ import { BAND_OUTLINE, BAND_TONE } from "@/components/consensus-chip";
 import { FixtureList } from "@/components/fixture-list";
 import { BoardState, LiveBar } from "@/components/live-bar";
 import { Button } from "@/components/ui/button";
-import { BAND_META, SITE_COUNT, bandOf, type ConsensusBand } from "@/lib/consensus";
+import { BAND_META, bandOf, type ConsensusBand } from "@/lib/consensus";
 import { fixtureIsToday } from "@/lib/format";
 import { useSlate } from "@/lib/live/use-live";
 import { loadBoardSnapshot } from "@/lib/live/snapshot";
@@ -89,10 +89,6 @@ function FixturesPage() {
       <header className="max-w-2xl">
         <LiveBar fetchedAt={data?.fetchedAt} liveCount={todayBoard.filter((f) => f.live).length} />
         <h1 className="font-display mt-2 text-4xl">Today's fixtures</h1>
-        <p className="mt-3 text-muted-foreground">
-          Upcoming tips, read across {data?.desks.length ?? SITE_COUNT} tip sites. Filter by how many
-          land on the same pick — high, medium, or low consensus.
-        </p>
       </header>
 
       <div className="chip-row" role="tablist" aria-label="Consensus strength">
@@ -122,12 +118,6 @@ function FixturesPage() {
           </button>
         ))}
       </div>
-
-      <p className="text-sm text-muted-foreground">
-        {band === "all"
-          ? `${SITE_COUNT} desks post a 1X2, total, or BTTS. High is 70% or more on the same side.`
-          : BAND_META[band].blurb}
-      </p>
 
       <div className="chip-row" aria-label="Kickoff status">
         {(
@@ -179,10 +169,7 @@ function FixturesPage() {
 
 function emptyCopy(band: BandFilter, status: StatusFilter, todayOnly: boolean) {
   if (todayOnly) return "Nobody on this list is playing today.";
-  if (status === "upcoming" && band !== "all") {
-    return `No upcoming ${band} consensus picks on this slate. Try another filter.`;
-  }
   if (status === "live") return "Nothing in play on this filter.";
-  if (band !== "all") return `No ${band} consensus picks on this filter.`;
+  if (band !== "all") return `No ${band} picks on this filter.`;
   return undefined;
 }

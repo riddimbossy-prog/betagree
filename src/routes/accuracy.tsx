@@ -28,19 +28,15 @@ function AccuracyPage() {
       <header className="max-w-2xl">
         <p className="text-xs tracking-widest text-subtle uppercase">{data.windowLabel}</p>
         <h1 className="font-display mt-2 text-4xl">Accuracy</h1>
-        <p className="mt-3 text-muted-foreground">
-          Same {data.desks.length} tip sites, graded against {data.sample} settled matches. One unit a pick at the posted
-          number. Form never uses the game being graded.
-        </p>
       </header>
 
       <section>
         <p className="text-xs tracking-widest text-subtle uppercase">The pack</p>
         <h2 className="font-display mt-1 text-2xl">When the desks agreed</h2>
         <div className="mt-5 grid gap-3 fold:grid-cols-3">
-          <PackStat k="All consensus 1X2" rec={data.pack.overall} note="Two or more sites on the same side" />
-          <PackStat k="High pack" rec={data.pack.strong} note="70%+ of sites that posted" />
-          <PackStat k="Softer lean" rec={data.pack.lean} note="Consensus below 70%" />
+          <PackStat k="All consensus 1X2" rec={data.pack.overall} />
+          <PackStat k="High pack" rec={data.pack.strong} />
+          <PackStat k="Softer lean" rec={data.pack.lean} />
         </div>
       </section>
 
@@ -141,13 +137,12 @@ function AccuracyPage() {
   );
 }
 
-function PackStat({ k, rec, note }: { k: string; rec: RecordSlice; note: string }) {
+function PackStat({ k, rec }: { k: string; rec: RecordSlice }) {
   return (
     <div className="rounded-3xl bg-card p-5">
       <p className="text-xs text-subtle">{k}</p>
       <p className="font-display mt-2 text-3xl">{rec.n ? formatPct(rec.hit) : "—"}</p>
       <p className="mt-1 font-mono text-sm tabular">{rec.n ? formatRecord(rec) : "No sample"}</p>
-      <p className="mt-3 text-xs text-subtle">{note}</p>
     </div>
   );
 }

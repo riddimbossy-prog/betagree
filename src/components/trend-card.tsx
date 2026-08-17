@@ -94,7 +94,7 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
 export function TrendEmpty({ label }: { label: string }) {
   return (
     <p className="glass rounded-3xl px-4 py-8 text-center text-sm text-muted-foreground">
-      No {label} today cleared 70% with odds 1.20–1.55.
+      No {label} today.
     </p>
   );
 }

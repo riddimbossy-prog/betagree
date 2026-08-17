@@ -12,7 +12,7 @@ import { FormRowCard } from "@/components/form-row";
 import { StreakCard } from "@/components/streak-card";
 import { useTodayOnly } from "@/lib/store";
 import { CATEGORY_META } from "@/lib/trend-meta";
-import { SITE_COUNT, bandOf } from "@/lib/consensus";
+import { bandOf } from "@/lib/consensus";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -64,7 +64,6 @@ function Home() {
   const streakTotal = [...(streaks.data?.twoYes ?? []), ...(streaks.data?.threeNo ?? [])].filter(
     (pick) => !todayOnly || isPlayingToday(pick.kickoff),
   ).length;
-  const siteN = data?.desks.length ?? SITE_COUNT;
 
   return (
     <div className="flex flex-col gap-8">
@@ -114,9 +113,6 @@ function Home() {
               Filter the board
             </Link>
           </div>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Upcoming matches where 70%+ of {siteN} tip sites land on the same pick.
-          </p>
           <FixtureList fixtures={highUpcoming.slice(0, 6)} byFixture={byFixture} />
         </section>
       ) : null}
@@ -131,9 +127,6 @@ function Home() {
               Full table
             </Link>
           </div>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Highest league win rates among sides kicking off today.
-          </p>
           <div className="flex flex-col gap-3">
             {formHot.map((row) => (
               <FormRowCard key={`${row.team}-${row.league}`} row={row} unit="Wins" highlight={row.rank === 1} />
@@ -152,9 +145,6 @@ function Home() {
               Full list
             </Link>
           </div>
-          <p className="mb-4 text-sm text-muted-foreground">
-            SportyBet 2+ Yes / 3+ No, only when a top-3 or bottom-3 side is the 1.19–1.55 favorite.
-          </p>
           <div className="grid gap-3 fold:grid-cols-2">
             {streakPreview.map((pick) => (
               <StreakCard key={pick.id} pick={pick} />
@@ -173,9 +163,6 @@ function Home() {
               Banker desk
             </Link>
           </div>
-          <p className="mb-4 text-sm text-muted-foreground">
-            Both desks posted this side at 70%+ / 1.20–1.55.
-          </p>
           <div className="grid gap-3 fold:grid-cols-2">
             {bankers.slice(0, 4).map((pick) => (
               <TrendCard key={pick.id} pick={pick} highlight />

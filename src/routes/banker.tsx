@@ -4,7 +4,6 @@ import { BoardState, LiveBar } from "@/components/live-bar";
 import { isPlayingToday } from "@/lib/format";
 import { useTrends } from "@/lib/live/use-live";
 import { useTodayOnly } from "@/lib/store";
-import { CATEGORY_META } from "@/lib/trend-meta";
 
 export const Route = createFileRoute("/banker")({ component: BankerPage });
 
@@ -22,22 +21,13 @@ function BankerPage() {
         <h1 className="mt-2 text-4xl font-semibold">
           Banker <span className="font-serif italic font-normal">desk</span>
         </h1>
-        <p className="mt-3 text-muted-foreground">
-          Matches where both desks posted the same side, the stat is 70% or higher,
-          and the decimal price is between 1.20 and 1.55. If they do not both clear that bar, the
-          match is not listed.
-        </p>
       </header>
 
       <BoardState
         loading={loading && !data}
         error={error}
         empty={!loading && !error && bankers.length === 0}
-        emptyLabel={
-          todayOnly
-            ? "No bankers playing today."
-            : "No bankers today — the desks did not agree on a 70% / 1.20–1.55 pick."
-        }
+        emptyLabel={todayOnly ? "No bankers playing today." : "No bankers listed."}
       />
 
       {bankers.length ? (
@@ -52,24 +42,13 @@ function BankerPage() {
 
       {!loading && !bankers.length && !error ? (
         <p className="text-sm text-muted-foreground">
-          Check{" "}
+          See{" "}
           <Link to="/trends" className="text-primary">
             today's trends
-          </Link>{" "}
-          for single-desk rows that still meet the 70% / 1.20–1.55 cut.
+          </Link>
+          .
         </p>
       ) : null}
-
-      <section className="glass rounded-3xl p-5">
-        <h2 className="text-lg font-semibold">How a banker is made</h2>
-        <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-          {CATEGORY_META.map((c) => (
-            <li key={c.id}>
-              <span className="font-medium text-foreground">{c.label}.</span> {c.blurb}
-            </li>
-          ))}
-        </ul>
-      </section>
     </div>
   );
 }

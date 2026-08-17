@@ -45,12 +45,8 @@ function FormPage() {
         <h1 className="mt-2 text-4xl font-semibold">
           Current <span className="font-serif italic font-normal">form</span>
         </h1>
-        <p className="mt-3 text-muted-foreground">
-          Season-to-date league tables. Cups and Europe are out. Teams marked Today
-          have a fixture on this board.
-        </p>
         <p className="mt-2 text-sm text-subtle">
-          {loading ? "Reading form…" : `${rows.length} teams · ${playing} playing today`}
+          {loading ? "Loading…" : `${rows.length} teams · ${playing} playing today`}
         </p>
       </header>
 
@@ -137,10 +133,6 @@ function FormPage() {
           </ul>
         </section>
       ) : null}
-
-      <p className="text-xs text-subtle">
-        League matches only. Refreshed with the live board.
-      </p>
     </div>
   );
 }

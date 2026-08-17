@@ -2,7 +2,6 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { BoardState } from "@/components/live-bar";
 import { FormDots, RecordLine, Units } from "@/components/record-line";
 import { Badge } from "@/components/ui/badge";
-import { SITE_COUNT } from "@/lib/consensus";
 import { useLedger } from "@/lib/live/use-live";
 import { formatPct } from "@/lib/odds";
 
@@ -18,8 +17,6 @@ function TipstersPage() {
         <p className="text-xs tracking-widest text-subtle uppercase">{data?.windowLabel ?? "Live book"}</p>
         <h1 className="font-display mt-2 text-4xl">Tip sites</h1>
         <p className="mt-3 text-muted-foreground">
-          {rows.length || SITE_COUNT} desks — price, form, Poisson, Elo, fade, and the rest. Graded
-          on settled matches from this board.{" "}
           <Link to="/accuracy" className="text-foreground underline-offset-2 hover:underline">
             Accuracy
           </Link>

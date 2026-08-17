@@ -13,7 +13,6 @@ function StreaksPage() {
   const two = (data?.twoYes ?? []).filter((pick) => !todayOnly || isPlayingToday(pick.kickoff));
   const three = (data?.threeNo ?? []).filter((pick) => !todayOnly || isPlayingToday(pick.kickoff));
   const total = two.length + three.length;
-  const filters = data?.filters;
 
   return (
     <div className="flex flex-col gap-8">
@@ -22,15 +21,8 @@ function StreaksPage() {
         <h1 className="mt-2 text-4xl font-semibold">
           Goal <span className="font-serif italic font-normal">streaks</span>
         </h1>
-        <p className="mt-3 text-muted-foreground">
-          SportyBet 2+ and 3+ Goals Streak prices, kept only when the favorite sits at{" "}
-          {filters?.favorite.from.toFixed(2) ?? "1.19"}–{filters?.favorite.to.toFixed(2) ?? "1.55"} and one
-          side is top 3 or bottom 3 in the league table.
-        </p>
         <p className="mt-2 text-sm text-subtle">
-          {loading
-            ? "Reading SportyBet…"
-            : `${total} listed${todayOnly ? " today" : ""} · 2+ Yes ${filters?.twoYes.from.toFixed(2) ?? "1.20"}–${filters?.twoYes.to.toFixed(2) ?? "1.55"} · 3+ No ${filters?.threeNo.from.toFixed(2) ?? "1.40"}–${filters?.threeNo.to.toFixed(2) ?? "2.10"}`}
+          {loading ? "Loading…" : `${total} listed${todayOnly ? " today" : ""}`}
         </p>
       </header>
 
@@ -38,11 +30,7 @@ function StreaksPage() {
         loading={loading && !data}
         error={error}
         empty={!loading && !error && total === 0}
-        emptyLabel={
-          todayOnly
-            ? "Nobody on this list is playing today."
-            : "Nothing this week cleared the streak bands plus a top-3 / bottom-3 favorite."
-        }
+        emptyLabel={todayOnly ? "Nobody on this list is playing today." : "No streaks listed."}
       />
 
       {total > 0 ? (
@@ -60,7 +48,7 @@ function StreaksPage() {
             </a>
           ) : null}
           <Link to="/odds" className="glass inline-flex shrink-0 items-center rounded-full px-4 py-2 text-sm">
-            1.19–1.55 filter
+            Odds
           </Link>
         </div>
       ) : null}
@@ -70,10 +58,6 @@ function StreaksPage() {
           <h2 className="text-2xl font-semibold">
             2+ streak <span className="font-serif italic font-normal">Yes</span>
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Any team to score two or more in a row. Yes priced {filters?.twoYes.from.toFixed(2)}–
-            {filters?.twoYes.to.toFixed(2)}.
-          </p>
           <ul className="mt-4 grid gap-3 fold:grid-cols-2">
             {two.map((pick) => (
               <li key={pick.id}>
@@ -89,10 +73,6 @@ function StreaksPage() {
           <h2 className="text-2xl font-semibold">
             3+ streak <span className="font-serif italic font-normal">No</span>
           </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            No team scores three in a row. No priced {filters?.threeNo.from.toFixed(2)}–
-            {filters?.threeNo.to.toFixed(2)}.
-          </p>
           <ul className="mt-4 grid gap-3 fold:grid-cols-2">
             {three.map((pick) => (
               <li key={pick.id}>
