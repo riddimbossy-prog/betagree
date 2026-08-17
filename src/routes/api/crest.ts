@@ -24,6 +24,23 @@ async function loadIndex(): Promise<{ byName: Record<string, string>; files?: Re
   }
 }
 
+/** Merge-only write. Never replace a fat index with a near-empty one. */
+async function saveIndex(index: { byName: Record<string, string>; files?: Record<string, string> }) {
+  const disk = await loadIndex();
+  const byName = { ...(disk.byName ?? {}), ...(index.byName ?? {}) };
+  const files = { ...(disk.files ?? {}), ...(index.files ?? {}) };
+  const diskN = Object.keys(disk.byName ?? {}).length;
+  const nextN = Object.keys(byName).length;
+  if (diskN >= 50 && nextN < Math.floor(diskN * 0.5)) {
+    console.error("[crest] refuse shrink index", diskN, "->", nextN);
+    return;
+  }
+  await writeFile(
+    INDEX,
+    JSON.stringify({ byName, files, mapped: nextN, updatedAt: new Date().toISOString() }),
+  );
+}
+
 async function download(url: string, dest: string) {
   const res = await fetch(url, {
     headers: { "User-Agent": UA, Accept: "image/png,image/*,*/*", Referer: "https://www.sofascore.com/" },
@@ -110,7 +127,9 @@ async function resolveName(name: string): Promise<{ path: string | null; remote:
   const remote = (await sofascoreUrl(name)) ?? (await findCrestOnline(name));
   if (!remote) return { path: null, remote: null };
 
-  const file = remote.includes("/team/") ? `ss-${remote.match(/team\/(\d+)/)?.[1] ?? slug(name)}.png` : `web-${slug(name)}.png`;
+  const file = remote.includes("/team/")
+    ? `ss-${remote.match(/team\/(\d+)/)?.[1] ?? slug(name)}.png`
+    : `web-${slug(name)}.png`;
   const dest = join(OUT, file);
   try {
     await stat(dest);
@@ -124,7 +143,7 @@ async function resolveName(name: string): Promise<{ path: string | null; remote:
   const path = `/crests/${file}`;
   index.byName ??= {};
   index.byName[key] = path;
-  await writeFile(INDEX, JSON.stringify(index));
+  await saveIndex(index);
   return { path, remote };
 }
 
