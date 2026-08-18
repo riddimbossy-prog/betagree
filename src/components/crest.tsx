@@ -144,25 +144,18 @@ export function Crest({
   className?: string;
 }) {
   const official = useOfficialCrest(name);
-  const [ready, setReady] = useState(false);
   const [failed, setFailed] = useState<string[]>([]);
   const uid = useId().replace(/:/g, "");
   const arms = blazon(name);
   const path = CUTS[arms.cut];
   const letters = lettersOf(name);
-  // First paint matches SSR (board logo). After mount, SofaScore/index can take over.
-  const src =
-    crestCandidates(ready ? official : null, logo).find((s) => !failed.includes(s)) ?? null;
+  const src = crestCandidates(official, logo).find((s) => !failed.includes(s)) ?? null;
   const showLogo = Boolean(src);
   const letterFill = arms.field.metal ? arms.ink.fill : "var(--tincture-argent)";
 
   useEffect(() => {
-    setReady(true);
-  }, []);
-
-  useEffect(() => {
     setFailed([]);
-  }, [name, official, logo]);
+  }, [name]);
 
   return (
     <span className={cn("crest-plate", SIZES[size], className)} title={name} aria-hidden>

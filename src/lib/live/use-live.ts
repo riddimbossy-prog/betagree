@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
-import type { DeskSource, FormPayload, LedgerPayload, SlatePayload, StreaksPayload, TrendPick, TrendsPayload } from "@/lib/types";
+import type {
+  DeskSource,
+  FormPayload,
+  LedgerPayload,
+  SlatePayload,
+  StreakAccuracy,
+  StreaksPayload,
+  TrendPick,
+  TrendsPayload,
+} from "@/lib/types";
 import { applySlateScores, type ScorePatch } from "@/lib/live/score-apply";
 import { mergeLiveFixtures } from "@/lib/live/merge-live";
 import { useSnapshot } from "@/lib/live/snapshot-context";
@@ -266,7 +275,7 @@ export function useTrends(pollMs = 90_000, enabled = true) {
   return { data, error, loading, reload };
 }
 
-export function useFormBoard(pollMs = 90_000, enabled = true) {
+export function useFormBoard(pollMs = 90_000, enabled = true, preview = false) {
   const snap = useSnapshot();
   const seed = snap?.form ? scrubForm(snap.form) : null;
   const { tick, reload } = useReload();
@@ -279,7 +288,10 @@ export function useFormBoard(pollMs = 90_000, enabled = true) {
     let dead = false;
     const load = async () => {
       try {
-        const json = scrubForm(await loadJson<FormPayload>(["/data/form.json", "/api/form"]));
+        const paths = preview
+          ? ["/data/form-preview.json", "/data/form.json", "/api/form"]
+          : ["/data/form.json", "/api/form"];
+        const json = scrubForm(await loadJson<FormPayload>(paths));
         if (!dead) {
           setData(json);
           setError(null);
@@ -301,7 +313,7 @@ export function useFormBoard(pollMs = 90_000, enabled = true) {
       dead = true;
       window.clearInterval(id);
     };
-  }, [pollMs, tick, enabled]);
+  }, [pollMs, tick, enabled, preview]);
 
   return { data, error, loading, reload };
 }
@@ -344,4 +356,27 @@ export function useStreaks(pollMs = 90_000, enabled = true) {
   }, [pollMs, tick, enabled]);
 
   return { data, error, loading, reload };
+}
+
+export function useStreakAccuracy(pollMs = 180_000, enabled = true) {
+  const [data, setData] = useState<StreakAccuracy | null>(null);
+  useEffect(() => {
+    if (!enabled) return;
+    let dead = false;
+    const load = async () => {
+      try {
+        const json = await loadJson<StreakAccuracy>(["/data/streak-accuracy.json"]);
+        if (!dead) setData(json);
+      } catch {
+        /* keep last */
+      }
+    };
+    void load();
+    const id = window.setInterval(() => void load(), pollMs);
+    return () => {
+      dead = true;
+      window.clearInterval(id);
+    };
+  }, [pollMs, enabled]);
+  return data;
 }

@@ -125,15 +125,66 @@ export type TrendCategory =
   | "losses"
   | "winless"
   | "undefeated"
+  | "over15"
   | "over25"
+  | "over35"
+  | "under15"
   | "under25"
-  | "gg";
+  | "under35"
+  | "gg"
+  | "ng"
+  | "ht_over05"
+  | "ht_under05"
+  | "ht_over15"
+  | "ht_under15"
+  | "ht_gg";
 
 export type TrendNote = {
   source: DeskSource;
   rate: number;
   sample: number;
   odds: number | null;
+};
+
+export type TrendPick = {
+  id: string;
+  category: TrendCategory;
+  home: string;
+  away: string;
+  team: string;
+  opponent: string;
+  league: string;
+  kickoff: string | null;
+  kickoffIso: string | null;
+  selection: string;
+  label: string;
+  market: string;
+  odds: number | null;
+  rate: number;
+  sample: number;
+  statLabel: string;
+  sources: DeskSource[];
+  sourceNotes: TrendNote[];
+  fixtureId: string | null;
+  homeLogo: string | null;
+  awayLogo: string | null;
+  url?: string;
+  agreed?: DeskSource[];
+  last5?: {
+    home: { results: string[]; winRate: number; ou: Record<string, { over: number; under: number; n: number }>; htOu?: Record<string, { over: number; under: number; n: number }>; bttsRate: number; htBttsRate?: number; n: number };
+    away: { results: string[]; winRate: number; ou: Record<string, { over: number; under: number; n: number }>; htOu?: Record<string, { over: number; under: number; n: number }>; bttsRate: number; htBttsRate?: number; n: number };
+    homeHome?: { results: string[]; winRate: number; ou: Record<string, { over: number; under: number; n: number }>; htOu?: Record<string, { over: number; under: number; n: number }>; bttsRate: number; htBttsRate?: number; n: number } | null;
+    awayAway?: { results: string[]; winRate: number; ou: Record<string, { over: number; under: number; n: number }>; htOu?: Record<string, { over: number; under: number; n: number }>; bttsRate: number; htBttsRate?: number; n: number } | null;
+    h2h: { results: string[]; ou: Record<string, { over: number; under: number; n: number }>; n: number } | null;
+    table?: {
+      size: number;
+      home: { rank: number; pts?: number; gp?: number; ppg?: number | null } | null;
+      away: { rank: number; pts?: number; gp?: number; ppg?: number | null } | null;
+      homeHome?: { rank: number } | null;
+      awayAway?: { rank: number } | null;
+    } | null;
+    agree: { line: number; side: string; home: number; away: number; h2h: number | null; rate: number; split?: boolean }[];
+  } | null;
 };
 
 export type TrendTeam = {
@@ -162,9 +213,14 @@ export type TrendsPayload = {
   date: string;
   dateLabel: string;
   fetchedAt: string;
+  minRate?: number;
+  oddsFrom?: number;
+  oddsTo?: number;
+  sources?: DeskSource[];
   counts: Record<string, number>;
-  teams: TrendTeam[];
-  bankers: BankerPick[];
+  categories: Record<TrendCategory, TrendPick[]>;
+  teams?: TrendTeam[];
+  bankers: (TrendPick & { agreed?: DeskSource[] })[];
   games: number;
 };
 
@@ -187,6 +243,21 @@ export type FormRow = {
   logo: string | null;
   fixtureId: string | null;
   opponent: string | null;
+  kickoff?: string | null;
+  boardLabel?: string | null;
+  boardMarket?: string | null;
+  boardSelection?: string | null;
+  band?: ConsensusBand | null;
+  pct?: number | null;
+  tipCount?: number | null;
+  coverage?: number | null;
+  settle?: "won" | "lost" | "pending" | null;
+  homeLogo?: string | null;
+  awayLogo?: string | null;
+  homeForm?: string | null;
+  awayForm?: string | null;
+  why?: string | null;
+  price?: number | null;
 };
 
 export type FormBoard = {
@@ -224,8 +295,10 @@ export type StreakPick = {
   id: string;
   gameId: string | null;
   league: string;
+  leagueSlug?: string | null;
   category: string;
   kickoff: string;
+  when?: "today" | "tomorrow" | "later";
   home: string;
   away: string;
   homeLogo: string | null;
@@ -251,6 +324,13 @@ export type StreakPick = {
   /** Raw 3+ Yes / No used for the Over 2.5 average. */
   streakYes?: number | null;
   streakNo?: number | null;
+  scoring?: {
+    heat: "hot" | "mid" | "cold";
+    gpg?: number;
+    stdev?: number;
+    over25?: number;
+    twoPlus?: number;
+  } | null;
 };
 
 export type StreaksPayload = {
@@ -272,7 +352,42 @@ export type StreaksPayload = {
   };
   scanned: number;
   withStreaks: number;
-  counts: { twoYes: number; threeNo: number };
+  weekOf?: string;
+  readyFor?: "today" | "tomorrow" | "later";
+  droppedYouth?: number;
+  counts: { twoYes: number; threeNo: number; today?: number; tomorrow?: number; weekly?: number };
   twoYes: StreakPick[];
   threeNo: StreakPick[];
+  weekly?: StreakPick[];
+  accuracy?: StreakAccuracy;
+};
+
+export type StreakAccuracyRate = { n: number; hits: number; rate: number };
+
+export type StreakAccuracy = {
+  fetchedAt: string;
+  windowDays: number;
+  from: string;
+  to: string;
+  sample: number;
+  twoPlus: StreakAccuracyRate;
+  twoPlusClear?: StreakAccuracyRate;
+  over25: StreakAccuracyRate;
+  rule2: StreakAccuracyRate;
+  ruleOver: StreakAccuracyRate;
+  leagues: Array<{
+    name: string;
+    slug?: string;
+    n: number;
+    gpg?: number;
+    stdev?: number;
+    cv?: number;
+    heat?: "hot" | "mid" | "cold";
+    allow2?: boolean;
+    allowOver?: boolean;
+    twoPlus: StreakAccuracyRate;
+    over25: StreakAccuracyRate;
+    rule2: StreakAccuracyRate;
+    ruleOver: StreakAccuracyRate;
+  }>;
 };

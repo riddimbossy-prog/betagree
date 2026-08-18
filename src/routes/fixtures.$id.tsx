@@ -5,10 +5,15 @@ import { Crest } from "@/components/crest";
 import { BoardState, LiveBar } from "@/components/live-bar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { bandOf } from "@/lib/consensus";
+import { bandOf, decideBoardTip, presentBoardTip, tieRuleLabel } from "@/lib/consensus";
+import { useLeagueRates } from "@/lib/league-rates";
+import { SettleChip } from "@/components/settle-chip";
+import { settleBoardTip } from "@/lib/settle";
 import { formatKickoffLong, marketLabel } from "@/lib/format";
 import { useSlate } from "@/lib/live/use-live";
+import { useOdds } from "@/lib/live/use-odds";
 import { formatDecimal } from "@/lib/odds";
+import { tipPrice } from "@/lib/tip-odds";
 
 export const Route = createFileRoute("/fixtures/$id")({
   component: FixturePage,
@@ -17,9 +22,14 @@ export const Route = createFileRoute("/fixtures/$id")({
 function FixturePage() {
   const { id } = Route.useParams();
   const { data, error, loading, reload } = useSlate();
+  const odds = useOdds();
+  const rates = useLeagueRates(data?.fixtures);
   const fixture = data?.fixtures.find((f) => f.id === id);
   const picks = (data?.picks ?? []).filter((p) => p.fixtureId === id);
   const consensus = (data?.consensus ?? []).filter((c) => c.fixture.id === id);
+  const decision = decideBoardTip(consensus, rates);
+  const shown = decision ? presentBoardTip(decision.tip) : null;
+  const price = shown && fixture ? tipPrice(shown, fixture, odds) : null;
   const onDesk = (data?.desks ?? []).filter((t) => picks.some((p) => p.tipsterId === t.id));
 
   if ((loading && !data) || error) {
@@ -76,6 +86,20 @@ function FixturePage() {
           <OddCell k={fixture.home.abbr} v={formatDecimal(fixture.home.ml)} />
         </dl>
       </header>
+
+      {shown ? (
+        <Card>
+          <CardContent className="p-5">
+            <p className="text-xs tracking-widest text-subtle uppercase">Board tip · {marketLabel(shown.boardMarket)}</p>
+            <h2 className="font-display mt-1 text-3xl">{shown.boardLabel}</h2>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <ConsensusChip pct={shown.pct} count={shown.count} coverage={shown.coverage} band={bandOf(shown)} />
+              <SettleChip status={settleBoardTip(shown, fixture)} />
+              {price != null ? <span className="odds-chip">{price.toFixed(2)}</span> : null}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {consensus.length ? (
         <section className="grid gap-3 md:grid-cols-2">

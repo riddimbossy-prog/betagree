@@ -39,18 +39,28 @@
   --color-hot-foreground: hsl(40 22% 96%);
   --color-crest: hsl(40 22% 92%);
   --color-crest-foreground: hsl(240 12% 9%);
-  --color-or: hsl(40 58% 62%);
-  --color-argent: hsl(40 22% 92%);
-  --color-gules: hsl(354 68% 46%);
-  --color-azure: hsl(214 52% 52%);
-  --color-vert: hsl(148 36% 38%);
-  --color-purpure: hsl(262 52% 46%);
-  --color-band-high: hsl(111 100% 50%);
+  --color-or: hsl(42 96% 62%);
+  --color-argent: hsl(40 22% 94%);
+  --color-gules: hsl(352 86% 56%);
+  --color-azure: hsl(204 92% 56%);
+  --color-vert: hsl(152 72% 46%);
+  --color-purpure: hsl(272 78% 58%);
+  --color-cyan: hsl(186 90% 52%);
+  --color-lime: hsl(86 88% 54%);
+  --color-rose: hsl(330 86% 62%);
+  --color-amber: hsl(32 96% 58%);
+  --color-band-high: hsl(111 100% 54%);
   --color-band-high-foreground: hsl(140 48% 6%);
-  --color-band-medium: hsl(34 100% 54%);
+  --color-band-medium: hsl(34 100% 56%);
   --color-band-medium-foreground: hsl(24 58% 8%);
-  --color-band-low: hsl(328 100% 56%);
+  --color-band-low: hsl(328 100% 60%);
   --color-band-low-foreground: hsl(330 40% 98%);
+  --color-win: hsl(86 88% 54%);
+  --color-loss: hsl(352 86% 58%);
+  --color-info: hsl(186 90% 58%);
+  --color-hot: hsl(352 86% 58%);
+  --color-primary: hsl(272 78% 56%);
+  --color-ring: hsl(42 96% 62%);
   --tincture-or: hsl(40 58% 62%);
   --tincture-or-bright: hsl(44 82% 76%);
   --tincture-or-deep: hsl(34 58% 36%);
@@ -94,11 +104,13 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    font-size: 112.5%;
+    font-size: clamp(17.5px, 0.65vw + 16.2px, 22px);
     background: var(--color-background);
     color: var(--color-foreground);
     overflow-x: clip;
     max-width: 100%;
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
   }
   body {
     min-height: 100dvh;
@@ -106,10 +118,11 @@
     max-width: 100%;
     background-color: var(--color-background);
     background-image:
-      radial-gradient(980px 520px at 8% -12%, hsl(262 58% 42% / 0.48), transparent 58%),
-      radial-gradient(760px 480px at 108% 4%, hsl(214 56% 38% / 0.32), transparent 56%),
-      radial-gradient(640px 420px at 92% 96%, hsl(354 62% 36% / 0.2), transparent 60%),
-      radial-gradient(520px 340px at -6% 88%, hsl(40 58% 52% / 0.1), transparent 58%);
+      radial-gradient(900px 540px at 6% -14%, hsl(272 88% 48% / 0.62), transparent 58%),
+      radial-gradient(820px 500px at 108% 0%, hsl(186 90% 42% / 0.42), transparent 56%),
+      radial-gradient(680px 460px at 94% 100%, hsl(352 86% 42% / 0.34), transparent 58%),
+      radial-gradient(560px 380px at -8% 92%, hsl(42 96% 48% / 0.22), transparent 58%),
+      radial-gradient(520px 360px at 50% 120%, hsl(152 72% 36% / 0.2), transparent 62%);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     line-height: 1.5;
@@ -130,7 +143,7 @@
   p { text-wrap: pretty; }
   button:not(:disabled), [role="button"]:not(:disabled) { cursor: pointer; }
   a { color: inherit; }
-  ::selection { background: hsl(40 58% 62% / 0.35); color: hsl(240 12% 8%); }
+  ::selection { background: hsl(186 90% 52% / 0.42); color: hsl(240 12% 8%); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -155,28 +168,58 @@
   box-shadow: var(--shadow-glass);
 }
 @utility glass-purpure {
-  background-color: hsl(262 52% 38% / 0.52);
-  backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
-  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
-  box-shadow: inset 0 1px 0 hsl(40 30% 92% / 0.14), 0 0 0 1px hsl(262 50% 70% / 0.28);
+  background-color: hsl(272 78% 42% / 0.58);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.7);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.7);
+  box-shadow: inset 0 1px 0 hsl(280 90% 88% / 0.22), 0 0 0 1px hsl(272 80% 72% / 0.42), 0 0 28px -10px hsl(272 80% 56% / 0.55);
 }
 @utility glass-azure {
-  background-color: hsl(214 52% 34% / 0.5);
-  backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
-  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.55);
-  box-shadow: inset 0 1px 0 hsl(40 30% 92% / 0.12), 0 0 0 1px hsl(40 58% 62% / 0.45);
+  background-color: hsl(204 88% 36% / 0.56);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.7);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.7);
+  box-shadow: inset 0 1px 0 hsl(200 90% 88% / 0.2), 0 0 0 1px hsl(204 90% 68% / 0.45), 0 0 28px -10px hsl(204 90% 56% / 0.5);
 }
 @utility glass-gules {
-  background-color: hsl(354 62% 36% / 0.52);
-  backdrop-filter: blur(var(--blur-glass)) saturate(1.5);
-  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.5);
-  box-shadow: inset 0 1px 0 hsl(40 30% 92% / 0.12), 0 0 0 1px hsl(354 50% 70% / 0.28);
+  background-color: hsl(352 82% 40% / 0.58);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.65);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.65);
+  box-shadow: inset 0 1px 0 hsl(352 90% 88% / 0.18), 0 0 0 1px hsl(352 80% 70% / 0.4), 0 0 28px -10px hsl(352 86% 56% / 0.5);
 }
 @utility glass-or {
-  background-color: hsl(40 58% 52% / 0.18);
-  backdrop-filter: blur(12px) saturate(1.4);
-  -webkit-backdrop-filter: blur(12px) saturate(1.4);
-  box-shadow: inset 0 1px 0 hsl(40 50% 88% / 0.16), 0 0 0 1px hsl(40 58% 62% / 0.28);
+  background-color: hsl(42 96% 48% / 0.28);
+  backdrop-filter: blur(12px) saturate(1.55);
+  -webkit-backdrop-filter: blur(12px) saturate(1.55);
+  box-shadow: inset 0 1px 0 hsl(42 96% 88% / 0.28), 0 0 0 1px hsl(42 96% 62% / 0.45), 0 0 22px -8px hsl(42 96% 56% / 0.4);
+}
+@utility glass-cyan {
+  background-color: hsl(186 88% 34% / 0.55);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.7);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.7);
+  box-shadow: inset 0 1px 0 hsl(186 90% 88% / 0.2), 0 0 0 1px hsl(186 90% 62% / 0.45), 0 0 26px -10px hsl(186 90% 52% / 0.5);
+}
+@utility glass-lime {
+  background-color: hsl(86 78% 32% / 0.55);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.7);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.7);
+  box-shadow: inset 0 1px 0 hsl(86 90% 88% / 0.22), 0 0 0 1px hsl(86 88% 60% / 0.42), 0 0 26px -10px hsl(86 88% 50% / 0.48);
+}
+@utility glass-rose {
+  background-color: hsl(330 78% 38% / 0.55);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.7);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.7);
+  box-shadow: inset 0 1px 0 hsl(330 90% 88% / 0.2), 0 0 0 1px hsl(330 86% 68% / 0.42), 0 0 26px -10px hsl(330 86% 58% / 0.48);
+}
+@utility glass-amber {
+  background-color: hsl(32 92% 40% / 0.5);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.65);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.65);
+  box-shadow: inset 0 1px 0 hsl(32 96% 88% / 0.22), 0 0 0 1px hsl(32 96% 62% / 0.42), 0 0 24px -10px hsl(32 96% 56% / 0.45);
+}
+@utility glass-vert {
+  background-color: hsl(152 68% 28% / 0.55);
+  backdrop-filter: blur(var(--blur-glass)) saturate(1.65);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(1.65);
+  box-shadow: inset 0 1px 0 hsl(152 80% 82% / 0.2), 0 0 0 1px hsl(152 72% 52% / 0.4), 0 0 24px -10px hsl(152 72% 46% / 0.42);
 }
 @utility glass-high {
   background-color: hsl(111 100% 48% / 0.92);
@@ -221,9 +264,15 @@
 
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass, .glass-strong, .bg-card, .bg-popover { background-color: hsl(240 16% 11%); }
-  .glass-purpure { background-color: hsl(262 52% 38%); }
-  .glass-azure { background-color: hsl(214 52% 32%); }
-  .glass-gules { background-color: hsl(354 62% 36%); }
+  .glass-purpure { background-color: hsl(272 78% 40%); }
+  .glass-azure { background-color: hsl(204 82% 34%); }
+  .glass-gules { background-color: hsl(352 78% 38%); }
+  .glass-or { background-color: hsl(42 80% 36%); }
+  .glass-cyan { background-color: hsl(186 80% 32%); }
+  .glass-lime { background-color: hsl(86 70% 30%); }
+  .glass-rose { background-color: hsl(330 72% 36%); }
+  .glass-amber { background-color: hsl(32 84% 38%); }
+  .glass-vert { background-color: hsl(152 62% 28%); }
   .glass-high { background-color: hsl(111 92% 46%); }
   .glass-medium { background-color: hsl(34 96% 50%); }
   .glass-low { background-color: hsl(328 92% 50%); }
@@ -235,7 +284,7 @@
 .tab-dock {
   position: fixed;
   inset-inline: 0;
-  bottom: max(0.75rem, env(safe-area-inset-bottom));
+  bottom: max(0.5rem, env(safe-area-inset-bottom));
   z-index: 40;
   margin-inline: auto;
   display: flex;
@@ -244,21 +293,29 @@
   justify-content: space-between;
   gap: 0.15rem;
   border-radius: 999px;
-  background: hsl(240 20% 10% / 0.55);
-  padding: 0.35rem;
-  backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.55);
-  -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.55);
-  box-shadow: inset 0 1px 0 hsl(40 30% 92% / 0.14), 0 0 0 1px hsl(40 58% 62% / 0.28), var(--shadow-lift);
+  background: linear-gradient(180deg, hsl(272 50% 16% / 0.72), hsl(240 24% 8% / 0.78));
+  padding: 0.3rem;
+  backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.7);
+  -webkit-backdrop-filter: blur(var(--blur-glass-strong)) saturate(1.7);
+  box-shadow:
+    inset 0 1px 0 hsl(42 90% 80% / 0.22),
+    0 0 0 1px hsl(272 80% 68% / 0.4),
+    0 0 28px -8px hsl(186 90% 50% / 0.35),
+    var(--shadow-lift);
 }
 
 .chip-row {
   display: flex;
+  flex-wrap: nowrap;
   gap: 0.5rem;
   overflow-x: auto;
   padding-bottom: 0.25rem;
+  padding-inline: 0.05rem;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  mask-image: linear-gradient(90deg, transparent, #000 12px, #000 calc(100% - 16px), transparent);
 }
 .chip-row::-webkit-scrollbar { display: none; }
 .chip-row > * { flex-shrink: 0; scroll-snap-align: start; min-height: 2.75rem; }
@@ -314,36 +371,72 @@
 @media (prefers-reduced-motion: reduce) { .hero-tab-pip { animation: none; } }
 
 @media (min-width: 41.25rem) {
-  .tab-dock { width: min(92%, 30rem); padding: 0.45rem; }
+  .tab-dock { width: min(94%, 32rem); padding: 0.4rem; }
   .hero-tabs { flex-wrap: wrap; overflow: visible; }
   .hero-tab { flex: 1 1 5.75rem; min-width: 5.5rem; }
   .hero-tab-sport { flex: 1 1 11.5rem; min-width: 10.5rem; }
 }
 @media (min-width: 51.25rem) {
-  .tab-dock { width: min(90%, 36rem); }
+  .tab-dock { width: min(92%, 38rem); }
   .hero-tabs { display: grid; grid-template-columns: minmax(11rem, 1.3fr) repeat(4, minmax(0, 1fr)); }
   .hero-tab-sport { grid-row: span 2; min-height: 100%; }
 }
 @media (min-width: 64rem) {
   .hero-tabs { grid-template-columns: minmax(12rem, 1.2fr) repeat(8, minmax(0, 1fr)); }
   .hero-tab-sport { grid-row: auto; }
+  .tab-dock { display: none; }
+  .page-pad { padding-bottom: 2.5rem; }
 }
-@media (min-width: 80rem) { .tab-dock { display: none; } }
+@media (min-width: 80rem) {
+  .page-pad { padding-bottom: 2.75rem; }
+}
 
-.page-pad { padding-bottom: calc(6.75rem + env(safe-area-inset-bottom)); }
-@media (min-width: 80rem) { .page-pad { padding-bottom: 2.5rem; } }
+@media (min-width: 41.25rem) and (max-width: 51.24rem) {
+  /* Z Fold inner — two columns, last odd tile spans */
+  .medium-grid > :last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .tab-dock { width: min(88%, 34rem); }
+}
+
+@media (min-width: 40rem) and (max-height: 540px) {
+  /* Z Fold flex / tabletop — short inner pane */
+  .live-pill { display: none; }
+  .analysis-hub h1 { font-size: 1.28rem; }
+  .analysis-card { padding: 0.7rem 0.85rem; min-height: 0 !important; }
+  .analysis-card .analysis-card-body { display: none; }
+  .tab-dock {
+    width: min(88%, 26rem);
+    padding: 0.22rem;
+    bottom: max(0.28rem, env(safe-area-inset-bottom));
+  }
+  .tab-dock .tab-label { display: none !important; }
+  .page-pad { padding-bottom: calc(5.4rem + env(safe-area-inset-bottom)); }
+}
+
+@media (max-width: 22.5rem) {
+  /* Z Fold cover */
+  .live-pill { padding-inline: 0.65rem; }
+}
+
+.page-pad { padding-bottom: calc(5.75rem + env(safe-area-inset-bottom)); }
+
+.sheet-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.sheet-scroll::-webkit-scrollbar { display: none; }
 
 .odds-chip {
   border-radius: 999px;
-  background: hsl(40 58% 52% / 0.16);
+  background: linear-gradient(180deg, hsl(42 96% 52% / 0.28), hsl(32 90% 40% / 0.18));
   color: var(--color-or);
   padding: 0.35rem 0.7rem;
   font-size: 0.8125rem;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  backdrop-filter: blur(10px) saturate(1.3);
-  -webkit-backdrop-filter: blur(10px) saturate(1.3);
-  box-shadow: inset 0 1px 0 hsl(40 50% 88% / 0.12), 0 0 0 1px hsl(40 58% 62% / 0.22);
+  backdrop-filter: blur(10px) saturate(1.4);
+  -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  box-shadow: inset 0 1px 0 hsl(42 96% 88% / 0.22), 0 0 0 1px hsl(42 96% 62% / 0.38);
 }
 .price-chip {
   display: inline-flex;
@@ -375,58 +468,20 @@
   }
 }
 
-@keyframes enter-fade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .enter-up {
-  animation: enter-up 560ms var(--ease-out-soft) both;
+  animation: enter-up 560ms var(--ease-out-soft) backwards;
   animation-delay: calc(var(--enter-i, 0) * 70ms);
 }
 
 .analysis-hub { position: relative; }
-
-@keyframes card-bounce {
-  0%   { transform: translateY(0) scale(1); }
-  28%  { transform: translateY(-10px) scale(1.025); }
-  48%  { transform: translateY(-3px) scale(1.008); }
-  68%  { transform: translateY(-6px) scale(1.016); }
-  100% { transform: translateY(-4px) scale(1.012); }
-}
-
-@keyframes icon-bounce {
-  0%   { transform: scale(1) rotate(0deg); }
-  30%  { transform: scale(1.14) rotate(-6deg); }
-  55%  { transform: scale(1.04) rotate(2deg); }
-  75%  { transform: scale(1.1) rotate(-3deg); }
-  100% { transform: scale(1.08) rotate(-3deg); }
-}
-
-@keyframes badge-bounce {
-  0%   { transform: translateY(0) scale(1); }
-  35%  { transform: translateY(-5px) scale(1.12); }
-  55%  { transform: translateY(-1px) scale(1.02); }
-  75%  { transform: translateY(-3px) scale(1.08); }
-  100% { transform: translateY(-2px) scale(1.06); }
-}
-
-@keyframes glass-bounce {
-  0%   { transform: translateY(0); }
-  30%  { transform: translateY(-7px); }
-  50%  { transform: translateY(-2px); }
-  70%  { transform: translateY(-4px); }
-  100% { transform: translateY(-3px); }
-}
 
 .analysis-card {
   position: relative;
   overflow: hidden;
   isolation: isolate;
   box-shadow: inset 0 1px 0 hsl(40 30% 92% / 0.1), 0 0 0 1px hsl(40 40% 72% / 0.14), var(--shadow-lift);
-  transition: box-shadow 280ms var(--ease-out-soft), background-color 280ms var(--ease-out-soft);
-  will-change: transform;
-  animation: enter-up 560ms var(--ease-out-soft) both;
+  transition: transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 280ms var(--ease-out-soft), background-color 280ms var(--ease-out-soft);
+  animation: enter-up 560ms var(--ease-out-soft) backwards;
   animation-delay: calc(0.12s + var(--enter-i, 0) * 80ms);
 }
 .analysis-card::before {
@@ -443,22 +498,18 @@
   transition: opacity 320ms var(--ease-out-soft), transform 420ms var(--ease-out-soft);
 }
 .analysis-card:hover {
-  animation: card-bounce 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   box-shadow: inset 0 1px 0 hsl(40 50% 88% / 0.2), 0 0 0 1px hsl(40 58% 62% / 0.55), 0 28px 48px -28px rgb(0 0 0 / 0.72), 0 0 36px -12px hsl(40 58% 62% / 0.28);
   transform: translateY(-4px) scale(1.012);
 }
 .analysis-card:hover::before { opacity: 1; transform: scale(1); }
 .analysis-card:active {
-  animation: none;
   transform: translateY(-1px) scale(0.995);
-  transition: transform 90ms ease-out;
+  transition-duration: 90ms;
 }
 .analysis-card-icon {
-  transition: box-shadow 280ms var(--ease-out-soft);
-  will-change: transform;
+  transition: transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 280ms var(--ease-out-soft);
 }
 .analysis-card:hover .analysis-card-icon {
-  animation: icon-bounce 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   transform: scale(1.08) rotate(-3deg);
   box-shadow: inset 0 1px 0 hsl(40 50% 88% / 0.22), 0 10px 22px -12px rgb(0 0 0 / 0.55);
 }
@@ -467,16 +518,42 @@
 .analysis-card-eyebrow, .analysis-card-body { transition: color 220ms var(--ease-out-soft), opacity 220ms var(--ease-out-soft); }
 .analysis-card:hover .analysis-card-eyebrow { color: hsl(40 30% 78%); }
 .analysis-card:hover .analysis-card-body { color: hsl(40 12% 82%); }
-.analysis-card-badge { will-change: transform; }
-.analysis-card:hover .analysis-card-badge {
-  animation: badge-bounce 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  transform: translateY(-2px) scale(1.06);
+.analysis-card-badge { transition: transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+.analysis-card.tone-high {
+  background: linear-gradient(165deg, hsl(111 80% 28% / 0.38), hsl(240 18% 12% / 0.55));
+  box-shadow: inset 0 1px 0 hsl(111 100% 80% / 0.22), 0 0 0 1px hsl(111 100% 50% / 0.38), var(--shadow-lift);
+}
+.analysis-card.tone-high::before { background: radial-gradient(circle, hsl(111 100% 54% / 0.28), transparent 68%); }
+.analysis-card.tone-live {
+  background: linear-gradient(165deg, hsl(352 80% 32% / 0.42), hsl(240 18% 12% / 0.55));
+  box-shadow: inset 0 1px 0 hsl(352 90% 80% / 0.2), 0 0 0 1px hsl(352 86% 58% / 0.4), var(--shadow-lift);
+}
+.analysis-card.tone-live::before { background: radial-gradient(circle, hsl(352 86% 58% / 0.3), transparent 68%); }
+.analysis-card.tone-or {
+  background: linear-gradient(165deg, hsl(42 90% 32% / 0.36), hsl(240 18% 12% / 0.55));
+  box-shadow: inset 0 1px 0 hsl(42 96% 80% / 0.22), 0 0 0 1px hsl(42 96% 58% / 0.38), var(--shadow-lift);
+}
+.analysis-card.tone-or::before { background: radial-gradient(circle, hsl(42 96% 62% / 0.28), transparent 68%); }
+.analysis-card.tone-purpure {
+  background: linear-gradient(165deg, hsl(272 78% 36% / 0.42), hsl(240 18% 12% / 0.55));
+  box-shadow: inset 0 1px 0 hsl(272 90% 82% / 0.22), 0 0 0 1px hsl(272 80% 64% / 0.4), var(--shadow-lift);
+}
+.analysis-card.tone-purpure::before { background: radial-gradient(circle, hsl(272 80% 62% / 0.3), transparent 68%); }
+.analysis-card.tone-azure {
+  background: linear-gradient(165deg, hsl(186 80% 28% / 0.4), hsl(240 18% 12% / 0.55));
+  box-shadow: inset 0 1px 0 hsl(186 90% 80% / 0.2), 0 0 0 1px hsl(186 90% 54% / 0.4), var(--shadow-lift);
+}
+.analysis-card.tone-azure::before { background: radial-gradient(circle, hsl(186 90% 52% / 0.3), transparent 68%); }
+
+.header-glow {
+  box-shadow:
+    inset 0 -1px 0 hsl(272 80% 70% / 0.18),
+    0 1px 0 hsl(186 90% 56% / 0.18);
 }
 
 .glass-lift {
-  transition: box-shadow 240ms var(--ease-out-soft);
-  will-change: transform;
-  animation: enter-up 520ms var(--ease-out-soft) both;
+  transition: transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 240ms var(--ease-out-soft);
+  animation: enter-up 520ms var(--ease-out-soft) backwards;
   animation-delay: calc(0.08s + var(--enter-i, 0) * 60ms);
 }
 
@@ -509,14 +586,22 @@ ul > li:nth-child(n+7) .glass-lift,
 .grid > *:nth-child(n+7) .glass-lift { --enter-i: 6; }
 
 .glass-lift:hover {
-  animation: glass-bounce 480ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   transform: translateY(-3px);
   box-shadow: inset 0 1px 0 hsl(40 50% 88% / 0.16), 0 0 0 1px hsl(40 58% 62% / 0.42), 0 24px 40px -24px rgb(0 0 0 / 0.65);
 }
 .glass-lift:active {
-  animation: none;
   transform: translateY(-1px);
-  transition: transform 90ms ease-out;
+  transition-duration: 90ms;
+}
+
+@media (hover: none) {
+  .analysis-card:hover,
+  .analysis-card:hover .analysis-card-icon,
+  .analysis-card:hover .analysis-card-badge,
+  .glass-lift:hover {
+    transform: none;
+  }
+  .analysis-card:hover::before { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -536,9 +621,14 @@ ul > li:nth-child(n+7) .glass-lift,
 }
 
 @media (max-width: 41.24rem) {
-  .analysis-card { padding: 1rem 1.1rem; }
+  .analysis-card { padding: 0.9rem 1rem; }
   .analysis-card:hover {
-    animation: card-bounce 480ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
     transform: translateY(-2px) scale(1.006);
   }
+  .analysis-card .analysis-card-body { display: none; }
+}
+
+@media (max-width: 22.5rem) {
+  .analysis-card > div { flex-wrap: wrap; }
+  .analysis-card-badge { width: 100%; text-align: left; margin-top: 0.35rem; padding-left: 3.25rem; }
 }

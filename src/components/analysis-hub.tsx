@@ -38,7 +38,7 @@ function TileIcon({ name, tone }: { name: AnalysisTile["icon"]; tone?: AnalysisT
   return (
     <span
       className={cn(
-        "analysis-card-icon grid size-12 shrink-0 place-items-center rounded-2xl",
+        "analysis-card-icon grid size-10 shrink-0 place-items-center rounded-2xl fold:size-12",
         tone === "high" && "glass-high text-band-high-foreground",
         tone === "live" && "glass-gules text-primary-foreground",
         tone === "or" && "glass-or text-or",
@@ -58,25 +58,32 @@ function AnalysisCard({ tile, index = 0 }: { tile: AnalysisTile; index?: number 
       to={tile.to}
       style={{ ["--enter-i" as string]: index }}
       className={cn(
-        "analysis-card group glass block rounded-3xl p-5 no-underline",
+        "analysis-card group glass block rounded-3xl p-4 no-underline fold:p-5",
         tile.size === "lg" && "fold:min-h-[9.5rem]",
+        tile.tone === "high" && "tone-high",
+        tile.tone === "live" && "tone-live",
+        tile.tone === "or" && "tone-or",
+        tile.tone === "purpure" && "tone-purpure",
+        tile.tone === "azure" && "tone-azure",
       )}
     >
-      <div className="flex items-start gap-4">
+      <div className="flex items-start gap-3 fold:gap-4">
         <TileIcon name={tile.icon} tone={tile.tone} />
         <div className="min-w-0 flex-1">
-          <p className="analysis-card-eyebrow text-[10px] font-semibold uppercase tracking-[0.16em] text-subtle">
+          <p className="analysis-card-eyebrow text-xs font-semibold uppercase tracking-[0.16em] text-subtle">
             {tile.eyebrow}
           </p>
-          <h3 className="analysis-card-title mt-1 text-xl font-semibold text-foreground">
+          <p className="analysis-card-title mt-1 text-xl font-semibold text-foreground fold:text-2xl">
             {tile.title}
-          </h3>
-          <p className="analysis-card-body mt-2 text-sm leading-relaxed text-muted-foreground">{tile.body}</p>
+          </p>
+          <p className="analysis-card-body mt-1.5 line-clamp-2 text-base leading-relaxed text-muted-foreground tab:line-clamp-3">
+            {tile.body}
+          </p>
         </div>
         <div className="analysis-card-badge shrink-0 text-right">
           <p
             className={cn(
-              "font-serif text-2xl italic leading-none tabular",
+              "font-serif text-2xl italic leading-none tabular fold:text-3xl",
               tile.tone === "high" && "text-band-high",
               tile.tone === "live" && "text-hot",
               tile.tone === "or" && "text-or",
@@ -101,7 +108,7 @@ function AnalysisCard({ tile, index = 0 }: { tile: AnalysisTile; index?: number 
 export function AnalysisHub({
   kicker = "Betagree board hub",
   title = "Choose the analysis view",
-  note = "Each board has a defined job. The homepage no longer mixes specialist systems into one small navigation row.",
+  note = "Pick a board.",
   liveLabel = "Boards online",
   tiles,
 }: {
@@ -116,10 +123,10 @@ export function AnalysisHub({
 
   return (
     <section className="analysis-hub">
-      <div className="enter-up flex flex-wrap items-start justify-between gap-4" style={{ ["--enter-i" as string]: 0 }}>
-        <div className="max-w-2xl">
+      <div className="enter-up flex flex-wrap items-start justify-between gap-3 fold:gap-4" style={{ ["--enter-i" as string]: 0 }}>
+        <div className="min-w-0 max-w-2xl">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-or">{kicker}</p>
-          <h1 className="mt-2 text-3xl font-semibold fold:text-4xl">
+          <h1 className="mt-1.5 text-[1.7rem] font-semibold leading-tight sm:text-3xl fold:mt-2 fold:text-5xl">
             {title.includes("analysis") ? (
               <>
                 Choose the <span className="font-serif italic font-normal">analysis</span> view
@@ -128,22 +135,22 @@ export function AnalysisHub({
               title
             )}
           </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground">{note}</p>
+          <p className="mt-3 max-w-xl text-base leading-relaxed text-muted-foreground">{note}</p>
         </div>
-        <span className="glass inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-xs font-semibold uppercase tracking-wide text-or">
+        <span className="live-pill glass inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-or fold:px-3.5 fold:py-2 fold:text-xs">
           <span className="size-2 rounded-full bg-band-high shadow-[0_0_12px_hsl(111_100%_50%/0.8)]" />
           {liveLabel}
         </span>
       </div>
 
-      <div className="mt-6 grid gap-3 fold:grid-cols-2">
+      <div className="mt-5 grid gap-3 fold:grid-cols-2">
         {large.map((tile, i) => (
           <AnalysisCard key={tile.id} tile={tile} index={i} />
         ))}
       </div>
 
       {medium.length ? (
-        <div className="mt-3 grid gap-3 fold:grid-cols-3">
+        <div className="medium-grid mt-3 grid gap-3 sm:grid-cols-2 tab:grid-cols-3">
           {medium.map((tile, i) => (
             <AnalysisCard key={tile.id} tile={tile} index={large.length + i} />
           ))}

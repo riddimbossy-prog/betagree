@@ -3,15 +3,23 @@ import { Crest } from "@/components/crest";
 import { TimeChip } from "@/components/trend-card";
 import { ConsensusChip } from "@/components/consensus-chip";
 import { usePickSheet } from "@/components/pick-sheet";
-import { bandOf } from "@/lib/consensus";
+import { bandOf, boardWhy, marketTitle, presentBoardTip } from "@/lib/consensus";
 import { formatDecimal, formatPct } from "@/lib/odds";
+import { SettleChip } from "@/components/settle-chip";
+import { settleBoardTip } from "@/lib/settle";
+import { useOdds } from "@/lib/live/use-odds";
+import { tipPrice } from "@/lib/tip-odds";
 import { cn } from "@/lib/utils";
 
 export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: number }) {
   const f = item.fixture;
-  const hot = (rank ?? 0) % 2 === 0;
+  const wash = ["glass-purpure", "glass-azure", "glass-gules", "glass-lime", "glass-amber"][(rank ?? 0) % 5];
   const sheet = usePickSheet();
-  const band = bandOf(item);
+  const tip = presentBoardTip(item);
+  const band = bandOf(tip);
+  const settled = settleBoardTip(tip, f);
+  const odds = useOdds();
+  const price = tipPrice(tip, f, odds);
   return (
     <button
       type="button"
@@ -24,28 +32,28 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
           awayLogo: f.away.logo,
           league: f.league,
           kickoffIso: f.start,
-          label: item.label,
-          odds: item.market === "1x2" ? (item.selection === "home" ? f.home.ml : item.selection === "away" ? f.away.ml : f.drawMl) : null,
+          label: tip.boardLabel,
+          odds: price,
           sources: ["form", "odds"],
-          why: `${item.label}. ${item.count} of ${item.coverage} tip sites land here (${formatPct(item.pct)}). ${band === "high" ? "High consensus." : band === "medium" ? "Medium consensus." : "Low consensus."} This is our read — the sheet stays on Betagree.`,
+          why: boardWhy(tip),
         })
       }
       className={cn(
-        "block w-full min-w-0 overflow-hidden rounded-3xl p-5 text-left text-primary-foreground",
-        hot ? "glass-gules" : "glass-purpure",
+        "block w-full min-w-0 overflow-hidden rounded-3xl p-4 text-left text-primary-foreground fold:p-5",
+        wash,
       )}
     >
       <div className="flex items-center justify-between gap-2">
         <p className="text-xs font-medium tracking-wide text-white/70">
-          {item.market === "1x2" ? "Match result" : item.market === "total" ? "Total" : "BTTS"}
+          {marketTitle(tip.boardMarket)}
           {rank !== undefined ? ` · 0${rank}` : ""}
         </p>
         <ConsensusChip pct={item.pct} count={item.count} coverage={item.coverage} band={band} compact />
       </div>
       <div className="mt-4 flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-col items-center gap-1.5">
-          <Crest name={f.away.name} logo={f.away.logo} size="lg" />
-          <span className="max-w-20 truncate text-center text-xs fold:max-w-24">{f.away.name}</span>
+          <Crest name={f.away.name} logo={f.away.logo} size="sm" className="fold:h-24 fold:w-[4.75rem]" />
+          <span className="max-w-20 truncate text-center text-[11px] fold:max-w-28 fold:text-xs">{f.away.name}</span>
         </div>
         <div className="text-center">
           <p className="text-2xl font-bold tabular fold:text-3xl">
@@ -56,8 +64,8 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
           </div>
         </div>
         <div className="flex min-w-0 flex-col items-center gap-1.5">
-          <Crest name={f.home.name} logo={f.home.logo} size="lg" />
-          <span className="max-w-20 truncate text-center text-xs fold:max-w-24">{f.home.name}</span>
+          <Crest name={f.home.name} logo={f.home.logo} size="sm" className="fold:h-24 fold:w-[4.75rem]" />
+          <span className="max-w-20 truncate text-center text-[11px] fold:max-w-28 fold:text-xs">{f.home.name}</span>
         </div>
       </div>
       <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
@@ -65,7 +73,14 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
         <span className="odds-chip">{formatDecimal(f.drawMl)}</span>
         <span className="odds-chip">{formatDecimal(f.home.ml)}</span>
       </div>
-      <p className="mt-4 text-center text-sm font-semibold">{item.label}</p>
+      <p className="mt-4 text-center text-sm font-semibold">{tip.boardLabel}</p>
+      <div className="mt-2 flex justify-center gap-2">
+        {price != null ? <span className="odds-chip">{price.toFixed(2)}</span> : null}
+        <SettleChip status={settled} />
+      </div>
+      {tip.downgrade !== "none" ? (
+        <p className="mt-1 text-center text-xs text-white/70">From {tip.rawLabel}</p>
+      ) : null}
     </button>
   );
 }

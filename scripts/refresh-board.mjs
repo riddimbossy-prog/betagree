@@ -3,6 +3,9 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildFormBoard, buildTrends } from "./lib/desks.mjs";
 import { assembleSlate, gradeLedger } from "./lib/tip-sites.mjs";
+import { buildLeagueRates } from "./lib/league-rates.mjs";
+import { slimSlate } from "./lib/slim-slate.mjs";
+import { buildOddsBook } from "./lib/attach-odds.mjs";
 
 const LEAGUES = [
   ["eng.1", "Premier League"],
@@ -177,10 +180,20 @@ const ledger = gradeLedger(history);
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const dir = join(root, "public", "data");
 mkdirSync(dir, { recursive: true });
-writeJson(join(dir, "slate.json"), todaySlate);
-writeJson(join(dir, `slate-${dayStr}.json`), todaySlate);
-writeJson(join(dir, `slate-${tomStr}.json`), tomorrowSlate, { keepIfEmpty: true });
+writeJson(join(dir, "slate.json"), slimSlate(todaySlate));
+writeJson(join(dir, `slate-${dayStr}.json`), slimSlate(todaySlate));
+writeJson(join(dir, `slate-${tomStr}.json`), slimSlate(tomorrowSlate), { keepIfEmpty: true });
+writeJson(join(dir, "picks.json"), { date: dayStr, picks: todaySlate.picks ?? [] });
 writeJson(join(dir, "ledger.json"), ledger);
+writeJson(join(dir, "league-rates.json"), buildLeagueRates(history));
+
+try {
+  const book = await buildOddsBook(todaySlate.fixtures ?? []);
+  writeJson(join(dir, "odds.json"), book);
+  console.log(`odds matched ${book.matched}/${book.events}`);
+} catch (err) {
+  console.error("odds refresh failed", err);
+}
 
 let trends;
 try {
@@ -203,7 +216,23 @@ try {
     dateLabel: todaySlate.dateLabel,
   });
   const hasRows = Object.values(form.boards ?? {}).some((b) => (b.overall?.length ?? 0) > 0);
-  if (hasRows) writeJson(join(dir, "form.json"), form);
+  if (hasRows) {
+    writeJson(join(dir, "form.json"), form);
+    const previewBoard = form.boards?.["most-wins"];
+    if (previewBoard) {
+      writeJson(join(dir, "form-preview.json"), {
+        ...form,
+        boards: {
+          "most-wins": {
+            ...previewBoard,
+            overall: (previewBoard.overall ?? []).slice(0, 8),
+            home: [],
+            away: [],
+          },
+        },
+      });
+    }
+  }
   else console.log("kept form.json (empty pull)");
 } catch (err) {
   console.error("form refresh failed", err);

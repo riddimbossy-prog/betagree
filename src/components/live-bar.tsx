@@ -10,8 +10,8 @@ export function LiveBar({
   const ago = fetchedAt ? formatWhen(fetchedAt) : "";
   return (
     <p className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-      <span className="glass-gules inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold text-hot-foreground">
-        <span className="size-1.5 animate-pulse rounded-full bg-or" />
+      <span className="glass-gules inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-semibold text-background">
+        <span className="size-1.5 animate-pulse rounded-full bg-lime" />
         Live
       </span>
       {ago ? <span>Updated {ago}</span> : null}

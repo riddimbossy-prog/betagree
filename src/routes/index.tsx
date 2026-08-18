@@ -6,7 +6,7 @@ import { FixtureList } from "@/components/fixture-list";
 import { BoardState } from "@/components/live-bar";
 import { TrendCard } from "@/components/trend-card";
 import { isLiveBoardMatch } from "@/lib/board-match";
-import { fixtureIsToday, isPlayingToday, sortBoardGames } from "@/lib/format";
+import { fixtureIsToday, isPlayingToday, isPlayingTomorrow, sortBoardGames } from "@/lib/format";
 import { fixturesInBand } from "@/lib/odds-band";
 import { useFormBoard, useSlate, useStreaks, useTrends } from "@/lib/live/use-live";
 import { loadBoardSnapshot } from "@/lib/live/snapshot";
@@ -14,7 +14,7 @@ import { FormRowCard } from "@/components/form-row";
 import { StreakCard } from "@/components/streak-card";
 import { useTodayOnly } from "@/lib/store";
 import { CATEGORY_META } from "@/lib/trend-meta";
-import { bandOf } from "@/lib/consensus";
+import { bandOf, consensusByFixture, fixturesWithConsensus, pickBoardTip } from "@/lib/consensus";
 
 export const Route = createFileRoute("/")({
   loader: async () => {
@@ -37,31 +37,33 @@ function Home() {
       cancelIdleCallback?: (id: number) => void;
     };
     const id = w.requestIdleCallback
-      ? w.requestIdleCallback(() => setSecondary(true), { timeout: 600 })
-      : window.setTimeout(() => setSecondary(true), 180);
+      ? w.requestIdleCallback(() => setSecondary(true), { timeout: 2200 })
+      : window.setTimeout(() => setSecondary(true), 1800);
     return () => {
       if (w.cancelIdleCallback && typeof id === "number") w.cancelIdleCallback(id);
       else window.clearTimeout(id);
     };
   }, []);
   const trends = useTrends(90_000, secondary);
-  const form = useFormBoard(90_000, secondary);
+  const form = useFormBoard(90_000, secondary, true);
   const streaks = useStreaks(90_000, secondary);
   const todayOnly = useTodayOnly();
-  const fixtures = sortBoardGames(
-    (data?.fixtures ?? []).filter((f) => !todayOnly || fixtureIsToday(f)),
-  );
   const consensus = (data?.consensus ?? []).filter((c) => !todayOnly || fixtureIsToday(c.fixture));
-  const high = consensus.filter((c) => (c.market === "1x2" || c.pct >= 0.65) && bandOf(c) === "high");
-  const top = (high.length ? high : consensus.filter((c) => c.market === "1x2" || c.pct >= 0.65)).slice(0, 4);
-  const byFixture = new Map(fixtures.map((f) => [f.id, consensus.filter((c) => c.fixture.id === f.id)]));
+  const byFixture = consensusByFixture(consensus);
+  const fixtures = fixturesWithConsensus(
+    sortBoardGames((data?.fixtures ?? []).filter((f) => !todayOnly || fixtureIsToday(f))),
+    byFixture,
+  );
+  const high = [...byFixture.values()]
+    .map((rows) => pickBoardTip(rows))
+    .filter((tip): tip is NonNullable<typeof tip> => Boolean(tip) && bandOf(tip) === "high");
+  const top = high.slice(0, 4);
   const upcoming = fixtures.filter((f) => f.status !== "post" && !f.live);
   const liveGames = fixtures.filter(isLiveBoardMatch);
   const band = fixturesInBand(fixtures);
   const liveCount = liveGames.length;
   const highUpcoming = upcoming.filter((f) => {
-    const rows = byFixture.get(f.id) ?? [];
-    const pick = rows.find((c) => c.market === "1x2") ?? rows[0];
+    const pick = pickBoardTip(byFixture.get(f.id));
     return pick ? bandOf(pick) === "high" : false;
   });
   const bankers = (trends.data?.bankers ?? []).filter(
@@ -76,12 +78,11 @@ function Home() {
       )
     : 0;
   const formHot = (form.data?.boards["most-wins"]?.overall ?? []).filter((r) => r.playingToday).slice(0, 4);
-  const streakPreview = [...(streaks.data?.twoYes ?? []), ...(streaks.data?.threeNo ?? [])]
-    .filter((pick) => !todayOnly || isPlayingToday(pick.kickoff))
-    .slice(0, 4);
-  const streakTotal = [...(streaks.data?.twoYes ?? []), ...(streaks.data?.threeNo ?? [])].filter(
-    (pick) => !todayOnly || isPlayingToday(pick.kickoff),
-  ).length;
+  const streakAll = [...(streaks.data?.twoYes ?? []), ...(streaks.data?.threeNo ?? [])];
+  const streakToday = streakAll.filter((pick) => pick.when === "today" || isPlayingToday(pick.kickoff));
+  const streakTomorrow = streakAll.filter((pick) => pick.when === "tomorrow" || isPlayingTomorrow(pick.kickoff));
+  const streakPreview = (streakToday.length ? streakToday : streakTomorrow).slice(0, 4);
+  const streakTotal = streakToday.length || streakTomorrow.length;
 
   return (
     <div className="flex flex-col gap-8">
@@ -91,7 +92,7 @@ function Home() {
             id: "high",
             eyebrow: "Primary consensus board",
             title: "High agreement",
-            body: "Top 1X2 and market picks where the desks cluster hardest — the final shortlist from 22 sources.",
+            body: "The strongest board tips for today.",
             badge: loading ? "—" : String(highUpcoming.length || high.length),
             badgeHint: "final board",
             to: "/fixtures",
@@ -103,7 +104,7 @@ function Home() {
             id: "live",
             eyebrow: "Live matches only",
             title: liveCount ? "In play now" : "In play board",
-            body: "Board matches that are currently running. No extras — only fixtures already on Betagree.",
+            body: "Matches that are on now.",
             badge: String(liveCount),
             badgeHint: liveCount ? "live" : "waiting",
             to: "/live",
@@ -113,9 +114,9 @@ function Home() {
           },
           {
             id: "form",
-            eyebrow: "High-scoring profile",
+            eyebrow: "Current form",
             title: "Form",
-            body: "Season shape, venue splits and recent results distilled into specialist form rows.",
+            body: "Best sides to back. Worst sides to fade.",
             badge: String(formHot.length || "—"),
             badgeHint: "specialist",
             to: "/form",
@@ -127,7 +128,7 @@ function Home() {
             id: "streaks",
             eyebrow: "Goals profile",
             title: "Streaks",
-            body: "2+ Yes when the favourite faces a soft PPG side, plus Over 2.5 from balanced 3+ prices.",
+            body: "Goal runs worth backing.",
             badge: String(streakTotal || "—"),
             badgeHint: "goals",
             to: "/streaks",
@@ -139,7 +140,7 @@ function Home() {
             id: "trends",
             eyebrow: "Qualified markets",
             title: "Trends 70%+",
-            body: "Filtered runs at the 70%+ bar — wins, overs, GG and dual bankers in one desk.",
+            body: "Hot markets on today's board.",
             badge: String(trendTotal || bankers.length || "—"),
             badgeHint: "qualified",
             to: "/trends",
@@ -154,7 +155,7 @@ function Home() {
         loading={loading && !data}
         error={error}
         empty={!loading && !error && fixtures.length === 0}
-        emptyLabel={todayOnly ? "Nobody on this board is playing today." : undefined}
+        emptyLabel={todayOnly ? "Nobody with consensus is playing today." : "No consensus picks on the board."}
         onRetry={reload}
       />
 
@@ -282,7 +283,7 @@ function Home() {
               View all
             </Link>
           </div>
-          <div className="grid gap-4 fold:grid-cols-2">
+          <div className="grid gap-3 fold:grid-cols-2 xl:grid-cols-3">
             {top.map((item, i) => (
               <ConsensusCard key={item.id} item={item} rank={i + 1} />
             ))}

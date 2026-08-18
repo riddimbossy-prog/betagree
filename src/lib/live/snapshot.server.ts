@@ -6,6 +6,7 @@ import { mergeLiveFixtures } from "./merge-live";
 import type { AppSnapshot } from "./snapshot-context";
 
 import { parseJsonLoose } from "../safe-fetch";
+import { hydrateSlate } from "./slim-slate";
 
 async function readJson<T>(path: string): Promise<T | null> {
   try {
@@ -40,7 +41,7 @@ export async function loadBoardSnapshot(): Promise<SlatePayload> {
   }
   const pack = await readJson<{ scores?: ScorePatch[] }>(join(root, "public/data/scores.json"));
   const scores = pack?.scores ?? [];
-  return mergeLiveFixtures(applySlateScores(slate, scores), scores);
+  return hydrateSlate(mergeLiveFixtures(applySlateScores(slate, scores), scores));
 }
 
 export async function loadAppSnapshot(): Promise<AppSnapshot> {

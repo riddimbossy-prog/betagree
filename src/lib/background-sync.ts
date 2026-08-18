@@ -59,9 +59,6 @@ export function wireServiceWorkerSync(reg: ServiceWorkerRegistration) {
   };
   window.addEventListener("online", onOnline);
 
-  void requestBoardSync();
-  void requestPeriodicBoardSync();
-
   return () => {
     navigator.serviceWorker.removeEventListener("message", onMessage);
     window.removeEventListener("online", onOnline);

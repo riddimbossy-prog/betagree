@@ -1,7 +1,7 @@
-/** Live form and odds desks. No invented rows. */
+import { agreedMarkets, isSameTier, last5Supports, loadLast5, packForSheet } from "./last5.mjs";
 
 export const MIN_RATE = 0.7;
-export const ODDS_FROM = 1.2;
+export const ODDS_FROM = 1.19;
 export const ODDS_TO = 1.55;
 export const MIN_SAMPLE = 3;
 
@@ -272,26 +272,34 @@ function findTeamFixture(fixtures, team) {
 }
 
 export function decorateFormRows(rows, fixtures, limit = 40) {
-  return (rows || []).slice(0, limit).map((row) => {
+  const today = new Date().toISOString().slice(0, 10);
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+  const decorated = (rows || []).map((row) => {
     const hit = findTeamFixture(fixtures, row.team);
-    const live = Boolean(hit && hit.fixture.status !== "post");
+    const day = String(hit?.fixture?.start || "").slice(0, 10);
+    const onBoard = Boolean(hit && (day === today || day === tomorrow || hit.fixture.live));
     return {
       rank: row.rank ?? 0,
       team: row.team,
-      league: row.league || "",
+      league: row.league || hit?.fixture?.league || "",
       count: row.count ?? 0,
       matches: row.matches ?? 0,
       rate: row.rate,
       display: row.display || (row.rate == null ? "—" : row.valueKind === "avg" ? String(row.rate) : `${Math.round(row.rate * 100)}%`),
       valueKind: row.valueKind === "avg" ? "avg" : "pct",
-      playingToday: Boolean(row.playingToday || live),
+      playingToday: Boolean(row.playingToday || onBoard),
       tipPath: null,
       teamPath: null,
       logo: hit?.side?.logo ?? null,
-      fixtureId: live ? hit.fixture.id : null,
-      opponent: live ? hit.opp.name : null,
+      fixtureId: hit?.fixture?.id ?? null,
+      opponent: hit?.opp?.name ?? null,
+      kickoff: hit?.fixture?.start ?? null,
     };
   });
+  const top = decorated.slice(0, limit);
+  const extra = decorated.filter((r) => r.fixtureId && !top.some((t) => t.team === r.team));
+  extra.sort((a, b) => a.rank - b.rank);
+  return extra.concat(top);
 }
 
 export async function buildFormBoard({ fixtures = [], date, dateLabel } = {}) {
@@ -483,6 +491,26 @@ function findTeamGame(games, team) {
   return best;
 }
 
+function toDec(american) {
+  if (american == null) return null;
+  const n = typeof american === "number" ? american : Number(String(american).replace("+", "").trim());
+  if (!Number.isFinite(n) || n === 0) return null;
+  return Number((n > 0 ? n / 100 + 1 : 100 / Math.abs(n) + 1).toFixed(2));
+}
+
+function fixtureMarketOdds(fixture, market, selection) {
+  if (!fixture) return null;
+  if (market === "1x2" || market === "dnb") {
+    if (selection === "home") return toDec(fixture.home?.ml);
+    if (selection === "away") return toDec(fixture.away?.ml);
+    return toDec(fixture.drawMl);
+  }
+  if (market === "total") {
+    return selection === "under" ? toDec(fixture.underOdds) : toDec(fixture.overOdds);
+  }
+  return null;
+}
+
 function findFixture(fixtures, home, away) {
   if (!fixtures?.length) return null;
   let best = null;
@@ -500,12 +528,15 @@ function findFixture(fixtures, home, away) {
   return best;
 }
 
-function isTodayRow(when, todayStamp) {
+function isSoonRow(when, todayStamp) {
   if (!when) return true;
   const m = String(when).match(/(\d{2})\.(\d{2})\.(\d{4})/);
   if (!m) return true;
   const stamp = `${m[3]}-${m[2]}-${m[1]}`;
-  return stamp === todayStamp;
+  if (stamp === todayStamp) return true;
+  const tom = new Date(`${todayStamp}T00:00:00Z`);
+  tom.setUTCDate(tom.getUTCDate() + 1);
+  return stamp === tom.toISOString().slice(0, 10);
 }
 
 function pickId(category, home, away, team) {
@@ -514,9 +545,14 @@ function pickId(category, home, away, team) {
 
 function attachFixture(pick, fixtures) {
   const f = findFixture(fixtures, pick.home, pick.away);
-  if (!f) return pick;
+  const book = fixtureMarketOdds(f, pick.market, pick.selection);
+  let odds = pick.odds;
+  if (inOddsBand(book) && !inOddsBand(odds)) odds = book;
+  else if (odds == null && book != null) odds = book;
+  if (!f) return { ...pick, odds };
   return {
     ...pick,
+    odds,
     fixtureId: f.id,
     homeLogo: f.home.logo,
     awayLogo: f.away.logo,
@@ -525,15 +561,41 @@ function attachFixture(pick, fixtures) {
   };
 }
 
+function priceAgreed(m, book, game, fixture) {
+  if (m.kind === "ftOu") {
+    const wanted = Number(m.line);
+    for (const [k, v] of Object.entries(book?.ou || {})) {
+      if (Number(k) === wanted && v?.[m.side]) return v[m.side];
+    }
+    if (wanted === 2.5 && game) return m.side === "over" ? game.overOdds ?? null : game.underOdds ?? null;
+    if (fixture && Number(fixture.total) === wanted) {
+      return m.side === "over" ? toDec(fixture.overOdds) : toDec(fixture.underOdds);
+    }
+  }
+  if (m.kind === "btts") return book?.bttsYes ?? null;
+  if (m.kind === "ng") return book?.bttsNo ?? null;
+  return null;
+}
+
 function emptyCategories() {
   return {
     wins: [],
     losses: [],
     winless: [],
     undefeated: [],
+    over15: [],
     over25: [],
+    over35: [],
+    under15: [],
     under25: [],
+    under35: [],
     gg: [],
+    ng: [],
+    ht_over05: [],
+    ht_under05: [],
+    ht_over15: [],
+    ht_under15: [],
+    ht_gg: [],
   };
 }
 
@@ -640,7 +702,7 @@ export function buildPicksFromPrimaForm(games, form, category, fixtures) {
 export function buildPicksFromBeStreaks(games, rows, category, fixtures, todayStamp) {
   const out = [];
   for (const row of rows) {
-    if (!isTodayRow(row.when, todayStamp)) continue;
+    if (!isSoonRow(row.when, todayStamp)) continue;
     const g = findGame(games, row.home, row.away) || findTeamGame(games, row.team)?.game;
     if (!g && !row.home) continue;
     const home = g?.home || row.home;
@@ -698,7 +760,7 @@ export function buildPicksFromBeStreaks(games, rows, category, fixtures, todaySt
 export function buildPicksFromBeOu(games, rows, category, fixtures, todayStamp) {
   const out = [];
   for (const row of rows) {
-    if (!isTodayRow(row.when, todayStamp)) continue;
+    if (!isSoonRow(row.when, todayStamp)) continue;
     const g = findGame(games, row.home, row.away);
     const home = g?.home || row.home;
     const away = g?.away || row.away;
@@ -909,7 +971,7 @@ async function mapPool(items, limit, fn) {
   return out;
 }
 
-export async function buildTrends({ fixtures = [], date, dateLabel } = {}) {
+export async function buildTrends({ fixtures = [], date, dateLabel, odds = null } = {}) {
   const today = date || new Date().toISOString().slice(0, 10);
   const pages = await Promise.all([
     fetchHtml("https://primatips.com/"),
@@ -962,6 +1024,110 @@ export async function buildTrends({ fixtures = [], date, dateLabel } = {}) {
     const markets = parsePrimaTipMarkets(tipHtml[i]);
     const extra = buildGgAndOuFromTip(ggCandidates[i], markets, fixtures);
     for (const p of extra) categories[p.category].push(p);
+  }
+
+  const skipPairs = new Set();
+  const packCache = new Map();
+  const packOf = async (p) => {
+    const key = `${normName(p.home)}|${normName(p.away)}`;
+    if (!packCache.has(key)) packCache.set(key, await loadLast5(p.home, p.away));
+    return packCache.get(key);
+  };
+
+  for (const key of Object.keys(categories)) {
+    categories[key] = mergePicks(categories[key]).filter(qualify);
+  }
+  for (const list of Object.values(categories)) {
+    for (const p of list) {
+      const pack = await packOf(p);
+      if (isSameTier(p, pack)) skipPairs.add(`${normName(p.home)}|${normName(p.away)}`);
+    }
+  }
+
+  for (const key of Object.keys(categories)) {
+    const next = [];
+    for (const p of categories[key]) {
+      const pair = `${normName(p.home)}|${normName(p.away)}`;
+      if (skipPairs.has(pair)) continue;
+      const pack = await packOf(p);
+      if (!last5Supports(p, pack)) continue;
+      const last5 = packForSheet(pack);
+      const focus = last5.home && p.team && p.home && String(p.team).toLowerCase() === String(p.home).toLowerCase()
+        ? last5.home
+        : last5.away;
+      next.push({
+        ...p,
+        last5,
+        statLabel: `${p.statLabel} · last 5 ${focus?.results?.join("") || ""}`.trim(),
+      });
+    }
+    categories[key] = next;
+  }
+
+  const books = odds?.byFixture ?? {};
+  const seenAgree = new Set();
+  const pool = [];
+  for (const g of games.filter((row) => !row.settled)) {
+    pool.push({
+      home: g.home,
+      away: g.away,
+      league: g.league,
+      kickoff: g.kickoff,
+      game: g,
+    });
+  }
+  for (const list of Object.values(categories)) {
+    for (const p of list) pool.push(p);
+  }
+
+  for (const row of pool) {
+    const pair = `${normName(row.home)}|${normName(row.away)}`;
+    if (skipPairs.has(pair) || seenAgree.has(pair)) continue;
+    seenAgree.add(pair);
+    const pack = await packOf(row);
+    if (isSameTier(row, pack)) {
+      skipPairs.add(pair);
+      continue;
+    }
+    const last5 = packForSheet(pack);
+    const fixture = findFixture(fixtures, row.home, row.away);
+    const book = fixture ? books[fixture.id] : null;
+    for (const m of agreedMarkets(pack)) {
+      const price = priceAgreed(m, book, row.game, fixture);
+      if (!inOddsBand(price)) continue;
+      const pick = attachFixture(
+        {
+          id: pickId(m.id, row.home, row.away, m.id),
+          category: m.id,
+          home: row.home,
+          away: row.away,
+          team: row.home,
+          opponent: row.away,
+          league: row.league,
+          kickoff: row.kickoff,
+          kickoffIso: fixture?.start ?? null,
+          selection: m.selection,
+          label: m.label,
+          market: m.market,
+          odds: price,
+          rate: m.rate,
+          sample: 5,
+          statLabel: `${Math.round(m.rate * 100)}% both last 5`,
+          sources: ["form"],
+          sourceNotes: [{ source: "form", rate: m.rate, sample: 5, odds: price }],
+          fixtureId: fixture?.id ?? null,
+          homeLogo: fixture?.home?.logo ?? null,
+          awayLogo: fixture?.away?.logo ?? null,
+          url: "",
+          last5,
+        },
+        fixtures,
+      );
+      if (qualify(pick) && last5Supports(pick, pack)) {
+        categories[m.id] = categories[m.id] || [];
+        categories[m.id].push(pick);
+      }
+    }
   }
 
   for (const key of Object.keys(categories)) {

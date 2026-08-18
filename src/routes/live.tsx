@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { isLiveBoardMatch } from "@/lib/board-match";
 import { useSlate } from "@/lib/live/use-live";
 import { loadBoardSnapshot } from "@/lib/live/snapshot";
-import type { ConsensusItem } from "@/lib/types";
+import { consensusByFixture, fixturesWithConsensus } from "@/lib/consensus";
 
 export const Route = createFileRoute("/live")({
   loader: async () => {
@@ -24,19 +24,11 @@ function LivePage() {
   const { data, error, loading, reload } = useSlate(initial);
   const [league, setLeague] = useState("all");
 
-  const byFixture = useMemo(() => {
-    const m = new Map<string, ConsensusItem[]>();
-    for (const c of data?.consensus ?? []) {
-      const arr = m.get(c.fixture.id) ?? [];
-      arr.push(c);
-      m.set(c.fixture.id, arr);
-    }
-    return m;
-  }, [data]);
+  const byFixture = useMemo(() => consensusByFixture(data?.consensus ?? []), [data]);
 
   const live = useMemo(
-    () => (data?.fixtures ?? []).filter(isLiveBoardMatch),
-    [data],
+    () => fixturesWithConsensus((data?.fixtures ?? []).filter(isLiveBoardMatch), byFixture),
+    [data, byFixture],
   );
   const fixtures = league === "all" ? live : live.filter((f) => f.league === league);
   const leagues = [...new Set(live.map((f) => f.league))];
@@ -83,7 +75,7 @@ function LivePage() {
         loading={loading && !data}
         error={error}
         empty={!loading && !error && fixtures.length === 0}
-        emptyLabel="Nothing from today's board is in play."
+        emptyLabel="No live games with a consensus pick."
         onRetry={reload}
       />
       {fixtures.length ? <FixtureList fixtures={fixtures} byFixture={byFixture} /> : null}

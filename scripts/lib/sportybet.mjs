@@ -12,6 +12,10 @@ export const SB_SPORT_FOOTBALL = "sr:sport:1";
 /** SportyBet market IDs we care about. */
 export const SB_MARKETS = {
   oneXTwo: 1,
+  doubleChance: 10,
+  drawNoBet: 11,
+  overUnder: 18,
+  btts: 29,
   twoPlusStreak: 60010,
   threePlusStreak: 60020,
 };
@@ -97,11 +101,62 @@ export function marketRow(ev) {
 
 /** Outcome price by description (yes/no/home/draw/away). */
 export function outcomeOdds(market, desc) {
-  const row = (market?.outcomes ?? []).find(
-    (o) => String(o.desc).toLowerCase() === String(desc).toLowerCase(),
-  );
+  const want = String(desc).toLowerCase();
+  const row = (market?.outcomes ?? []).find((o) => String(o.desc).toLowerCase() === want);
   const n = Number(row?.odds);
   return Number.isFinite(n) ? n : null;
+}
+
+export function marketsOf(ev) {
+  return ev?.markets ?? [];
+}
+
+export function ouLines(ev) {
+  const lines = {};
+  for (const m of marketsOf(ev)) {
+    if (String(m.id) !== "18" && String(m.name || "").toLowerCase() !== "over/under") continue;
+    const spec = String(m.specifier ?? "");
+    const line = Number((spec.match(/total=([\d.]+)/) || [])[1]);
+    if (!Number.isFinite(line)) continue;
+    const over = (m.outcomes ?? []).find((o) => /^over/i.test(o.desc));
+    const under = (m.outcomes ?? []).find((o) => /^under/i.test(o.desc));
+    lines[String(line)] = {
+      over: Number.isFinite(Number(over?.odds)) ? Number(over.odds) : null,
+      under: Number.isFinite(Number(under?.odds)) ? Number(under.odds) : null,
+    };
+  }
+  return lines;
+}
+
+export async function pullBoardBooks({ pageSize = 80, maxPages = 8 } = {}) {
+  const [one, dc, dnb, ou, btts] = await Promise.all([
+    pullMarket(SB_MARKETS.oneXTwo, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.doubleChance, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.drawNoBet, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.overUnder, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.btts, { pageSize, maxPages }),
+  ]);
+  const ids = new Set([...one.keys(), ...dc.keys(), ...dnb.keys(), ...ou.keys(), ...btts.keys()]);
+  const events = [];
+  for (const id of ids) {
+    const ev = one.get(id) ?? dc.get(id) ?? dnb.get(id) ?? ou.get(id) ?? btts.get(id);
+    if (!ev) continue;
+    events.push({
+      id,
+      ev,
+      home: ev.homeTeamName,
+      away: ev.awayTeamName,
+      one: marketRow(one.get(id)),
+      dc: marketRow(dc.get(id)),
+      dnb: marketRow(dnb.get(id)),
+      ou: ou.get(id) ?? ev,
+      btts: marketRow(btts.get(id)),
+    });
+  }
+  return {
+    events,
+    counts: { one: one.size, dc: dc.size, dnb: dnb.size, ou: ou.size, btts: btts.size },
+  };
 }
 
 /**

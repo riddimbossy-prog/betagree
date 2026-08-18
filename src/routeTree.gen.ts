@@ -25,6 +25,7 @@ import { Route as TrendsRouteImport } from './routes/trends'
 import { Route as ApiCrestRouteImport } from './routes/api/crest'
 import { Route as ApiFormRouteImport } from './routes/api/form'
 import { Route as ApiLedgerRouteImport } from './routes/api/ledger'
+import { Route as ApiOddsRouteImport } from './routes/api/odds'
 import { Route as ApiScoresRouteImport } from './routes/api/scores'
 import { Route as ApiSlateRouteImport } from './routes/api/slate'
 import { Route as ApiStreaksRouteImport } from './routes/api/streaks'
@@ -115,6 +116,11 @@ const ApiLedgerRoute = ApiLedgerRouteImport.update({
   path: '/api/ledger',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOddsRoute = ApiOddsRouteImport.update({
+  id: '/api/odds',
+  path: '/api/odds',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiScoresRoute = ApiScoresRouteImport.update({
   id: '/api/scores',
   path: '/api/scores',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/api/crest': typeof ApiCrestRoute
   '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
+  '/api/odds': typeof ApiOddsRoute
   '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
   '/api/streaks': typeof ApiStreaksRoute
@@ -203,6 +210,7 @@ export interface FileRoutesByTo {
   '/api/crest': typeof ApiCrestRoute
   '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
+  '/api/odds': typeof ApiOddsRoute
   '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
   '/api/streaks': typeof ApiStreaksRoute
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/api/crest': typeof ApiCrestRoute
   '/api/form': typeof ApiFormRoute
   '/api/ledger': typeof ApiLedgerRoute
+  '/api/odds': typeof ApiOddsRoute
   '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
   '/api/streaks': typeof ApiStreaksRoute
@@ -260,6 +269,7 @@ export interface FileRouteTypes {
     | '/api/crest'
     | '/api/form'
     | '/api/ledger'
+    | '/api/odds'
     | '/api/scores'
     | '/api/slate'
     | '/api/streaks'
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
     | '/api/crest'
     | '/api/form'
     | '/api/ledger'
+    | '/api/odds'
     | '/api/scores'
     | '/api/slate'
     | '/api/streaks'
@@ -312,6 +323,7 @@ export interface FileRouteTypes {
     | '/api/crest'
     | '/api/form'
     | '/api/ledger'
+    | '/api/odds'
     | '/api/scores'
     | '/api/slate'
     | '/api/streaks'
@@ -340,6 +352,7 @@ export interface RootRouteChildren {
   ApiCrestRoute: typeof ApiCrestRoute
   ApiFormRoute: typeof ApiFormRoute
   ApiLedgerRoute: typeof ApiLedgerRoute
+  ApiOddsRoute: typeof ApiOddsRoute
   ApiScoresRoute: typeof ApiScoresRoute
   ApiSlateRoute: typeof ApiSlateRoute
   ApiStreaksRoute: typeof ApiStreaksRoute
@@ -461,6 +474,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLedgerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/odds': {
+      id: '/api/odds'
+      path: '/api/odds'
+      fullPath: '/api/odds'
+      preLoaderRoute: typeof ApiOddsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/scores': {
       id: '/api/scores'
       path: '/api/scores'
@@ -572,6 +592,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCrestRoute: ApiCrestRoute,
   ApiFormRoute: ApiFormRoute,
   ApiLedgerRoute: ApiLedgerRoute,
+  ApiOddsRoute: ApiOddsRoute,
   ApiScoresRoute: ApiScoresRoute,
   ApiSlateRoute: ApiSlateRoute,
   ApiStreaksRoute: ApiStreaksRoute,

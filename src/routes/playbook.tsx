@@ -59,9 +59,11 @@ function PlaybookPage() {
           <CardContent className="p-6">
             <h2 className="font-display text-2xl">What the number means</h2>
             <dl className="mt-4 divide-y divide-border text-sm">
-              <Row k="High" v="70% or more of the sites that posted this market land on the same side." />
-              <Row k="Medium" v="A real lean — half to two-thirds of the sites. Check who faded." />
-              <Row k="Low" v="Split board. The fixture stays listed; it is not a pack pick." />
+              <Row k="High" v="70% or more of the sites that posted this market land on the same side. That tip is shown as-is." />
+              <Row k="Medium" v="Half to two-thirds. A straight win is shown as DNB; totals and BTTS step to a safer line." />
+              <Row k="Low" v="Split board. A win becomes double chance (1X / X2). One tip per match — high beats medium." />
+              <Row k="Markets" v="1X2, DNB, double chance, Over/Under 1.5 · 2.5 · 3.5, and BTTS. The strongest band wins the card." />
+              <Row k="Settle" v="Each board tip grades as Won, Lost, or Pending. Pending covers games not finished, plus DNB draws and totals that land on the line." />
             </dl>
           </CardContent>
         </Card>

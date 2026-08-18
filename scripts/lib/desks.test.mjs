@@ -21,10 +21,10 @@ import {
   ODDS_TO,
 } from "./desks.mjs";
 
-test("odds band is 1.20–1.55 inclusive", () => {
-  assert.equal(inOddsBand(1.2), true);
+test("odds band is 1.19–1.55 inclusive", () => {
+  assert.equal(inOddsBand(1.19), true);
   assert.equal(inOddsBand(1.55), true);
-  assert.equal(inOddsBand(1.19), false);
+  assert.equal(inOddsBand(1.18), false);
   assert.equal(inOddsBand(1.56), false);
   assert.equal(inOddsBand(null), false);
 });
@@ -243,6 +243,6 @@ test("parse streak and tip markets", () => {
   assert.equal(markets.gg.yesOdds, 1.4);
   assert.ok(markets.homeGg >= 0.7);
   assert.equal(parsePct("70%"), 0.7);
-  assert.equal(ODDS_FROM, 1.2);
+  assert.equal(ODDS_FROM, 1.19);
   assert.equal(ODDS_TO, 1.55);
 });

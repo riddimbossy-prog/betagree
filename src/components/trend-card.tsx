@@ -45,7 +45,7 @@ export function TimeChip({
   return (
     <span
       className={cn(
-        "inline-flex items-baseline gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide uppercase tabular",
+        "inline-flex items-baseline gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide uppercase tabular",
         invert ? "bg-primary-foreground/15 text-primary-foreground backdrop-blur-md" : "glass-or text-or",
       )}
     >
@@ -62,31 +62,25 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
       type="button"
       onClick={() => sheet.open(briefFromTrend(pick))}
       className={cn(
-        "glass-lift block w-full rounded-3xl p-5 text-left",
+        "glass-lift block w-full min-w-0 overflow-hidden rounded-3xl p-3 text-left fold:p-5",
         highlight ? "glass-purpure text-primary-foreground" : "glass",
       )}
     >
-      <div className="flex items-start justify-between gap-3">
-        <SourcePills sources={pick.sources} invert={highlight} />
-      </div>
-      <div className="mt-4 flex items-center gap-3">
-        <Crest name={pick.home} logo={pick.homeLogo && pick.homeLogo === pick.awayLogo ? null : pick.homeLogo} />
+      <div className="mt-1 flex items-center gap-3">
+        <Crest name={pick.home} logo={pick.homeLogo && pick.homeLogo === pick.awayLogo ? null : pick.homeLogo} size="xs" className="shrink-0 fold:h-16 fold:w-[3.25rem]" />
         <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
           <PriceChip value={pick.odds} />
           <TimeChip raw={pick.kickoff} iso={pick.kickoffIso} invert={highlight} />
-          <span className={cn("max-w-full truncate text-center text-xs", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
+          <span className={cn("max-w-full truncate text-center text-sm", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
             {pick.league}
           </span>
         </div>
-        <Crest name={pick.away} logo={pick.awayLogo && pick.awayLogo === pick.homeLogo ? null : pick.awayLogo} />
+        <Crest name={pick.away} logo={pick.awayLogo && pick.awayLogo === pick.homeLogo ? null : pick.awayLogo} size="xs" className="shrink-0 fold:h-16 fold:w-[3.25rem]" />
       </div>
-      <p className="mt-3 truncate text-center text-sm font-semibold">
+      <p className="mt-3 truncate text-center text-base font-semibold">
         {pick.home} <span className="text-subtle">vs</span> {pick.away}
       </p>
-      <p className="mt-3 text-center text-base font-semibold">{pick.label}</p>
-      <p className={cn("mt-1 text-sm", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
-        {pick.statLabel}
-      </p>
+      <p className="mt-3 text-center text-lg font-semibold">{pick.label}</p>
     </button>
   );
 }

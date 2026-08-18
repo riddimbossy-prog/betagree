@@ -18,7 +18,7 @@ function BankerPage() {
     <div className="flex flex-col gap-8">
       <header className="max-w-2xl">
         <LiveBar fetchedAt={data?.fetchedAt} />
-        <h1 className="mt-2 text-3xl font-semibold fold:text-4xl">
+        <h1 className="mt-2 text-3xl font-semibold fold:text-5xl">
           Banker <span className="font-serif italic font-normal">desk</span>
         </h1>
       </header>

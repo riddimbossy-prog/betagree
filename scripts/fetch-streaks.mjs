@@ -3,25 +3,32 @@
  * Pull SportyBet 2+ / 3+ Goals Streak prices, join league tables,
  * and keep only matches that clear the user's bands:
  *   2+ Yes  1.19–1.40  AND favorite's opponent PPG < 1.2
- *   3+      (Yes + No) / 2 in 1.90–2.10  → assign Over 2.5 goals
+ *   3+      (Yes + No) / 2 in 1.90–2.10  → show Over 2.5 odds
+ * Tomorrow's board is built tonight. Weekly top is ranked from this week.
  */
+import { readFileSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { namesMatch as matchNames } from "./lib/names-match.mjs";
+import { marketRow, outcomeOdds, pullMarket, SB_MARKETS } from "./lib/sportybet.mjs";
+import {
+  dayBucket,
+  findLeagueProfile,
+  inBand,
+  isSeniorName,
+  leagueAllows,
+  OPP_PPG_MAX,
+  rankWeekly,
+  scoringHeat,
+  THREE_AVG,
+  TWO_YES,
+  weekKey,
+} from "./lib/streak-rules.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
 const OUT = join(ROOT, "public/data/streaks.json");
-const UA =
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
-const SB = "https://www.sportybet.com/api/ng/factsCenter";
 const ESPN = "https://site.web.api.espn.com/apis/v2/sports/soccer";
-const PAGE = 80;
 const HORIZON_DAYS = 8;
-
-const TWO_YES = { from: 1.19, to: 1.4 };
-const THREE_AVG = { from: 1.9, to: 2.1 };
-/** Opponent of the favorite must average under this PPG for 2+ picks. */
-const OPP_PPG_MAX = 1.2;
 
 const LEAGUES = [
   ["eng.1", ["england premier league", "english premier league"]],
@@ -40,7 +47,7 @@ const LEAGUES = [
   ["por.1", ["portugal primeira", "liga portugal", "liga portugal betclic"]],
   ["bel.1", ["belgium first division", "belgium jupiler", "belgium pro league"]],
   ["sco.1", ["scotland premiership", "scottish premiership"]],
-  ["tur.1", ["turkey super lig", "turkiye super lig", "süper lig", "super lig"]],
+  ["tur.1", ["turkey super lig", "turkiye super lig", "super lig"]],
   ["usa.1", ["usa major league soccer", "united states mls", "usa mls"]],
   ["mex.1", ["mexico liga mx", "liga mx"]],
   ["bra.1", ["brazil brasileiro serie a", "brazil serie a", "brasileiro serie a"]],
@@ -69,6 +76,13 @@ const LEAGUES = [
   ["uae.1", ["uae pro league"]],
   ["egy.1", ["egypt premier league"]],
   ["rsa.1", ["south africa premiership"]],
+  ["bol.1", ["bolivia liga", "copa bolivia", "division profesional"]],
+  ["blr.1", ["belarus vysshaya", "belarus premier"]],
+  ["svk.1", ["slovakia super liga"]],
+  ["fin.1", ["finland veikkausliiga"]],
+  ["isl.1", ["iceland besta"]],
+  ["per.1", ["peru liga 1"]],
+  ["qat.1", ["qatar stars"]],
   ["uefa.champions", ["uefa champions league"]],
   ["uefa.europa", ["uefa europa league"]],
   ["uefa.europa.conf", ["uefa conference league", "uefa europa conference"]],
@@ -84,24 +98,12 @@ const norm = (s) =>
     .replace(/\s+/g, " ")
     .trim();
 
-function alias(s) {
-  return norm(s)
-    .split(" ")
-    .filter((t) => t.length > 1);
-}
-
 function namesMatch(a, b) {
   return matchNames(a, b);
 }
 
-function inBand(n, band) {
-  return Number.isFinite(n) && n >= band.from && n <= band.to;
-}
-
 function outcome(market, desc) {
-  const row = (market?.outcomes ?? []).find((o) => String(o.desc).toLowerCase() === desc);
-  const n = Number(row?.odds);
-  return Number.isFinite(n) ? n : null;
+  return outcomeOdds(market, desc);
 }
 
 function favFrom1x2(market) {
@@ -117,47 +119,32 @@ function favFrom1x2(market) {
   return { side: sides[0].side, odds: sides[0].odds, home, draw, away };
 }
 
+function over25(ev) {
+  if (!ev) return null;
+  for (const m of ev.markets ?? []) {
+    const spec = String(m.specifier ?? "");
+    const line = Number((spec.match(/total=([\d.]+)/) || [])[1]);
+    if (line !== 2.5) continue;
+    const over = (m.outcomes ?? []).find((o) => /^over/i.test(String(o.desc)));
+    const n = Number(over?.odds);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
 async function fetchJson(url) {
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": UA,
-      Accept: "application/json",
-      Origin: "https://www.sportybet.com",
-      Referer: "https://www.sportybet.com/ng/sport/football",
-    },
-    signal: AbortSignal.timeout(20_000),
-  });
+  const res = await fetch(url, { signal: AbortSignal.timeout(18_000) });
   if (!res.ok) return null;
   return res.json();
 }
 
-async function pullMarket(marketId) {
-  const byId = new Map();
-  let page = 1;
-  let total = Infinity;
-  while ((page - 1) * PAGE < total && page <= 20) {
-    const url = `${SB}/pcUpcomingEvents?sportId=sr:sport:1&marketId=${marketId}&pageSize=${PAGE}&pageNum=${page}`;
-    const json = await fetchJson(url);
-    const data = json?.data;
-    if (!data) break;
-    total = Number(data.totalNum ?? 0);
-    for (const tour of data.tournaments ?? []) {
-      for (const ev of tour.events ?? []) {
-        byId.set(ev.eventId, ev);
-      }
-    }
-    if (!(data.tournaments ?? []).length) break;
-    page += 1;
-    await sleep(80);
-  }
-  return byId;
-}
-
 function isSenior(ev) {
-  const key = leagueKey(ev);
-  const teams = norm(`${ev?.homeTeamName ?? ""} ${ev?.awayTeamName ?? ""}`);
-  const bad = /\b(women|ladies|femenil|feminine|u1[5-9]|u2[0-3]|reserve|reserves|youth|junior|ii|iii|next pro)\b/;
-  return !bad.test(key) && !bad.test(teams);
+  return isSeniorName(
+    ev?.sport?.category?.name,
+    ev?.sport?.category?.tournament?.name,
+    ev?.homeTeamName,
+    ev?.awayTeamName,
+  );
 }
 
 function leagueKey(ev) {
@@ -234,7 +221,7 @@ function findRow(rows, name) {
   );
 }
 
-function mergeEvents(one, two, three) {
+function mergeEvents(one, two, three, ou) {
   const ids = new Set([...one.keys(), ...two.keys(), ...three.keys()]);
   const out = [];
   for (const id of ids) {
@@ -242,20 +229,36 @@ function mergeEvents(one, two, three) {
     if (!a) continue;
     out.push({
       ev: a,
-      one: (one.get(id)?.markets ?? [])[0] ?? null,
-      two: (two.get(id)?.markets ?? [])[0] ?? null,
-      three: (three.get(id)?.markets ?? [])[0] ?? null,
+      one: marketRow(one.get(id)),
+      two: marketRow(two.get(id)),
+      three: marketRow(three.get(id)),
+      ou: ou.get(id) ?? null,
     });
   }
   return out;
 }
 
-async function main() {
+function loadProfiles() {
+  try {
+    const file = JSON.parse(readFileSync(join(ROOT, "public/data/streak-accuracy.json"), "utf8"));
+    return file.leagues ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function buildStreaks() {
+  const profiles = loadProfiles();
   const now = Date.now();
   const until = now + HORIZON_DAYS * 86_400_000;
 
-  const [one, two, three] = await Promise.all([pullMarket(1), pullMarket(60010), pullMarket(60020)]);
-  const merged = mergeEvents(one, two, three);
+  const [one, two, three, ou] = await Promise.all([
+    pullMarket(SB_MARKETS.oneXTwo, { maxPages: 16 }),
+    pullMarket(SB_MARKETS.twoPlusStreak, { maxPages: 28 }),
+    pullMarket(SB_MARKETS.threePlusStreak, { maxPages: 28 }),
+    pullMarket(SB_MARKETS.overUnder, { maxPages: 16 }),
+  ]);
+  const merged = mergeEvents(one, two, three, ou);
 
   const slugSet = new Set();
   for (const row of merged) {
@@ -269,61 +272,63 @@ async function main() {
     } catch {
       tables.set(slug, []);
     }
-    await sleep(60);
+    await sleep(50);
   }
 
   const yes2 = [];
   const no3 = [];
   let scanned = 0;
   let withStreaks = 0;
+  let droppedYouth = 0;
+  let droppedLeague = 0;
 
   for (const row of merged) {
     const ev = row.ev;
     const start = Number(ev.estimateStartTime ?? 0);
     if (!start || start < now - 30 * 60_000 || start > until) continue;
-    if (!isSenior(ev)) continue;
+    if (!isSenior(ev)) {
+      droppedYouth += 1;
+      continue;
+    }
     scanned += 1;
     const fav = favFrom1x2(row.one);
     const yes2price = outcome(row.two, "yes");
     const no2price = outcome(row.two, "no");
     const yes3 = outcome(row.three, "yes");
     const no3price = outcome(row.three, "no");
+    const o25 = over25(row.ou);
     if (yes2price != null || yes3 != null || no3price != null) withStreaks += 1;
 
     const slug = mapSlug(leagueKey(ev));
+    const profile = findLeagueProfile(profiles, { slug, league: ev.sport?.category?.tournament?.name });
+    const heat = scoringHeat(profile);
     const table = slug ? tables.get(slug) ?? [] : [];
-    // Table is only required for 2+ PPG gate — never drop 3+ Over picks for missing standings
     const homeRow = table.length ? findRow(table, ev.homeTeamName) : null;
     let awayRow = table.length ? findRow(table, ev.awayTeamName) : null;
     if (homeRow && awayRow && homeRow.name === awayRow.name) {
-      awayRow =
-        table.find((r) => alias(r.name) === alias(ev.awayTeamName) && r.name !== homeRow.name) ?? null;
+      awayRow = table.find((r) => r.name !== homeRow.name && namesMatch(r.name, ev.awayTeamName)) ?? null;
     }
     const sameLogo = Boolean(homeRow?.logo && awayRow?.logo && homeRow.logo === awayRow.logo);
-    const homePole = poleOf(homeRow, table.length);
-    const awayPole = poleOf(awayRow, table.length);
-
-    // Prefer live event icons (SportyBet) so crests never go blank on cups / unmapped leagues
-    const homeLogo = sameLogo ? null : (ev.homeTeamIcon || homeRow?.logo || null);
-    const awayLogo = sameLogo ? null : (ev.awayTeamIcon || awayRow?.logo || null);
-
+    const homeLogo = sameLogo ? null : ev.homeTeamIcon || homeRow?.logo || null;
+    const awayLogo = sameLogo ? null : ev.awayTeamIcon || awayRow?.logo || null;
     const league = ev.sport?.category?.tournament?.name ?? ev.sport?.category?.name ?? "Football";
+    const kickoff = new Date(start).toISOString();
+    const when = dayBucket(kickoff, now);
     const base = {
       id: ev.eventId,
       gameId: ev.gameId ?? null,
       league,
       category: ev.sport?.category?.name ?? "",
-      kickoff: new Date(start).toISOString(),
+      kickoff,
+      when,
       home: ev.homeTeamName,
       away: ev.awayTeamName,
       homeLogo,
       awayLogo,
-      favorite:
-        fav.side === "home"
-          ? ev.homeTeamName
-          : fav.side === "away"
-            ? ev.awayTeamName
-            : ev.homeTeamName,
+      leagueSlug: slug,
+      scoring: profile
+        ? { heat, gpg: profile.gpg, stdev: profile.stdev, over25: profile.over25?.rate, twoPlus: profile.twoPlus?.rate }
+        : null,
       favoriteSide: fav.side,
       favoriteOdds: fav.odds,
       homeOdds: fav.home,
@@ -331,45 +336,48 @@ async function main() {
       drawOdds: fav.draw,
       table: {
         size: table.length,
-        home: homeRow ? { rank: homeRow.rank, pole: homePole, pts: homeRow.pts, gp: homeRow.gp } : null,
-        away: awayRow ? { rank: awayRow.rank, pole: awayPole, pts: awayRow.pts, gp: awayRow.gp } : null,
+        home: homeRow ? { rank: homeRow.rank, pole: poleOf(homeRow, table.length), pts: homeRow.pts, gp: homeRow.gp } : null,
+        away: awayRow ? { rank: awayRow.rank, pole: poleOf(awayRow, table.length), pts: awayRow.pts, gp: awayRow.gp } : null,
       },
     };
 
-    // 2+ Yes @ 1.19–1.40 + favorite's opponent averages under 1.2 PPG
-    // Require a real standings row so PPG is meaningful; skip when table is missing.
     if (inBand(yes2price, TWO_YES) && fav.side && table.length >= 6) {
       const oppRow = fav.side === "home" ? awayRow : homeRow;
       const oppPpg = ppg(oppRow);
       if (oppPpg != null && oppPpg < OPP_PPG_MAX) {
-        yes2.push({
-          ...base,
-          id: `${ev.eventId}-2yes`,
-          market: "2+",
-          pick: "Yes",
-          label: "2+ Goals Streak · Yes",
-          odds: yes2price,
-          otherOdds: no2price,
-          oppPpg: Math.round(oppPpg * 100) / 100,
-        });
+        if (!leagueAllows(profile, "2+")) droppedLeague += 1;
+        else {
+          yes2.push({
+            ...base,
+            id: `${ev.eventId}-2yes`,
+            market: "2+",
+            pick: "Yes",
+            label: "2+ Yes",
+            odds: yes2price,
+            otherOdds: no2price,
+            oppPpg: Math.round(oppPpg * 100) / 100,
+          });
+        }
       }
     }
 
-    // 3+ streak: (Yes + No) / 2 in 1.90–2.10 → Over 2.5 goals (no table required)
-    if (Number.isFinite(yes3) && Number.isFinite(no3price)) {
+    if (Number.isFinite(yes3) && Number.isFinite(no3price) && o25 != null) {
       const avg = (yes3 + no3price) / 2;
       if (inBand(avg, THREE_AVG)) {
-        no3.push({
-          ...base,
-          id: `${ev.eventId}-o25`,
-          market: "3+",
-          pick: "Over",
-          label: "Over 2.5 Goals",
-          odds: Math.round(avg * 100) / 100,
-          otherOdds: no3price,
-          streakYes: yes3,
-          streakNo: no3price,
-        });
+        if (!leagueAllows(profile, "3+")) droppedLeague += 1;
+        else {
+          no3.push({
+            ...base,
+            id: `${ev.eventId}-o25`,
+            market: "3+",
+            pick: "Over",
+            label: "Over 2.5",
+            odds: o25,
+            otherOdds: null,
+            streakYes: yes3,
+            streakNo: no3price,
+          });
+        }
       }
     }
   }
@@ -377,12 +385,18 @@ async function main() {
   const sortBy = (a, b) => a.kickoff.localeCompare(b.kickoff) || a.odds - b.odds;
   yes2.sort(sortBy);
   no3.sort(sortBy);
+  const all = [...yes2, ...no3];
+  const weekly = rankWeekly(all, 10, profiles);
+  const todayN = all.filter((p) => p.when === "today").length;
+  const tomorrowN = all.filter((p) => p.when === "tomorrow").length;
 
-  const payload = {
-    date: new Date().toISOString().slice(0, 10),
+  return {
+    date: new Date(now).toISOString().slice(0, 10),
     dateLabel: "SportyBet streaks",
     fetchedAt: new Date().toISOString(),
     source: "sportybet",
+    weekOf: weekKey(now),
+    readyFor: tomorrowN ? "tomorrow" : todayN ? "today" : "later",
     filters: {
       twoYes: TWO_YES,
       threeAvg: THREE_AVG,
@@ -394,18 +408,27 @@ async function main() {
     },
     scanned,
     withStreaks,
-    counts: { twoYes: yes2.length, threeNo: no3.length },
+    droppedYouth,
+    droppedLeague,
+    books: { one: one.size, two: two.size, three: three.size, ou: ou.size },
+    counts: {
+      twoYes: yes2.length,
+      threeNo: no3.length,
+      today: todayN,
+      tomorrow: tomorrowN,
+      weekly: weekly.length,
+    },
     twoYes: yes2,
     threeNo: no3,
+    weekly,
   };
-
-  await writeFile(OUT, JSON.stringify(payload));
-  console.log(
-    `streaks scanned=${scanned} withMarkets=${withStreaks} 2yes=${yes2.length} 3no=${no3.length} -> ${OUT}`,
-  );
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+const asMain = process.argv[1] && process.argv[1].endsWith("fetch-streaks.mjs");
+if (asMain) {
+  const payload = await buildStreaks();
+  await writeFile(OUT, JSON.stringify(payload));
+  console.log(
+    `streaks scanned=${payload.scanned} 2yes=${payload.counts.twoYes} o25=${payload.counts.threeNo} today=${payload.counts.today} tomorrow=${payload.counts.tomorrow} weekly=${payload.counts.weekly} -> ${OUT}`,
+  );
+}

@@ -2,10 +2,11 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import { Crest } from "@/components/crest";
+import { Last5Strip } from "@/components/last5-strip";
 import { PriceChip } from "@/components/price-chip";
 import { formatBoardTime } from "@/lib/format";
-import { formatDecimal, formatPct } from "@/lib/odds";
-import type { DeskSource, FormRow, TrendNote, TrendPick } from "@/lib/types";
+import { formatDecimal } from "@/lib/odds";
+import type { FormRow, TrendPick } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export type PickBrief = {
@@ -20,19 +21,8 @@ export type PickBrief = {
   label: string;
   stat?: string | null;
   odds?: number | null;
-  sources?: DeskSource[];
-  sourceNotes?: TrendNote[];
-  why: string;
-};
-
-const SOURCE_TONE: Record<DeskSource, string> = {
-  form: "glass-purpure text-primary-foreground",
-  odds: "glass-azure text-primary-foreground",
-};
-
-const SOURCE_LABEL: Record<DeskSource, string> = {
-  form: "Form",
-  odds: "Odds",
+  last5?: TrendPick["last5"];
+  why?: string;
 };
 
 function priceLabel(n: number | null | undefined) {
@@ -54,10 +44,6 @@ export function usePickSheet() {
 }
 
 export function briefFromTrend(pick: TrendPick): PickBrief {
-  const desks = pick.sources.map((s) => SOURCE_LABEL[s]).join(" and ");
-  const notes = pick.sourceNotes
-    .map((n) => `${SOURCE_LABEL[n.source]} has ${formatPct(n.rate)} over ${n.sample} games`)
-    .join(". ");
   return {
     id: pick.id,
     home: pick.home,
@@ -70,18 +56,12 @@ export function briefFromTrend(pick: TrendPick): PickBrief {
     label: pick.label,
     stat: pick.statLabel,
     odds: pick.odds,
-    sources: pick.sources,
-    sourceNotes: pick.sourceNotes,
-    why: `${pick.label} because ${notes || `${formatPct(pick.rate)} over ${pick.sample} games`}. The price sits in the 1.20–1.55 band${desks ? ` on ${desks}` : ""}.`,
+    last5: pick.last5 ?? null,
+    why: "",
   };
 }
 
 export function briefFromForm(row: FormRow, unit: string): PickBrief {
-  const today = row.playingToday
-    ? row.opponent
-      ? ` They play ${row.opponent} today.`
-      : " They play today."
-    : "";
   return {
     id: `form:${row.team}:${row.league}`,
     home: row.team,
@@ -89,9 +69,8 @@ export function briefFromForm(row: FormRow, unit: string): PickBrief {
     homeLogo: row.logo,
     league: row.league,
     label: `${row.team} · ${row.display} ${unit.toLowerCase()}`,
-    stat: `${row.count}/${row.matches} ${unit.toLowerCase()}`,
-    sources: ["form"],
-    why: `${row.team} sit on ${row.display} ${unit.toLowerCase()} across ${row.matches} league games (${row.count} hits). Cups and Europe are out.${today}`,
+    stat: `${row.count}/${row.matches}`,
+    why: "",
   };
 }
 
@@ -107,7 +86,7 @@ export function PickProvider({ children }: { children: ReactNode }) {
       <Dialog.Root open={Boolean(brief)} onOpenChange={(next) => !next && setBrief(null)}>
         <Dialog.Portal>
           <Dialog.Overlay className="fixed inset-0 z-50 bg-[hsl(240_16%_4%/0.45)] backdrop-blur-md" />
-          <Dialog.Content className="glass-strong fixed inset-x-3 z-50 max-h-[88dvh] overflow-y-auto rounded-[28px] text-card-foreground outline-none bottom-[max(0.75rem,env(safe-area-inset-bottom))] fold:inset-auto fold:top-1/2 fold:left-1/2 fold:w-[min(32rem,92vw)] fold:-translate-x-1/2 fold:-translate-y-1/2 fold:bottom-auto">
+          <Dialog.Content className="glass-strong fixed inset-x-2 z-50 max-h-[min(86dvh,42rem)] overflow-y-auto rounded-[28px] text-card-foreground outline-none bottom-[max(4.5rem,env(safe-area-inset-bottom))] fold:inset-auto fold:top-1/2 fold:left-1/2 fold:w-[min(32rem,92vw)] fold:-translate-x-1/2 fold:-translate-y-1/2 fold:bottom-auto lg:max-h-[min(88dvh,44rem)]">
             {brief ? (
               <>
                 <div className="glass-purpure relative px-5 pt-5 pb-6 text-primary-foreground">
@@ -115,8 +94,8 @@ export function PickProvider({ children }: { children: ReactNode }) {
                     <X className="size-5" />
                     <span className="sr-only">Close</span>
                   </Dialog.Close>
-                  <p className="text-xs tracking-[0.18em] text-or uppercase">Pick sheet</p>
-                  <Dialog.Title className="mt-2 pr-12 text-2xl font-semibold tracking-tight">
+                  <p className="text-sm tracking-[0.18em] text-or uppercase">Pick</p>
+                  <Dialog.Title className="mt-2 pr-12 text-3xl font-semibold tracking-tight">
                     {brief.label}
                   </Dialog.Title>
                   {brief.league ? <p className="mt-1 text-sm text-primary-foreground/70">{brief.league}</p> : null}
@@ -125,7 +104,7 @@ export function PickProvider({ children }: { children: ReactNode }) {
                 <div className="space-y-4 px-5 pt-5 pb-6">
                   <div className="flex items-end justify-between gap-3">
                     <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                      <Crest name={brief.home} logo={brief.homeLogo} size="lg" />
+                      <Crest name={brief.home} logo={brief.homeLogo} size="sm" className="fold:h-24 fold:w-[4.75rem]" />
                       <span className="max-w-32 truncate text-center text-sm font-semibold">{brief.home}</span>
                     </div>
                     <div className="pb-8 text-center">
@@ -141,7 +120,7 @@ export function PickProvider({ children }: { children: ReactNode }) {
                     </div>
                     {brief.away ? (
                       <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                        <Crest name={brief.away} logo={brief.awayLogo} size="lg" />
+                        <Crest name={brief.away} logo={brief.awayLogo} size="sm" className="fold:h-24 fold:w-[4.75rem]" />
                         <span className="max-w-32 truncate text-center text-sm font-semibold">{brief.away}</span>
                       </div>
                     ) : (
@@ -149,53 +128,13 @@ export function PickProvider({ children }: { children: ReactNode }) {
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    {(brief.sources ?? []).map((s) => (
-                      <span
-                        key={s}
-                        className={cn(
-                          "rounded-full px-3 py-1 text-[11px] font-semibold tracking-wide uppercase",
-                          SOURCE_TONE[s],
-                        )}
-                      >
-                        {SOURCE_LABEL[s]}
-                      </span>
-                    ))}
                     {price ? <PriceChip value={price} /> : null}
-                    {brief.league ? <span className="text-sm text-muted-foreground">{brief.league}</span> : null}
+                    {brief.league ? <span className="text-base text-muted-foreground">{brief.league}</span> : null}
                   </div>
 
-                  <Dialog.Description className="text-sm leading-relaxed text-muted-foreground">
-                    {brief.why}
-                  </Dialog.Description>
+                  <Dialog.Description className="sr-only">{brief.label}</Dialog.Description>
 
-                  {brief.sourceNotes?.length ? (
-                    <ul className="grid gap-2">
-                      {brief.sourceNotes.map((n) => (
-                        <li
-                          key={n.source}
-                          className={cn(
-                            "flex items-center justify-between rounded-2xl px-4 py-3",
-                            n.source === "odds" ? "glass-azure" : "glass-purpure",
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              "text-sm font-semibold",
-                              n.source === "odds" ? "text-or" : "text-primary-foreground",
-                            )}
-                          >
-                            {SOURCE_LABEL[n.source]}
-                          </span>
-                          <span className="text-sm tabular">
-                            {formatPct(n.rate)} · {n.sample} games
-                            {priceLabel(n.odds) ? ` · ${priceLabel(n.odds)}` : ""}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : brief.stat ? (
-                    <p className="rounded-2xl bg-secondary px-4 py-3 text-sm">{brief.stat}</p>
-                  ) : null}
+                  {brief.last5 ? <Last5Strip last5={brief.last5} home={brief.home} away={brief.away ?? ""} /> : null}
                 </div>
               </>
             ) : null}

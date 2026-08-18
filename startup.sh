@@ -9,8 +9,17 @@ if ! grep -q watch-push-betagree /proc/*/cmdline 2>/dev/null; then
     sh scripts/watch-push-betagree.sh >>/tmp/betagree-push.log 2>&1 &
   fi
 fi
-if [ -f scripts/score-loop.mjs ] && ! grep -q score-loop /proc/*/cmdline 2>/dev/null; then
-  node scripts/score-loop.mjs >>/tmp/score-loop.log 2>&1 &
+if [ -f scripts/refresh-form.mjs ]; then
+  form_date=$(node -e "try{console.log(require('./public/data/form.json').date||'')}catch(e){console.log('')}" 2>/dev/null || true)
+  today=$(date -u +%F)
+  if [ "$form_date" != "$today" ]; then
+    node scripts/refresh-form.mjs >>/tmp/form-refresh.log 2>&1 &
+  fi
+fi
+if [ -f scripts/desk-loop.sh ] && ! grep -q desk-loop /proc/*/cmdline 2>/dev/null; then
+  sh scripts/desk-loop.sh >>/tmp/desk-loop.log 2>&1 &
+elif [ -f scripts/form-loop.sh ] && ! grep -q form-loop /proc/*/cmdline 2>/dev/null; then
+  sh scripts/form-loop.sh >>/tmp/form-loop.log 2>&1 &
 fi
 if curl -sf -o /dev/null --max-time 2 http://127.0.0.1:8080/; then
   exit 0

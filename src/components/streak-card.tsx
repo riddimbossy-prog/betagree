@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 function PoleChip({ rank, size, pole }: { rank: number; size: number; pole: StreakPole | null }) {
   if (!pole) {
     return (
-      <span className="rounded-full px-2.5 py-0.5 text-[11px] font-semibold tabular text-muted-foreground glass">
+      <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold tabular text-muted-foreground glass">
         {rank}/{size}
       </span>
     );
@@ -15,13 +15,20 @@ function PoleChip({ rank, size, pole }: { rank: number; size: number; pole: Stre
   return (
     <span
       className={cn(
-        "rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide tabular",
-        pole === "top" ? "glass-or text-or" : "glass-azure text-primary-foreground",
+        "rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide tabular",
+        pole === "top" ? "glass-or text-or" : "glass-cyan text-background",
       )}
     >
       {pole === "top" ? "Top" : "Bottom"} {rank}/{size}
     </span>
   );
+}
+
+function shortLabel(pick: StreakPick) {
+  if (pick.market === "2+") return "2+ Yes";
+  if (pick.pick === "Over") return "Over 2.5";
+  if (pick.pick === "Under") return "Under 2.5";
+  return pick.label;
 }
 
 export function StreakCard({ pick }: { pick: StreakPick }) {
@@ -30,11 +37,11 @@ export function StreakCard({ pick }: { pick: StreakPick }) {
   const sameLogo = Boolean(pick.homeLogo && pick.homeLogo === pick.awayLogo);
   const { clock, day } = formatBoardTime(null, pick.kickoff);
   return (
-    <article className="glass glass-lift block w-full rounded-3xl p-5 text-left">
-      <div className="flex flex-wrap items-center justify-between gap-2">
+    <article className="glass glass-lift block w-full min-w-0 overflow-hidden rounded-3xl p-3 text-left fold:p-5">
+      <div className="flex items-center justify-between gap-2">
         <span
           className={cn(
-            "rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide",
+            "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide",
             pick.market === "2+"
               ? "glass-purpure text-primary-foreground"
               : pick.pick === "Over"
@@ -42,53 +49,48 @@ export function StreakCard({ pick }: { pick: StreakPick }) {
                 : "glass-or text-or",
           )}
         >
-          {pick.label}
+          {shortLabel(pick)}
         </span>
-        <span className="glass-or inline-flex items-baseline gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide tabular text-or">
+        <span className="glass-or inline-flex shrink-0 items-baseline gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide tabular text-or">
           {day ? <span className="font-medium opacity-80">{day}</span> : null}
           <span>{clock}</span>
         </span>
       </div>
 
-      <div className="mt-4 flex items-center gap-3">
-        <Crest name={pick.home} logo={sameLogo ? null : pick.homeLogo} />
-        <div className="flex min-w-0 flex-1 flex-col items-center gap-1">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-subtle">Kickoff</p>
-          <p className="font-serif text-3xl italic tabular leading-none text-or">{clock}</p>
-          {day ? <p className="text-xs font-semibold tabular text-muted-foreground">{day}</p> : null}
-          <div className="mt-2">
-            <PriceChip value={pick.odds} />
-          </div>
-          <span className="mt-1 max-w-full truncate text-center text-xs text-muted-foreground">{pick.league}</span>
+      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 fold:gap-3">
+        <div className="flex min-w-0 items-center gap-1.5 fold:gap-2">
+          <Crest
+            name={pick.home}
+            logo={sameLogo ? null : pick.homeLogo}
+            size="xs"
+            className="shrink-0 fold:h-16 fold:w-[3.25rem]"
+          />
+          <span className="min-w-0 truncate text-sm font-semibold fold:text-base">{pick.home}</span>
         </div>
-        <Crest name={pick.away} logo={sameLogo ? null : pick.awayLogo} />
+        <div className="flex flex-col items-center px-1">
+          <PriceChip value={pick.odds} />
+          <span className="mt-1 text-xs font-semibold uppercase tracking-wide text-subtle">vs</span>
+        </div>
+        <div className="flex min-w-0 items-center justify-end gap-1.5 fold:gap-2">
+          <span className="min-w-0 truncate text-right text-sm font-semibold fold:text-base">{pick.away}</span>
+          <Crest
+            name={pick.away}
+            logo={sameLogo ? null : pick.awayLogo}
+            size="xs"
+            className="shrink-0 fold:h-16 fold:w-[3.25rem]"
+          />
+        </div>
       </div>
 
-      <p className="mt-3 truncate text-center text-sm font-semibold">
-        {pick.home} <span className="text-subtle">vs</span> {pick.away}
+      <p className="mt-2 truncate text-center text-xs text-muted-foreground fold:text-sm">
+        {pick.league}
+        {pick.scoring?.heat === "hot" ? " · hot" : pick.scoring?.heat === "cold" ? " · tight" : ""}
       </p>
 
-      <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+      <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
         {home ? <PoleChip rank={home.rank} size={pick.table.size} pole={home.pole} /> : null}
         {away ? <PoleChip rank={away.rank} size={pick.table.size} pole={away.pole} /> : null}
       </div>
-
-      <p className="mt-3 text-center text-sm text-muted-foreground">
-        Favorite {pick.favorite}{" "}
-        <span className="tabular font-semibold text-foreground">{pick.favoriteOdds.toFixed(2)}</span>
-        {typeof pick.oppPpg === "number" ? (
-          <>
-            {" "}
-            · opp <span className="tabular font-semibold text-foreground">{pick.oppPpg.toFixed(2)}</span> PPG
-          </>
-        ) : null}
-        {pick.pick === "Over" && pick.streakYes != null && pick.streakNo != null ? (
-          <>
-            {" "}
-            · 3+ {pick.streakYes.toFixed(2)}/{pick.streakNo.toFixed(2)}
-          </>
-        ) : null}
-      </p>
     </article>
   );
 }

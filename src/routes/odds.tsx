@@ -165,7 +165,7 @@ function OddsFilterPage() {
                   >
                     <div className="flex flex-wrap items-center gap-2">
                       {hit.fixture.live ? (
-                        <span className="rounded-full bg-gules px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-hot-foreground uppercase">
+                        <span className="rounded-full bg-gules px-2.5 py-0.5 text-[11px] font-bold tracking-wide text-background uppercase">
                           {hit.fixture.detail || "Live"}
                         </span>
                       ) : (
@@ -255,7 +255,7 @@ function TeamTile({
             {vsPrice ? ` · ${vsPrice.toFixed(2)}` : ""}
           </p>
         </div>
-        <span className="rounded-full bg-azure px-3 py-1 text-sm font-semibold tabular text-primary-foreground">
+        <span className="rounded-full bg-azure px-3 py-1 text-sm font-semibold tabular text-background">
           {row.price.toFixed(2)}
         </span>
       </button>

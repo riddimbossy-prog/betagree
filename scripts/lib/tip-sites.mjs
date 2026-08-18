@@ -179,7 +179,7 @@ function context(f, form) {
 
 function emit(id, f, made) {
   return made.map((p) => ({
-    id: `${id}-${f.id}-${p.market}`,
+    id: `${id}-${f.id}-${p.market}-${p.selection}`,
     tipsterId: id,
     fixtureId: f.id,
     ...p,
@@ -190,12 +190,28 @@ function oneX(c, side, confidence = "play") {
   return { market: "1x2", selection: side, label: label1x2(c.f, side), confidence };
 }
 
-function ou(c, side, confidence = "play") {
-  return { market: "total", selection: side, label: `${side === "over" ? "Over" : "Under"} ${c.line}`, confidence };
+function ou(c, side, line, confidence = "play") {
+  const n = line ?? c.line;
+  return { market: "total", selection: `${side}:${n}`, label: `${side === "over" ? "Over" : "Under"} ${n}`, confidence };
 }
 
 function btts(yes, confidence = "lean") {
   return { market: "btts", selection: yes ? "yes" : "no", label: yes ? "Both teams to score" : "BTTS — no", confidence };
+}
+
+function marketBook(c) {
+  const exp = c.totalExp;
+  const made = [];
+  const lines = [
+    { line: 1.5, overIf: 2.05, underIf: 1.15 },
+    { line: 2.5, overIf: 2.85, underIf: 2.15 },
+    { line: 3.5, overIf: 3.85, underIf: 2.9 },
+  ];
+  for (const { line, overIf, underIf } of lines) {
+    if (exp >= overIf) made.push(ou(c, "over", line, exp - line > 0.7 ? "strong" : "play"));
+    else if (exp <= underIf) made.push(ou(c, "under", line, underIf - exp > 0.4 ? "strong" : "play"));
+  }
+  return made;
 }
 
 function formSide(c, gap = 0.25) {
@@ -255,24 +271,25 @@ function pickFor(id, c) {
         const over = parseAmerican(f.overOdds);
         const under = parseAmerican(f.underOdds);
         const side = under != null && over != null && implied(under) > implied(over) ? "under" : "over";
-        made.push(ou(c, side));
+        made.push(ou(c, side, c.line));
       }
+      made.push(...marketBook(c));
       return emit(id, f, made);
     }
     case "form":
-      return emit(id, f, [oneX(c, lean(id, c, formSide(c)), Math.abs(c.hr - c.ar) > 0.6 ? "strong" : "play")]);
+      return emit(id, f, [oneX(c, lean(id, c, formSide(c)), Math.abs(c.hr - c.ar) > 0.6 ? "strong" : "play"), ...marketBook(c)]);
     case "attack":
-      return emit(id, f, [oneX(c, lean(id, c, attackSide(c))), ou(c, c.totalExp > c.line ? "over" : "under"), btts(c.hSc >= 0.6 && c.aSc >= 0.6)]);
+      return emit(id, f, [oneX(c, lean(id, c, attackSide(c))), ...marketBook(c), btts(c.hSc >= 0.6 && c.aSc >= 0.6)]);
     case "shield":
-      return emit(id, f, [oneX(c, lean(id, c, rateSide(-c.hga, -c.aga, 0.15)))]);
+      return emit(id, f, [oneX(c, lean(id, c, rateSide(-c.hga, -c.aga, 0.15))), ...marketBook(c)]);
     case "pulse":
-      return emit(id, f, [oneX(c, lean(id, c, rateSide(c.h3, c.a3, 0.2)))]);
+      return emit(id, f, [oneX(c, lean(id, c, rateSide(c.h3, c.a3, 0.2))), ...marketBook(c)]);
     case "poisson":
-      return emit(id, f, [oneX(c, lean(id, c, poissonSide(c.homeExp, c.awayExp)))]);
+      return emit(id, f, [oneX(c, lean(id, c, poissonSide(c.homeExp, c.awayExp))), ...marketBook(c)]);
     case "elo": {
       const homeR = c.hr * 3 + (c.hgf - c.hga) + 0.28;
       const awayR = c.ar * 3 + (c.agf - c.aga);
-      return emit(id, f, [oneX(c, lean(id, c, rateSide(homeR, awayR, 0.35)))]);
+      return emit(id, f, [oneX(c, lean(id, c, rateSide(homeR, awayR, 0.35))), ...marketBook(c)]);
     }
     case "fortress":
       return emit(id, f, [oneX(c, c.ai > 0.48 ? "away" : "home")]);
@@ -287,14 +304,11 @@ function pickFor(id, c) {
     case "contrarian":
       return emit(id, f, [oneX(c, fadeSide(priced(c) ? c.fav : "home"), "lean")]);
     case "line":
-      return emit(id, f, [oneX(c, lean(id, c, attackSide(c))), ou(c, c.totalExp > c.line ? "over" : "under")]);
+      return emit(id, f, [oneX(c, lean(id, c, attackSide(c))), ...marketBook(c)]);
     case "clean":
-      return emit(id, f, [oneX(c, lean(id, c, rateSide(-c.hga, -c.aga, 0.12))), btts(!(c.hga < 1.1 && c.aga < 1.1))]);
-    case "fire": {
-      const made = [oneX(c, lean(id, c, rateSide(c.hgf, c.agf, 0.2)))];
-      if (f.total != null) made.push(ou(c, c.hgf > 1.15 && c.agf > 1.15 ? "over" : "under"));
-      return emit(id, f, made);
-    }
+      return emit(id, f, [oneX(c, lean(id, c, rateSide(-c.hga, -c.aga, 0.12))), btts(!(c.hga < 1.1 && c.aga < 1.1)), ...marketBook(c)]);
+    case "fire":
+      return emit(id, f, [oneX(c, lean(id, c, rateSide(c.hgf, c.agf, 0.2))), ...marketBook(c)]);
     case "grit":
       return emit(id, f, [oneX(c, lean(id, c, rateSide(c.hUnb, c.aUnb, 0.12)))]);
     case "split":
@@ -310,7 +324,7 @@ function pickFor(id, c) {
       return emit(id, f, [oneX(c, side)]);
     }
     case "both":
-      return emit(id, f, [oneX(c, lean(id, c, formSide(c))), btts(c.hSc >= 0.55 && c.aSc >= 0.55)]);
+      return emit(id, f, [oneX(c, lean(id, c, formSide(c))), btts(c.hSc >= 0.55 && c.aSc >= 0.55), ...marketBook(c)]);
     case "run":
       return emit(id, f, [oneX(c, lean(id, c, rateSide(c.hWins, c.aWins, 0.12)))]);
     case "bounce":
@@ -330,6 +344,14 @@ export function buildPicks(fixtures, history) {
   });
 }
 
+function familyKey(fixtureId, market, selection) {
+  if (market === "total") {
+    const line = String(selection).includes(":") ? String(selection).split(":")[1] : "line";
+    return `${fixtureId}|total|${line}`;
+  }
+  return `${fixtureId}|${market}`;
+}
+
 export function buildConsensus(picks, fixtures) {
   const byId = Object.fromEntries(fixtures.map((f) => [f.id, f]));
   const groups = new Map();
@@ -337,7 +359,7 @@ export function buildConsensus(picks, fixtures) {
   for (const p of picks) {
     const g = `${p.fixtureId}|${p.market}|${p.selection}`;
     groups.set(g, [...(groups.get(g) ?? []), p]);
-    const c = `${p.fixtureId}|${p.market}`;
+    const c = familyKey(p.fixtureId, p.market, p.selection);
     const set = coverage.get(c) ?? new Set();
     set.add(p.tipsterId);
     coverage.set(c, set);
@@ -348,11 +370,12 @@ export function buildConsensus(picks, fixtures) {
     const [fixtureId, market] = key.split("|");
     const fixture = byId[fixtureId];
     if (!fixture) continue;
-    const cov = coverage.get(`${fixtureId}|${market}`)?.size ?? group.length;
+    const selection = group[0].selection;
+    const cov = coverage.get(familyKey(fixtureId, market, selection))?.size ?? group.length;
     if (cov < 2) continue;
     const agreeIds = new Set(group.map((g) => g.tipsterId));
     if (agreeIds.size < 2) continue;
-    const posted = picks.filter((p) => p.fixtureId === fixtureId && p.market === market);
+    const posted = picks.filter((p) => familyKey(p.fixtureId, p.market, p.selection) === familyKey(fixtureId, market, selection));
     const fade = DESKS.filter((d) => posted.some((p) => p.tipsterId === d.id) && !agreeIds.has(d.id));
     const agree = [...agreeIds].map((id) => deskBy[id]).filter(Boolean);
     const pct = agree.length / cov;
@@ -360,7 +383,7 @@ export function buildConsensus(picks, fixtures) {
       id: key,
       fixture,
       market,
-      selection: group[0].selection,
+      selection,
       label: group[0].label,
       agree,
       fade,
@@ -373,7 +396,7 @@ export function buildConsensus(picks, fixtures) {
   }
   const best = new Map();
   for (const item of items) {
-    const k = `${item.fixture.id}|${item.market}`;
+    const k = familyKey(item.fixture.id, item.market, item.selection);
     const prev = best.get(k);
     if (!prev || item.count > prev.count || (item.count === prev.count && item.pct > prev.pct)) best.set(k, item);
   }
@@ -422,11 +445,14 @@ function gradePick(p, f) {
     return p.selection === out ? "won" : "lost";
   }
   if (p.market === "total") {
-    if (f.total == null) return null;
+    const parsed = String(p.selection).match(/^(over|under)(?::(\d+(?:\.\d+)?))?$/i);
+    const side = (parsed?.[1] ?? "over").toLowerCase();
+    const line = parsed?.[2] ? Number(parsed[2]) : f.total;
+    if (line == null) return null;
     const goals = hs + as;
-    if (goals === f.total) return "push";
-    const over = goals > f.total;
-    return (p.selection === "over" ? over : !over) ? "won" : "lost";
+    if (goals === line) return "push";
+    const over = goals > line;
+    return (side === "over" ? over : !over) ? "won" : "lost";
   }
   const hit = hs > 0 && as > 0;
   return (p.selection === "yes" ? hit : !hit) ? "won" : "lost";

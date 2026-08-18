@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Bell, CalendarDays, Flame, Home, Radio, Zap } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
@@ -21,7 +21,19 @@ const NAV = [
 
 export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  preloadOfficialCrests();
+  useEffect(() => {
+    const w = window as Window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    const id = w.requestIdleCallback
+      ? w.requestIdleCallback(() => preloadOfficialCrests(), { timeout: 2500 })
+      : window.setTimeout(() => preloadOfficialCrests(), 1200);
+    return () => {
+      if (w.cancelIdleCallback && typeof id === "number") w.cancelIdleCallback(id);
+      else window.clearTimeout(id);
+    };
+  }, []);
   const showTodayFilter = pathname !== "/login";
 
   return (
@@ -34,21 +46,41 @@ export function SiteShell({ children }: { children: ReactNode }) {
       >
         Skip to content
       </a>
-      <header className="glass-strong sticky top-0 z-40">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-3 py-3 sm:px-6 fold:py-4">
-          <Link to="/" className="flex min-w-0 items-center gap-3 no-underline">
+      <header className="glass-strong header-glow sticky top-0 z-40 pt-[env(safe-area-inset-top)]">
+        <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-2 sm:px-6 fold:gap-3 fold:py-2.5">
+          <Link to="/" className="flex min-w-0 shrink items-center no-underline">
             <BrandLogo />
           </Link>
-          <AuthSlot />
-        </div>
-        {showTodayFilter ? (
-          <div className="mx-auto flex max-w-5xl items-center px-3 pb-3 sm:px-6">
-            <PlayingTodayChip />
+          <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex" aria-label="Primary">
+            {NAV.map((item) => {
+              const active =
+                item.to === "/"
+                  ? pathname === "/"
+                  : item.to === "/live"
+                    ? pathname === "/live" || pathname.startsWith("/live/")
+                    : pathname.startsWith(item.to);
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={cn(
+                    "rounded-full px-3 py-2 text-base font-medium no-underline",
+                    active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            {showTodayFilter ? <PlayingTodayChip /> : null}
+            <AuthSlot />
           </div>
-        ) : null}
+        </div>
       </header>
 
-      <main id="main" className="page-pad mx-auto w-full min-w-0 max-w-5xl flex-1 px-3 py-5 fold:px-6 fold:py-6">
+      <main id="main" className="page-pad mx-auto w-full min-w-0 max-w-6xl flex-1 px-3 py-3 fold:px-6 fold:py-6">
         {children}
       </main>
 
@@ -72,7 +104,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
               )}
             >
               <Icon className="size-5" />
-              <span className="hidden text-[10px] font-semibold tracking-wide uppercase tab:inline">
+              <span className="tab-label mt-0.5 hidden text-[10px] font-semibold tracking-wide uppercase fold:inline">
                 {item.label}
               </span>
             </Link>
@@ -80,9 +112,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
         })}
       </nav>
 
-      <footer className="glass mt-auto hidden xl:block">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-6 text-xs text-subtle">
-          <p>Betagree ranks soccer tips where 22 sites overlap. Not a sportsbook.</p>
+      <footer className="glass mt-auto hidden lg:block">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-6 text-sm text-subtle">
+          <p>Betagree. Not a sportsbook.</p>
           <div className="flex flex-wrap gap-4">
             {NAV.map((item) => (
               <Link key={item.to} to={item.to} className="hover:text-foreground">
