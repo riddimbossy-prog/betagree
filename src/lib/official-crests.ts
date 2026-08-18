@@ -247,9 +247,12 @@ export function crestCandidates(official: string | null | undefined, logo?: stri
     out.push(s);
   };
   add(toLocalCrest(official));
-  add(crestProxy(official, name));
   add(toLocalCrest(logo));
-  if (name && !out.some((s) => s.startsWith("/api/crest-img"))) add(crestProxy(null, name));
+  // /api/crest-img only exists on the preview server, not GitHub Pages.
+  if (import.meta.env.DEV) {
+    add(crestProxy(official, name));
+    if (name && !out.some((s) => s.startsWith("/api/crest-img"))) add(crestProxy(null, name));
+  }
   return out;
 }
 
@@ -344,10 +347,16 @@ async function loadIndex() {
 }
 
 function remember(name: string, path: string) {
-  const local = toLocalCrest(path) ?? (path.startsWith("/crests/") || path.startsWith("/api/crest-img") ? path : null);
+  const local = toLocalCrest(path);
   if (!cache || !local) return;
-  for (const k of nameKeys(name)) cache.byName[k] = local;
-  emitSoon();
+  let changed = false;
+  for (const k of nameKeys(name)) {
+    const cur = cache.byName[k];
+    if (cur?.startsWith("/crests/")) continue;
+    cache.byName[k] = local;
+    changed = true;
+  }
+  if (changed) emitSoon();
 }
 
 async function askServer(name: string): Promise<string | null> {
@@ -366,10 +375,10 @@ async function askServer(name: string): Promise<string | null> {
           .then((res) => (res.ok ? res.json() : null))
           .catch(() => null),
       )) as { path?: string; remote?: string } | null;
-      let path = toLocalCrest(api?.path) ?? toLocalCrest(api?.remote) ?? crestProxy(api?.remote ?? api?.path, name);
+      let path = toLocalCrest(api?.path) ?? toLocalCrest(api?.remote);
       if (!path && typeof window !== "undefined") {
         const found = await withCrestSlot(() => findCrestOnline(name));
-        path = toLocalCrest(found) ?? crestProxy(found, name);
+        path = toLocalCrest(found);
       }
       if (path) {
         remember(name, path);
@@ -406,8 +415,10 @@ export function useOfficialCrest(name: string): string | null {
       setPath((prev) => (prev === next ? prev : next));
     };
     listeners.add(sync);
-    void loadIndex().then(sync);
-    if (!officialCrestPath(name)) void askServer(name);
+    void loadIndex().then(() => {
+      sync();
+      if (!officialCrestPath(name)) void askServer(name);
+    });
     return () => {
       listeners.delete(sync);
     };

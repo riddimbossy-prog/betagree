@@ -1,5 +1,5 @@
 /* Betagree service worker — cache the desk, sync the board when the line returns. */
-const VERSION = "betagree-sw-v7";
+const VERSION = "betagree-sw-v8";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 const MEDIA = `${VERSION}-media`;
