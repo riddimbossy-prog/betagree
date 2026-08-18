@@ -42,7 +42,7 @@ export function BankerPage() {
           Dedicated split-form desk. Last 5 at home vs last 5 away — not the consensus board.
         </p>
         <div className="mt-4 flex flex-wrap gap-2 text-[11px] font-semibold tracking-wide uppercase">
-          <b className="rounded-full bg-destructive/15 px-3 py-1 text-destructive">Home <1.00 PPG = skip</b>
+          <b className="rounded-full bg-destructive/15 px-3 py-1 text-destructive">{`Home <1.00 PPG = skip`}</b>
           <b className="glass rounded-full px-3 py-1">Early season = skip</b>
           <b className="glass rounded-full px-3 py-1">Both split top 5 = skip</b>
           <b className="glass rounded-full px-3 py-1">Exact last 5 home + last 5 away</b>
@@ -53,7 +53,7 @@ export function BankerPage() {
         {[
           ["Qualified", picks.length],
           ["Early skips", skips["early-season"] ?? 0],
-          ["Home <1 PPG", skips["home-under-1-ppg"] ?? 0],
+          ["Home under 1 PPG", skips["home-under-1-ppg"] ?? 0],
           ["Top-5 clashes", skips["both-top-five"] ?? 0],
         ].map(([label, n]) => (
           <div key={String(label)} className="glass rounded-2xl px-3 py-3">
