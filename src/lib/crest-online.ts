@@ -68,6 +68,10 @@ const SEARCH_ALIAS: Record<string, string> = {
   "alverca futebol": "Alverca",
   "cs cienciano": "Cienciano",
   "kf aegir": "Aegir",
+  "jerv grimstad": "Jerv",
+  "cracovia krakow": "Cracovia",
+  "kolos-2": "Kolos Kovalivka",
+  "mafco salima": "Malawi Armed Forces",
 };
 
 const LEGAL = new Set([
@@ -450,9 +454,9 @@ export async function sportsDbBadge(name: string): Promise<string | null> {
 /** Same query you'd type into Google Images. Google itself is captcha-walled
  *  from servers, so we search Bing's image index and keep only official hosts. */
 const IMAGE_HOST_OK =
-  /upload\.wikimedia\.org|wikipedia\.org|img\.sofascore\.com|thesportsdb\.com|tmssl\.akamaized\.net|transfermarkt|seeklogo\.com/i;
+  /upload\.wikimedia\.org|wikipedia\.org|img\.sofascore\.com|thesportsdb\.com|tmssl\.akamaized\.net|transfermarkt|seeklogo\.com|espncdn\.com|a\.espncdn\.com/i;
 
-async function webImageBadge(name: string): Promise<string | null> {
+export async function webImageBadge(name: string): Promise<string | null> {
   if (typeof window !== "undefined") return null;
   try {
     const q = `${queryFor(name)} football club crest logo`;
@@ -480,7 +484,7 @@ async function webImageBadge(name: string): Promise<string | null> {
       const start = i + marker.length;
       const end = html.indexOf(entity, start);
       if (end < 0) break;
-      const url = html.slice(start, end).replace(/&/g, "&");
+      const url = html.slice(start, end).split("&").join("&");
       if (url.startsWith("http") && IMAGE_HOST_OK.test(url) && !urls.includes(url)) urls.push(url);
       from = end + entity.length;
     }

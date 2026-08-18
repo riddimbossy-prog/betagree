@@ -205,7 +205,21 @@ for (const [k, v] of Object.entries(byName)) {
 }
 
 const names = new Set();
-for (const f of ["public/data/slate.json", "public/data/streaks.json", "public/data/form.json", "public/data/trends.json"]) {
+const dataFiles = [
+  "public/data/slate.json",
+  "public/data/streaks.json",
+  "public/data/form.json",
+  "public/data/trends.json",
+];
+try {
+  const { readdirSync } = await import("node:fs");
+  for (const f of readdirSync("public/data").filter((n) => n.startsWith("slate-") && n.endsWith(".json"))) {
+    dataFiles.push(`public/data/${f}`);
+  }
+} catch {
+  /* optional */
+}
+for (const f of dataFiles) {
   try {
     walk(JSON.parse(await readFile(f, "utf8")), names);
   } catch {

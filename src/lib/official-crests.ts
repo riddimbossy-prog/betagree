@@ -147,6 +147,11 @@ const ALIAS: Record<string, string> = {
   "imt new belgrade": "fk imt beograd",
   "tigre victoria": "tigre",
   "ca tigre": "tigre",
+  "jerv grimstad": "jerv",
+  "cracovia krakow": "cracovia",
+  "kolos-2": "kolos kovalivka",
+  "mafco salima": "malawi armed forces",
+  mafco: "malawi armed forces",
 };
 
 const PINNED: Record<string, string> = {
@@ -175,6 +180,13 @@ const PINNED: Record<string, string> = {
   tigre: "/crests/ss-7628.png",
   "ca tigre": "/crests/ss-7628.png",
   "tigre victoria": "/crests/ss-7628.png",
+  jerv: "/crests/ss-862.png",
+  "jerv grimstad": "/crests/ss-862.png",
+  cracovia: "/crests/ss-4901.png",
+  "cracovia krakow": "/crests/ss-4901.png",
+  "kolos kovalivka": "/crests/ss-200776.png",
+  "kolos 2": "/crests/ss-200776.png",
+  "mafco salima": "/crests/ss-290616.png",
 };
 
 export function normTeam(name: string) {
