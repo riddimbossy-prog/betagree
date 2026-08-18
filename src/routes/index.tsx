@@ -8,7 +8,8 @@ import { TrendCard } from "@/components/trend-card";
 import { isLiveBoardMatch } from "@/lib/board-match";
 import { fixtureIsToday, isPlayingToday, isPlayingTomorrow, sortBoardGames } from "@/lib/format";
 import { fixturesInBand } from "@/lib/odds-band";
-import { useFormBoard, useSlate, useStreaks, useTrends } from "@/lib/live/use-live";
+import { useFormBoard, useSlate, useStreaks, useTrends, useBankers } from "@/lib/live/use-live";
+import { BankerCard } from "@/components/banker-card";
 import { loadBoardSnapshot } from "@/lib/live/snapshot";
 import { FormRowCard } from "@/components/form-row";
 import { StreakCard } from "@/components/streak-card";
@@ -45,6 +46,7 @@ function Home() {
     };
   }, []);
   const trends = useTrends(90_000, secondary);
+  const bankersBoard = useBankers(90_000, secondary);
   const form = useFormBoard(90_000, secondary, true);
   const streaks = useStreaks(90_000, secondary);
   const todayOnly = useTodayOnly();
@@ -66,8 +68,8 @@ function Home() {
     const pick = pickBoardTip(byFixture.get(f.id));
     return pick ? bandOf(pick) === "high" : false;
   });
-  const bankers = (trends.data?.bankers ?? []).filter(
-    (pick) => !todayOnly || isPlayingToday(pick.kickoffIso, pick.kickoff, trends.data?.date),
+  const bankers = (bankersBoard.data?.picks ?? []).filter(
+    (pick) => !todayOnly || isPlayingToday(pick.kickoff),
   );
   const trendCats = trends.data?.categories;
   const trendTotal = trendCats
@@ -227,7 +229,7 @@ function Home() {
         <section>
           <div className="mb-4 flex items-end justify-between">
             <h2 className="text-2xl font-semibold">
-              Dual <span className="font-serif italic font-normal">bankers</span>
+              Banker <span className="font-serif italic font-normal">rules</span>
             </h2>
             <Link to="/banker" className="text-sm text-muted-foreground">
               Banker desk
@@ -235,7 +237,7 @@ function Home() {
           </div>
           <div className="grid gap-3 fold:grid-cols-2">
             {bankers.slice(0, 4).map((pick) => (
-              <TrendCard key={pick.id} pick={pick} highlight />
+              <BankerCard key={`${pick.fixtureId}-${pick.rule}`} pick={pick} />
             ))}
           </div>
         </section>

@@ -476,3 +476,26 @@ export function packForSheet(pack) {
     agree: agreedGoalTips(pack),
   };
 }
+
+/** Last-5 home / last-5 away rows for Banker rules v2. */
+export async function loadVenueForm(home, away) {
+  const ev = await loadEvent(home, away);
+  if (!ev?.homeTeam?.id || !ev?.awayTeam?.id) {
+    return { homeHome: [], awayAway: [], table: null, earlySeason: true };
+  }
+  const [hs, as, tab] = await Promise.all([
+    lastForTeam(ev.homeTeam.id),
+    lastForTeam(ev.awayTeam.id),
+    loadTable(home, away, ev),
+  ]);
+  const homeHome = venueSlice(hs, "H");
+  const awayAway = venueSlice(as, "A");
+  const homeGp = tab?.home?.gp ?? 0;
+  const awayGp = tab?.away?.gp ?? 0;
+  return {
+    homeHome,
+    awayAway,
+    table: tab,
+    earlySeason: homeGp < LAST5 || awayGp < LAST5,
+  };
+}

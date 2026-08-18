@@ -1,5 +1,5 @@
 /* Betagree service worker — cache the desk, sync the board when the line returns. */
-const VERSION = "betagree-sw-v8";
+const VERSION = "betagree-sw-v9";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 const MEDIA = `${VERSION}-media`;
@@ -8,6 +8,7 @@ const PRECACHE = [
   "/data/slate.json",
   "/data/streaks.json",
   "/data/trends.json",
+  "/data/bankers.json",
   "/data/league-rates.json",
   "/favicon.svg",
   "/brand/betagree-lockup.png",
@@ -17,6 +18,7 @@ const BOARD_URLS = [
   "/data/slate.json",
   "/data/streaks.json",
   "/data/trends.json",
+  "/data/bankers.json",
   "/data/form.json",
   "/data/form-preview.json",
   "/data/picks.json",
@@ -28,6 +30,7 @@ const BOARD_URLS = [
   "/api/slate",
   "/api/streaks",
   "/api/trends",
+  "/api/bankers",
 ];
 
 self.addEventListener("install", (event) => {

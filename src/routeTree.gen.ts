@@ -22,6 +22,7 @@ import { Route as PlaybookRouteImport } from './routes/playbook'
 import { Route as StreaksRouteImport } from './routes/streaks'
 import { Route as TipstersRouteImport } from './routes/tipsters'
 import { Route as TrendsRouteImport } from './routes/trends'
+import { Route as ApiBankersRouteImport } from './routes/api/bankers'
 import { Route as ApiCrestRouteImport } from './routes/api/crest'
 import { Route as ApiCrestImgRouteImport } from './routes/api/crest-img'
 import { Route as ApiFormRouteImport } from './routes/api/form'
@@ -100,6 +101,11 @@ const TipstersRoute = TipstersRouteImport.update({
 const TrendsRoute = TrendsRouteImport.update({
   id: '/trends',
   path: '/trends',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBankersRoute = ApiBankersRouteImport.update({
+  id: '/api/bankers',
+  path: '/api/bankers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCrestRoute = ApiCrestRouteImport.update({
@@ -187,6 +193,7 @@ export interface FileRoutesByFullPath {
   '/streaks': typeof StreaksRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/trends': typeof TrendsRoute
+  '/api/bankers': typeof ApiBankersRoute
   '/api/crest': typeof ApiCrestRoute
   '/api/crest-img': typeof ApiCrestImgRoute
   '/api/form': typeof ApiFormRoute
@@ -214,6 +221,7 @@ export interface FileRoutesByTo {
   '/playbook': typeof PlaybookRoute
   '/streaks': typeof StreaksRoute
   '/trends': typeof TrendsRoute
+  '/api/bankers': typeof ApiBankersRoute
   '/api/crest': typeof ApiCrestRoute
   '/api/crest-img': typeof ApiCrestImgRoute
   '/api/form': typeof ApiFormRoute
@@ -244,6 +252,7 @@ export interface FileRoutesById {
   '/streaks': typeof StreaksRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/trends': typeof TrendsRoute
+  '/api/bankers': typeof ApiBankersRoute
   '/api/crest': typeof ApiCrestRoute
   '/api/crest-img': typeof ApiCrestImgRoute
   '/api/form': typeof ApiFormRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/streaks'
     | '/tipsters'
     | '/trends'
+    | '/api/bankers'
     | '/api/crest'
     | '/api/crest-img'
     | '/api/form'
@@ -302,6 +312,7 @@ export interface FileRouteTypes {
     | '/playbook'
     | '/streaks'
     | '/trends'
+    | '/api/bankers'
     | '/api/crest'
     | '/api/crest-img'
     | '/api/form'
@@ -331,6 +342,7 @@ export interface FileRouteTypes {
     | '/streaks'
     | '/tipsters'
     | '/trends'
+    | '/api/bankers'
     | '/api/crest'
     | '/api/crest-img'
     | '/api/form'
@@ -361,6 +373,7 @@ export interface RootRouteChildren {
   StreaksRoute: typeof StreaksRoute
   TipstersRoute: typeof TipstersRouteWithChildren
   TrendsRoute: typeof TrendsRoute
+  ApiBankersRoute: typeof ApiBankersRoute
   ApiCrestRoute: typeof ApiCrestRoute
   ApiCrestImgRoute: typeof ApiCrestImgRoute
   ApiFormRoute: typeof ApiFormRoute
@@ -464,6 +477,13 @@ declare module '@tanstack/react-router' {
       path: '/trends'
       fullPath: '/trends'
       preLoaderRoute: typeof TrendsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/bankers': {
+      id: '/api/bankers'
+      path: '/api/bankers'
+      fullPath: '/api/bankers'
+      preLoaderRoute: typeof ApiBankersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/crest': {
@@ -609,6 +629,7 @@ const rootRouteChildren: RootRouteChildren = {
   StreaksRoute: StreaksRoute,
   TipstersRoute: TipstersRouteWithChildren,
   TrendsRoute: TrendsRoute,
+  ApiBankersRoute: ApiBankersRoute,
   ApiCrestRoute: ApiCrestRoute,
   ApiCrestImgRoute: ApiCrestImgRoute,
   ApiFormRoute: ApiFormRoute,

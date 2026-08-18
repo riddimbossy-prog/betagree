@@ -199,14 +199,65 @@ export type TrendTeam = {
   fixtureId: string | null;
 };
 
-export type BankerPick = {
-  id: string;
+export type BankerRuleId =
+  | "HOME_STRAIGHT_WIN"
+  | "AWAY_TEAM_NOT_TO_WIN"
+  | "AWAY_STRENGTH_OVER15"
+  | "BALANCED_HIGH_SCORING_OVER25"
+  | "BALANCED_LOW_SCORING_OVER15";
+
+export type BankerMetrics = {
+  played: number;
+  ready: boolean;
+  ppg: number | null;
+  avgGF: number | null;
+  avgGA: number | null;
+  winRate: number | null;
+  drawRate: number | null;
+  lossRate: number | null;
+  record: string;
+};
+
+export type BankerLeagueProfile = {
+  class: "high-scoring" | "low-scoring-draw-heavy" | "neutral" | "insufficient" | string;
+  matches: number;
+  avgGoals: number | null;
+  drawRate: number | null;
+  over25Rate: number | null;
+};
+
+export type BankerRulePick = {
   fixtureId: string;
-  label: string;
-  market: Market;
+  league: string;
+  country?: string;
+  kickoff: string;
+  home: string;
+  away: string;
+  homeLogo: string | null;
+  awayLogo: string | null;
+  rule: BankerRuleId | string;
+  market: string;
   selection: string;
-  odds: number | null;
-  confidence: number;
+  displaySelection: string;
+  priority: number;
+  reasons: string[];
+  ruleMeta?: Record<string, unknown>;
+  alsoQualified?: string[];
+  metrics: { home: BankerMetrics; away: BankerMetrics; league: BankerLeagueProfile };
+  homeSplit?: { position?: number; size?: number } | null;
+  awaySplit?: { position?: number; size?: number } | null;
+  engine: "banker-rules-v2" | string;
+};
+
+export type BankersPayload = {
+  date: string;
+  dateLabel: string;
+  fetchedAt: string;
+  engine: "banker-rules-v2" | string;
+  scanned?: number;
+  analyzed?: number;
+  picks: BankerRulePick[];
+  meta: { engine: string; count: number; skips: Record<string, number> };
 };
 
 export type TrendsPayload = {

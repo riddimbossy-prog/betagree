@@ -65,6 +65,15 @@ jobs:
         run: node scripts/fetch-streaks.mjs
         continue-on-error: true
 
+      - name: Banker rules v2
+        if: >-
+          github.event.schedule == '0 21 * * *' ||
+          github.event.schedule == '0 23 * * *' ||
+          github.event_name == 'workflow_dispatch' ||
+          github.event_name == 'push'
+        run: node scripts/refresh-bankers.mjs
+        continue-on-error: true
+
       - name: Nightly next-day prep
         if: >-
           github.event.schedule == '0 21 * * *' ||

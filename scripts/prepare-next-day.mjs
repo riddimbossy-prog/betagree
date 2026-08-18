@@ -86,6 +86,10 @@ if (!crestsOnly) {
     const ms = await run("scripts/fetch-streaks.mjs");
     return { childMs: ms };
   });
+  await step("2b-bankers", "banker rules v2 for today + tomorrow", async () => {
+    const ms = await run("scripts/refresh-bankers.mjs");
+    return { childMs: ms };
+  });
 }
 
 const idx = (await readJson("public/data/index.json", {})) ?? {};

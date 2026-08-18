@@ -8,6 +8,7 @@ import type {
   StreaksPayload,
   TrendPick,
   TrendsPayload,
+  BankersPayload,
 } from "@/lib/types";
 import { applySlateScores, type ScorePatch } from "@/lib/live/score-apply";
 import { mergeLiveFixtures } from "@/lib/live/merge-live";
@@ -259,6 +260,44 @@ export function useTrends(pollMs = 90_000, enabled = true) {
           setLoading(false);
           setData((cur) => {
             if (!cur) setError("Could not reach the trends board.");
+            return cur;
+          });
+        }
+      }
+    };
+    void load();
+    const id = window.setInterval(() => void load(), pollMs);
+    return () => {
+      dead = true;
+      window.clearInterval(id);
+    };
+  }, [pollMs, tick, enabled]);
+
+  return { data, error, loading, reload };
+}
+
+export function useBankers(pollMs = 90_000, enabled = true) {
+  const { tick, reload } = useReload();
+  const [data, setData] = useState<BankersPayload | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let dead = false;
+    const load = async () => {
+      try {
+        const json = await loadJson<BankersPayload>(["/data/bankers.json", "/api/bankers"]);
+        if (!dead) {
+          setData(json);
+          setError(null);
+          setLoading(false);
+        }
+      } catch {
+        if (!dead) {
+          setLoading(false);
+          setData((cur) => {
+            if (!cur) setError("Could not reach the banker desk.");
             return cur;
           });
         }

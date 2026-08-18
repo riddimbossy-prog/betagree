@@ -125,7 +125,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
               Trends
             </Link>
             <Link to="/banker" className="hover:text-foreground">
-              Banker
+              Bankers
             </Link>
             <Link to="/odds" className="hover:text-foreground">
               Filter
