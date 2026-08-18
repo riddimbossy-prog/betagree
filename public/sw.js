@@ -1,5 +1,5 @@
 /* Betagree service worker — cache the desk, sync the board when the line returns. */
-const VERSION = "betagree-sw-v4";
+const VERSION = "betagree-sw-v7";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 const MEDIA = `${VERSION}-media`;
@@ -10,7 +10,7 @@ const PRECACHE = [
   "/data/trends.json",
   "/data/league-rates.json",
   "/favicon.svg",
-  "/logo.svg",
+  "/brand/betagree-lockup.png",
 ];
 
 const BOARD_URLS = [

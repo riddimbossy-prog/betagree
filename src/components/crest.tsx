@@ -145,20 +145,40 @@ export function Crest({
 }) {
   const official = useOfficialCrest(name);
   const [failed, setFailed] = useState<string[]>([]);
+  const [painted, setPainted] = useState(false);
   const uid = useId().replace(/:/g, "");
   const arms = blazon(name);
   const path = CUTS[arms.cut];
   const letters = lettersOf(name);
-  const src = crestCandidates(official, logo).find((s) => !failed.includes(s)) ?? null;
-  const showLogo = Boolean(src);
+  const src = crestCandidates(official, logo, name).find((s) => !failed.includes(s)) ?? null;
   const letterFill = arms.field.metal ? arms.ink.fill : "var(--tincture-argent)";
 
   useEffect(() => {
     setFailed([]);
+    setPainted(false);
   }, [name]);
+
+  useEffect(() => {
+    setPainted(false);
+  }, [src]);
 
   return (
     <span className={cn("crest-plate", SIZES[size], className)} title={name} aria-hidden>
+      {src ? (
+        <img
+          className={cn("crest-badge", painted && "is-on")}
+          src={src}
+          alt=""
+          width={80}
+          height={80}
+          decoding="async"
+          onLoad={() => setPainted(true)}
+          onError={() => {
+            setPainted(false);
+            if (src) setFailed((prev) => (prev.includes(src) ? prev : [...prev, src]));
+          }}
+        />
+      ) : null}
       <svg viewBox="0 0 80 96" className="size-full">
         <defs>
           <clipPath id={`shield-${uid}`}>
@@ -177,28 +197,9 @@ export function Crest({
           </linearGradient>
         </defs>
         <g clipPath={`url(#shield-${uid})`}>
-          <path d={path} fill={showLogo ? "var(--tincture-argent)" : arms.field.fill} />
-          {showLogo ? null : <OrdinaryMark kind={arms.ordinary} ink={arms.ink.fill} />}
-          {showLogo ? null : <ChargeMark kind={arms.charge} fill={letterFill} />}
-          {showLogo ? (
-            <foreignObject x="6" y="9" width="68" height="70">
-              <div xmlns="http://www.w3.org/1999/xhtml" style={{ width: 68, height: 70 }}>
-                <img
-                  src={src ?? undefined}
-                  alt=""
-                  width={68}
-                  height={70}
-                  loading="lazy"
-                  decoding="async"
-                  referrerPolicy="no-referrer"
-                  style={{ width: "68px", height: "70px", objectFit: "contain", display: "block" }}
-                  onError={() => {
-                    if (src) setFailed((prev) => (prev.includes(src) ? prev : [...prev, src]));
-                  }}
-                />
-              </div>
-            </foreignObject>
-          ) : null}
+          <path d={path} fill={painted ? "var(--tincture-argent)" : arms.field.fill} />
+          {painted ? null : <OrdinaryMark kind={arms.ordinary} ink={arms.ink.fill} />}
+          {painted ? null : <ChargeMark kind={arms.charge} fill={letterFill} />}
           <path d={path} fill={`url(#enamel-${uid})`} />
         </g>
         <path
@@ -223,7 +224,7 @@ export function Crest({
           strokeOpacity="0.7"
           strokeLinejoin="round"
         />
-        {showLogo ? null : (
+        {painted ? null : (
           <Lettering ordinary={arms.ordinary} letters={letters} field={arms.field.fill} ink={arms.ink.fill} />
         )}
       </svg>

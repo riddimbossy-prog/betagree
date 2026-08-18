@@ -447,6 +447,49 @@ export async function sportsDbBadge(name: string): Promise<string | null> {
   }
 }
 
+/** Same query you'd type into Google Images. Google itself is captcha-walled
+ *  from servers, so we search Bing's image index and keep only official hosts. */
+const IMAGE_HOST_OK =
+  /upload\.wikimedia\.org|wikipedia\.org|img\.sofascore\.com|thesportsdb\.com|tmssl\.akamaized\.net|transfermarkt|seeklogo\.com/i;
+
+async function webImageBadge(name: string): Promise<string | null> {
+  if (typeof window !== "undefined") return null;
+  try {
+    const q = `${queryFor(name)} football club crest logo`;
+    const res = await fetch(
+      `https://www.bing.com/images/async?q=${encodeURIComponent(q)}&first=0&count=35&mmasync=1`,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          Accept: "text/html",
+          "Accept-Language": "en-US,en;q=0.9",
+        },
+        signal: AbortSignal.timeout(14_000),
+      },
+    );
+    if (!res.ok) return null;
+    const html = await res.text();
+    const entity = "&" + "quot;";
+    const marker = "murl" + entity + ":" + entity;
+    const urls: string[] = [];
+    let from = 0;
+    while (from < html.length) {
+      const i = html.indexOf(marker, from);
+      if (i < 0) break;
+      const start = i + marker.length;
+      const end = html.indexOf(entity, start);
+      if (end < 0) break;
+      const url = html.slice(start, end).replace(/&/g, "&");
+      if (url.startsWith("http") && IMAGE_HOST_OK.test(url) && !urls.includes(url)) urls.push(url);
+      from = end + entity.length;
+    }
+    return urls[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** SofaScore first on the server. In the browser, search is CORS-blocked. */
 export async function findCrestOnline(name: string): Promise<string | null> {
   const canSearchSofa = typeof window === "undefined";
@@ -456,5 +499,7 @@ export async function findCrestOnline(name: string): Promise<string | null> {
   }
   const fromWiki = await wikiBadge(name);
   if (fromWiki) return fromWiki;
-  return sportsDbBadge(name);
+  const fromDb = await sportsDbBadge(name);
+  if (fromDb) return fromDb;
+  return webImageBadge(name);
 }

@@ -113,7 +113,13 @@ async function resolveName(name: string): Promise<{ path: string | null; remote:
   const index = await loadIndex();
   const existing = resolveCrestPath(name, index.byName ?? {});
   if (existing) {
-    return { path: existing, remote: sofaMirror(existing) ?? (existing.startsWith("http") ? existing : null) };
+    const id = sofaMirror(existing);
+    const local = existing.startsWith("/crests/")
+      ? existing
+      : existing.match(/team\/(\d+)/)?.[1]
+        ? `/crests/ss-${existing.match(/team\/(\d+)/)?.[1]}.png`
+        : existing;
+    return { path: local, remote: id ?? (existing.startsWith("http") ? existing : null) };
   }
 
   const remote = await findCrestOnline(name);
@@ -129,15 +135,18 @@ async function resolveName(name: string): Promise<{ path: string | null; remote:
     try {
       await download(remote, dest);
     } catch {
+      // Still return a same-origin proxy so the browser never hotlinks SofaScore.
+      const id = remote.match(/team\/(\d+)/)?.[1];
+      const proxy = id ? `/api/crest-img?id=${id}` : `/api/crest-img?name=${encodeURIComponent(name)}`;
       index.byName ??= {};
-      for (const k of nameKeys(name)) index.byName[k] = remote;
+      for (const k of nameKeys(name)) index.byName[k] = proxy;
       await saveIndex(index);
-      return { path: remote, remote };
+      return { path: proxy, remote };
     }
   }
   const path = `/crests/${file}`;
   index.byName ??= {};
-  for (const k of nameKeys(name)) index.byName[k] = remote;
+  for (const k of nameKeys(name)) index.byName[k] = path;
   await saveIndex(index);
   return { path, remote };
 }

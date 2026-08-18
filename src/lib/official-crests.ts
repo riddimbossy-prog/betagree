@@ -141,20 +141,40 @@ const ALIAS: Record<string, string> = {
   "cd sabadell": "ce sabadell",
   "maxline vitebsk": "ml vitebsk",
   "bohemians prague 1905": "bohemians 1905",
+  sonderjyske: "sonderjyske",
+  "sonderjyske fodbold": "sonderjyske",
+  "lokomotiv pd": "lokomotiv plovdiv",
+  "imt new belgrade": "fk imt beograd",
+  "tigre victoria": "tigre",
+  "ca tigre": "tigre",
 };
 
 const PINNED: Record<string, string> = {
-  monza: "https://img.sofascore.com/api/v1/team/2729/image",
-  "ac monza": "https://img.sofascore.com/api/v1/team/2729/image",
-  "associazione calcio monza": "https://img.sofascore.com/api/v1/team/2729/image",
-  "club brugge": "https://img.sofascore.com/api/v1/team/2888/image",
-  "club brugge kv": "https://img.sofascore.com/api/v1/team/2888/image",
-  "cercle brugge": "https://img.sofascore.com/api/v1/team/2929/image",
-  "cercle brugge ksv": "https://img.sofascore.com/api/v1/team/2929/image",
-  "fenerbahce istanbul": "https://img.sofascore.com/api/v1/team/3052/image",
-  fenerbahce: "https://img.sofascore.com/api/v1/team/3052/image",
-  "besiktas istanbul": "https://img.sofascore.com/api/v1/team/3050/image",
-  besiktas: "https://img.sofascore.com/api/v1/team/3050/image",
+  monza: "/crests/ss-2729.png",
+  "ac monza": "/crests/ss-2729.png",
+  "associazione calcio monza": "/crests/ss-2729.png",
+  "club brugge": "/crests/ss-2888.png",
+  "club brugge kv": "/crests/ss-2888.png",
+  "cercle brugge": "/crests/ss-2929.png",
+  "cercle brugge ksv": "/crests/ss-2929.png",
+  "fenerbahce istanbul": "/crests/ss-3052.png",
+  fenerbahce: "/crests/ss-3052.png",
+  "besiktas istanbul": "/crests/ss-3050.png",
+  besiktas: "/crests/ss-3050.png",
+  sonderjyske: "/crests/ss-1295.png",
+  "sonderjyske fodbold": "/crests/ss-1295.png",
+  "imt new belgrade": "/crests/ss-308176.png",
+  "fk imt beograd": "/crests/ss-308176.png",
+  "lokomotiv pd": "/crests/ss-3272.png",
+  "lokomotiv plovdiv": "/crests/ss-3272.png",
+  sabadell: "/crests/ss-24335.png",
+  "cd sabadell": "/crests/ss-24335.png",
+  "ce sabadell": "/crests/ss-24335.png",
+  brondby: "/crests/ss-1281.png",
+  "brondby if": "/crests/ss-1281.png",
+  tigre: "/crests/ss-7628.png",
+  "ca tigre": "/crests/ss-7628.png",
+  "tigre victoria": "/crests/ss-7628.png",
 };
 
 export function normTeam(name: string) {
@@ -192,23 +212,44 @@ export function nameKeys(name: string): string[] {
   return [...keys];
 }
 
-/** If a local ss-ID file 404s, the SofaScore CDN still has the badge. */
-export function sofaMirror(path: string | null | undefined): string | null {
+export function sofaIdOf(path: string | null | undefined): string | null {
   if (!path) return null;
-  const id = path.match(/ss-(\d+)\.png/)?.[1] ?? path.match(/\/team\/(\d+)\/image/)?.[1];
+  return path.match(/ss-(\d+)\.png/)?.[1] ?? path.match(/\/team\/(\d+)\/image/)?.[1] ?? path.match(/[?&]id=(\d+)/)?.[1] ?? null;
+}
+
+/** SofaScore CDN — server-side download only. Never use as an <img src>. */
+export function sofaMirror(path: string | null | undefined): string | null {
+  const id = sofaIdOf(path);
   return id ? `https://img.sofascore.com/api/v1/team/${id}/image` : null;
 }
 
-export function crestCandidates(official: string | null | undefined, logo?: string | null): string[] {
+/** Same-origin file the browser can always paint (preview iframe + live). */
+export function toLocalCrest(path: string | null | undefined): string | null {
+  if (!path) return null;
+  const id = sofaIdOf(path);
+  if (id) return `/crests/ss-${id}.png`;
+  if (path.startsWith("/crests/") && !BAD_PATH.test(path)) return path;
+  return null;
+}
+
+export function crestProxy(path: string | null | undefined, name?: string): string | null {
+  const id = sofaIdOf(path);
+  if (id) return `/api/crest-img?id=${id}`;
+  if (name) return `/api/crest-img?name=${encodeURIComponent(name)}`;
+  return null;
+}
+
+export function crestCandidates(official: string | null | undefined, logo?: string | null, name?: string): string[] {
   const out: string[] = [];
   const add = (s?: string | null) => {
     if (!s || out.includes(s)) return;
+    if (s.startsWith("https://")) return;
     out.push(s);
-    const mirror = sofaMirror(s);
-    if (mirror && !out.includes(mirror)) out.push(mirror);
   };
-  add(official);
-  add(logo);
+  add(toLocalCrest(official));
+  add(crestProxy(official, name));
+  add(toLocalCrest(logo));
+  if (name && !out.some((s) => s.startsWith("/api/crest-img"))) add(crestProxy(null, name));
   return out;
 }
 
@@ -222,7 +263,8 @@ function isUsablePath(path: string | null | undefined): path is string {
   if (!path) return false;
   if (BAD_PATH.test(path)) return false;
   if (path.startsWith("/crests/")) return true;
-  if (path.startsWith("https://")) return true;
+  if (path.startsWith("/api/crest-img")) return true;
+  if (path.startsWith("https://img.sofascore.com/")) return true;
   return false;
 }
 
@@ -269,10 +311,11 @@ async function loadIndex() {
     const json = parseJsonLoose<{ byName?: Record<string, string> }>(raw, { byName: {} });
     const byName: Record<string, string> = {};
     for (const [k, v] of Object.entries(json.byName ?? {})) {
-      if (typeof v === "string" && isUsablePath(v)) byName[k] = v;
+      if (typeof v !== "string" || !isUsablePath(v)) continue;
+      byName[k] = toLocalCrest(v) ?? v;
     }
     for (const [k, path] of Object.entries(PINNED)) {
-      if (isUsablePath(path)) byName[k] = path;
+      if (isUsablePath(path)) byName[k] = toLocalCrest(path) ?? path;
     }
     if (typeof localStorage !== "undefined") {
       try {
@@ -280,7 +323,7 @@ async function loadIndex() {
           const k = localStorage.key(i);
           if (!k?.startsWith("crest:")) continue;
           const v = localStorage.getItem(k);
-          if (v && isUsablePath(v)) byName[k.slice(6)] = v;
+          if (v && isUsablePath(v)) byName[k.slice(6)] = toLocalCrest(v) ?? v;
         }
       } catch {
         /* ignore */
@@ -291,7 +334,7 @@ async function loadIndex() {
   } catch {
     const byName: Record<string, string> = {};
     for (const [k, path] of Object.entries(PINNED)) {
-      if (isUsablePath(path)) byName[k] = path;
+      if (isUsablePath(path)) byName[k] = toLocalCrest(path) ?? path;
     }
     cache = { byName };
     indexAt = Date.now();
@@ -301,8 +344,9 @@ async function loadIndex() {
 }
 
 function remember(name: string, path: string) {
-  if (!cache || !isUsablePath(path)) return;
-  for (const k of nameKeys(name)) cache.byName[k] = path;
+  const local = toLocalCrest(path) ?? (path.startsWith("/crests/") || path.startsWith("/api/crest-img") ? path : null);
+  if (!cache || !local) return;
+  for (const k of nameKeys(name)) cache.byName[k] = local;
   emitSoon();
 }
 
@@ -322,11 +366,12 @@ async function askServer(name: string): Promise<string | null> {
           .then((res) => (res.ok ? res.json() : null))
           .catch(() => null),
       )) as { path?: string; remote?: string } | null;
-      let path = api?.remote || api?.path || null;
+      let path = toLocalCrest(api?.path) ?? toLocalCrest(api?.remote) ?? crestProxy(api?.remote ?? api?.path, name);
       if (!path && typeof window !== "undefined") {
-        path = await withCrestSlot(() => findCrestOnline(name));
+        const found = await withCrestSlot(() => findCrestOnline(name));
+        path = toLocalCrest(found) ?? crestProxy(found, name);
       }
-      if (path && isUsablePath(path)) {
+      if (path) {
         remember(name, path);
         try {
           for (const k of nameKeys(name)) localStorage.setItem(`crest:${k}`, path);
@@ -350,7 +395,7 @@ async function askServer(name: string): Promise<string | null> {
 
 export function officialCrestPath(name: string): string | null {
   const path = resolveCrestPath(name, cache?.byName ?? {});
-  return sofaMirror(path) ?? path;
+  return toLocalCrest(path) ?? (path?.startsWith("/crests/") ? path : null);
 }
 
 export function useOfficialCrest(name: string): string | null {

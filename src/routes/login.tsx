@@ -9,7 +9,7 @@ function Login() {
   return (
     <div className="mx-auto grid min-h-[60vh] max-w-md place-items-center">
       <div className="w-full rounded-2xl bg-card p-6 shadow-border sm:p-8">
-        <BrandLogo className="mb-5" />
+        <BrandLogo size="hero" className="mb-5" />
         <p className="text-xs tracking-widest text-subtle uppercase">Account</p>
         <h1 className="font-display mt-2 text-3xl">Sign in</h1>
         <p className="mt-2 text-sm text-muted-foreground">
