@@ -211,14 +211,15 @@ export async function collectBoardClubs() {
   };
 }
 
-export async function fillCrests({ limit = 80 } = {}) {
+export async function fillCrests({ limit = 80, priority = [] } = {}) {
   const idx = await loadIndex();
   const byName = { ...(idx.byName ?? {}) };
   const { names, espn } = await collectBoardClubs();
+  const all = [...new Set([...priority, ...names])];
 
   const missing = [];
   const needFile = [];
-  for (const name of names) {
+  for (const name of all) {
     const path = mappedPath(byName, name);
     if (!path) {
       missing.push(name);
@@ -317,13 +318,13 @@ export async function fillCrests({ limit = 80 } = {}) {
   await rename(`${INDEX}.tmp`, INDEX);
 
   const still = [];
-  for (const name of names) {
+  for (const name of all) {
     const path = mappedPath(byName, name);
     if (!path || !(await fileOk(path))) still.push(name);
   }
 
   return {
-    clubs: names.length,
+    clubs: all.length,
     missingBefore: missing.length,
     saved,
     stillMissing: still,

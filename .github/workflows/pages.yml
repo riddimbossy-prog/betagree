@@ -6,8 +6,7 @@ on:
   schedule:
     - cron: "*/20 * * * *"
     - cron: "0 21 * * *"
-    - cron: "30 22 * * *"
-    - cron: "50 23 * * *"
+    - cron: "0 23 * * *"
   workflow_dispatch:
 
 permissions:
@@ -66,7 +65,11 @@ jobs:
         run: node scripts/fetch-streaks.mjs
         continue-on-error: true
 
-      - name: Prepare tomorrow crests
+      - name: Nightly next-day prep
+        if: >-
+          github.event.schedule == '0 21 * * *' ||
+          github.event.schedule == '0 23 * * *' ||
+          github.event_name == 'workflow_dispatch'
         run: node scripts/prepare-next-day.mjs --crests-only
         continue-on-error: true
 

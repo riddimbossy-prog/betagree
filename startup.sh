@@ -4,9 +4,6 @@ cd /workspace
 if [ -f scripts/ensure-crests.mjs ]; then
   node scripts/ensure-crests.mjs >>/tmp/crests.log 2>&1 &
 fi
-if [ -f scripts/prepare-next-day.mjs ]; then
-  node scripts/prepare-next-day.mjs >>/tmp/prepare-next-day.log 2>&1 &
-fi
 if ! grep -q watch-push-betagree /proc/*/cmdline 2>/dev/null; then
   if [ -f scripts/watch-push-betagree.sh ]; then
     sh scripts/watch-push-betagree.sh >>/tmp/betagree-push.log 2>&1 &
