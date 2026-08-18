@@ -1,14 +1,14 @@
 /* Betagree service worker — cache the desk, sync the board when the line returns. */
-const VERSION = "betagree-sw-v3";
+const VERSION = "betagree-sw-v4";
 const SHELL = `${VERSION}-shell`;
 const DATA = `${VERSION}-data`;
 const MEDIA = `${VERSION}-media`;
 
 const PRECACHE = [
-  "/crests/index.json",
   "/data/slate.json",
   "/data/streaks.json",
   "/data/trends.json",
+  "/data/league-rates.json",
   "/favicon.svg",
   "/logo.svg",
 ];
@@ -18,8 +18,12 @@ const BOARD_URLS = [
   "/data/streaks.json",
   "/data/trends.json",
   "/data/form.json",
+  "/data/form-preview.json",
+  "/data/picks.json",
+  "/data/odds.json",
   "/data/scores.json",
   "/data/ledger.json",
+  "/data/league-rates.json",
   "/api/scores",
   "/api/slate",
   "/api/streaks",
