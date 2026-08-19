@@ -105,7 +105,7 @@ export function PickProvider({ children }: { children: ReactNode }) {
                   <div className="flex items-end justify-between gap-3">
                     <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
                       <Crest name={brief.home} logo={brief.homeLogo} size="sm" className="fold:h-24 fold:w-[4.75rem]" />
-                      <span className="max-w-32 truncate text-center text-sm font-semibold">{brief.home}</span>
+                      <span className="max-w-32 text-center text-sm font-semibold leading-tight break-words">{brief.home}</span>
                     </div>
                     <div className="pb-8 text-center">
                       <p className="font-serif text-3xl italic text-or">{brief.away ? "vs" : "form"}</p>
@@ -121,7 +121,7 @@ export function PickProvider({ children }: { children: ReactNode }) {
                     {brief.away ? (
                       <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
                         <Crest name={brief.away} logo={brief.awayLogo} size="sm" className="fold:h-24 fold:w-[4.75rem]" />
-                        <span className="max-w-32 truncate text-center text-sm font-semibold">{brief.away}</span>
+                        <span className="max-w-32 text-center text-sm font-semibold leading-tight break-words">{brief.away}</span>
                       </div>
                     ) : (
                       <div className="flex-1" />

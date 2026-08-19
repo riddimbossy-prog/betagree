@@ -1,5 +1,5 @@
 import type { ConsensusItem } from "@/lib/types";
-import { Crest } from "@/components/crest";
+import { MatchSides } from "@/components/match-sides";
 import { TimeChip } from "@/components/trend-card";
 import { ConsensusChip } from "@/components/consensus-chip";
 import { usePickSheet } from "@/components/pick-sheet";
@@ -50,24 +50,23 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
         </p>
         <ConsensusChip pct={item.pct} count={item.count} coverage={item.coverage} band={band} compact />
       </div>
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <div className="flex min-w-0 flex-col items-center gap-1.5">
-          <Crest name={f.away.name} logo={f.away.logo} size="sm" className="fold:h-24 fold:w-[4.75rem]" />
-          <span className="max-w-20 truncate text-center text-[11px] fold:max-w-28 fold:text-xs">{f.away.name}</span>
-        </div>
-        <div className="text-center">
-          <p className="text-2xl font-bold tabular fold:text-3xl">
-            {f.away.score ?? "–"} <span className="text-white/50">:</span> {f.home.score ?? "–"}
-          </p>
-          <div className="mt-2 flex justify-center">
-            <TimeChip raw={null} iso={f.start} invert />
-          </div>
-        </div>
-        <div className="flex min-w-0 flex-col items-center gap-1.5">
-          <Crest name={f.home.name} logo={f.home.logo} size="sm" className="fold:h-24 fold:w-[4.75rem]" />
-          <span className="max-w-20 truncate text-center text-[11px] fold:max-w-28 fold:text-xs">{f.home.name}</span>
-        </div>
-      </div>
+      <MatchSides
+        className="mt-4"
+        home={f.home.name}
+        away={f.away.name}
+        homeLogo={f.home.logo}
+        awayLogo={f.away.logo}
+        center={
+          <>
+            <p className="text-2xl font-bold tabular fold:text-3xl">
+              {f.home.score ?? "–"} <span className="text-white/50">:</span> {f.away.score ?? "–"}
+            </p>
+            <div className="mt-2 flex justify-center">
+              <TimeChip raw={null} iso={f.start} invert compact />
+            </div>
+          </>
+        }
+      />
       <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
         <span className="odds-chip">{formatDecimal(f.away.ml)}</span>
         <span className="odds-chip">{formatDecimal(f.drawMl)}</span>

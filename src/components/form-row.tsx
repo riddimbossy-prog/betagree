@@ -1,5 +1,6 @@
 import { ConsensusChip } from "@/components/consensus-chip";
 import { Crest } from "@/components/crest";
+import { MatchSides } from "@/components/match-sides";
 import { usePickSheet } from "@/components/pick-sheet";
 import { SettleChip } from "@/components/settle-chip";
 import { TimeChip } from "@/components/trend-card";
@@ -48,9 +49,9 @@ export function FormRowCard({
     >
       <div className="flex w-full min-w-0 items-center gap-2 fold:gap-3">
         <span className="w-6 shrink-0 text-base font-semibold tabular text-subtle fold:w-8 fold:text-lg">{row.rank}</span>
-        <Crest name={row.team} logo={row.logo} size="xs" className="fold:h-16 fold:w-[3.25rem]" />
+        <Crest name={row.team} logo={row.logo} size="xs" className="tab:h-16 tab:w-[3.25rem]" />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold fold:text-base">{row.team}</span>
+          <span className="block text-sm font-semibold leading-tight break-words fold:text-base">{row.team}</span>
           <span className={cn("block truncate text-xs", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
             {row.league}
             {row.opponent ? ` · vs ${row.opponent}` : ""}
@@ -100,29 +101,20 @@ export function FormMatchCard({
       className="glass glass-lift block w-full min-w-0 overflow-hidden rounded-3xl p-3 text-left fold:p-4"
     >
       <div className="flex flex-wrap items-center gap-2">
-        {row.kickoff ? <TimeChip raw={null} iso={row.kickoff} /> : null}
-        <span className="min-w-0 flex-1 truncate text-sm text-subtle">{row.league}</span>
+        {row.kickoff ? <TimeChip raw={null} iso={row.kickoff} compact /> : null}
+        <span className="min-w-0 flex-1 text-sm leading-tight text-subtle break-words">{row.league}</span>
         {row.pct != null ? (
           <ConsensusChip pct={row.pct} count={row.tipCount ?? 0} coverage={row.coverage ?? 0} band={row.band} compact />
         ) : null}
       </div>
-      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 fold:gap-3">
-        <span className="flex min-w-0 items-center gap-1.5">
-          <Crest name={row.team} logo={row.homeLogo ?? row.logo} size="xs" className="fold:h-16 fold:w-[3.25rem]" />
-          <span className="min-w-0">
-            <span className="block truncate text-xs font-medium fold:text-base">{row.team}</span>
-            <span className="block text-[11px] text-or tabular">{row.homeForm ?? row.display} {unit}</span>
-          </span>
-        </span>
-        <span className="px-1 text-xs font-semibold uppercase tracking-wide text-subtle">vs</span>
-        <span className="flex min-w-0 items-center justify-end gap-1.5">
-          <span className="min-w-0 text-right">
-            <span className="block truncate text-xs font-medium fold:text-base">{row.opponent}</span>
-            <span className="block text-[11px] text-or tabular">{row.awayForm ?? "—"} {unit}</span>
-          </span>
-          <Crest name={row.opponent ?? ""} logo={row.awayLogo} size="xs" className="fold:h-16 fold:w-[3.25rem]" />
-        </span>
-      </div>
+      <MatchSides
+        className="mt-3"
+        home={row.team}
+        away={row.opponent ?? "—"}
+        homeLogo={row.homeLogo ?? row.logo}
+        awayLogo={row.awayLogo}
+        center={<span className="text-xs font-semibold uppercase tracking-wide text-subtle">vs</span>}
+      />
       <div className="mt-3 flex flex-wrap items-center gap-2">
         {row.settle ? <SettleChip status={row.settle} compact /> : null}
         {row.price != null ? <span className="odds-chip">{row.price.toFixed(2)}</span> : null}

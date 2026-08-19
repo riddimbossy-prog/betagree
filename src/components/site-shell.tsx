@@ -12,11 +12,11 @@ import { preloadOfficialCrests } from "@/lib/official-crests";
 import { TodayFilterProvider } from "@/lib/today-filter";
 
 const NAV = [
-  { to: "/", label: "Today", icon: Home },
-  { to: "/live", label: "In play", icon: Radio },
-  { to: "/banker", label: "Bankers", icon: Sparkles },
-  { to: "/form", label: "Form", icon: Flame },
-  { to: "/streaks", label: "Streaks", icon: Zap },
+  { to: "/", label: "Today", short: "Today", icon: Home },
+  { to: "/live", label: "Live", short: "Live", icon: Radio },
+  { to: "/banker", label: "Bankers", short: "Bankers", icon: Sparkles },
+  { to: "/form", label: "Form", short: "Form", icon: Flame },
+  { to: "/streaks", label: "Streaks", short: "Streaks", icon: Zap },
 ] as const;
 
 export function SiteShell({ children }: { children: ReactNode }) {
@@ -104,8 +104,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
               )}
             >
               <Icon className="size-5" />
-              <span className="tab-label mt-0.5 hidden text-[10px] font-semibold tracking-wide uppercase fold:inline">
-                {item.label}
+              <span className="tab-label mt-0.5 text-[9px] font-semibold tracking-wide uppercase fold:text-[10px]">
+                {item.short}
               </span>
             </Link>
           );

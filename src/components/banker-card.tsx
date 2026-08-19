@@ -1,4 +1,4 @@
-import { Crest } from "@/components/crest";
+import { MatchSides } from "@/components/match-sides";
 import { TimeChip } from "@/components/trend-card";
 import type { BankerRulePick } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -35,45 +35,30 @@ function shortPick(pick: BankerRulePick, kind: string) {
   return pick.selection || "Banker";
 }
 
-function TeamCol({
-  name,
-  logo,
-  align,
-}: {
-  name: string;
-  logo: string | null;
-  align: "left" | "right";
-}) {
-  return (
-    <div className={cn("flex min-w-0 items-center gap-2", align === "right" && "flex-row-reverse text-right")}>
-      <Crest name={name} logo={logo} size="xs" className="shrink-0 fold:h-16 fold:w-[3.25rem]" />
-      <p className="min-w-0 truncate text-sm font-semibold fold:text-base">{name}</p>
-    </div>
-  );
-}
-
 export function BankerCard({ pick }: { pick: BankerRulePick }) {
   const kind = pickKind(pick);
-  const sameLogo = Boolean(pick.homeLogo && pick.homeLogo === pick.awayLogo);
   return (
     <article className="glass glass-lift block w-full min-w-0 overflow-hidden rounded-3xl p-3 text-left fold:p-5">
       <div className="flex items-center justify-between gap-2">
         <span className={cn("shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide uppercase", PICK_CHIP[kind] ?? "glass")}>
           {PICK_LABEL[kind] ?? "Banker"}
         </span>
-        <TimeChip iso={pick.kickoff} />
+        <TimeChip iso={pick.kickoff} compact />
       </div>
 
-      <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 fold:gap-3">
-        <TeamCol name={pick.home} logo={sameLogo ? null : pick.homeLogo} align="left" />
-        <div className="flex min-w-[5.5rem] flex-col items-center px-1">
-          <span className="max-w-[9rem] text-center text-sm font-semibold leading-tight fold:text-base">
-            {shortPick(pick, kind)}
-          </span>
-          <span className="mt-1 max-w-full truncate text-[11px] text-muted-foreground">{pick.league}</span>
-        </div>
-        <TeamCol name={pick.away} logo={sameLogo ? null : pick.awayLogo} align="right" />
-      </div>
+      <MatchSides
+        className="mt-3"
+        home={pick.home}
+        away={pick.away}
+        homeLogo={pick.homeLogo}
+        awayLogo={pick.awayLogo}
+        center={
+          <>
+            <span className="text-center text-sm font-semibold leading-tight fold:text-base">{shortPick(pick, kind)}</span>
+            <span className="mt-1 w-full text-center text-[11px] leading-tight text-muted-foreground break-words">{pick.league}</span>
+          </>
+        }
+      />
     </article>
   );
 }

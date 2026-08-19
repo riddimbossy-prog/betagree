@@ -1,4 +1,5 @@
-export function PriceChip({ value }: { value: number | string }) {
+export function PriceChip({ value }: { value: number | string | null | undefined }) {
+  if (value == null || value === "") return null;
   const label = typeof value === "number" && Number.isFinite(value) ? value.toFixed(2) : String(value);
   return (
     <span className="price-chip">

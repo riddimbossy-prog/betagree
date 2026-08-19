@@ -1,6 +1,6 @@
 import type { ConsensusItem, Fixture } from "@/lib/types";
 import { formatDecimal } from "@/lib/odds";
-import { Crest } from "@/components/crest";
+import { MatchSides } from "@/components/match-sides";
 import { TimeChip } from "@/components/trend-card";
 import { ConsensusChip } from "@/components/consensus-chip";
 import { usePickSheet } from "@/components/pick-sheet";
@@ -69,9 +69,9 @@ export function FixtureList({
                     {f.detail || "Live"}
                   </span>
                 ) : (
-                  <TimeChip raw={null} iso={f.start} />
+                  <TimeChip raw={null} iso={f.start} compact />
                 )}
-                <span className="min-w-0 flex-1 truncate text-sm text-subtle">{f.league}</span>
+                <span className="min-w-0 flex-1 text-sm leading-tight text-subtle break-words">{f.league}</span>
                 <span className="shrink-0">
                   <ConsensusChip
                     pct={tip.pct}
@@ -82,19 +82,18 @@ export function FixtureList({
                   />
                 </span>
               </div>
-              <div className="mt-3 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1 fold:gap-3">
-                <span className="flex min-w-0 items-center gap-1.5 fold:gap-2">
-                  <Crest name={f.away.name} logo={f.away.logo} size="xs" className="fold:h-16 fold:w-[3.25rem]" />
-                  <span className="truncate text-sm font-medium fold:text-lg">{f.away.name}</span>
-                </span>
-                <span className="px-1 text-base font-bold tabular fold:text-2xl">
-                  {f.away.score ?? "–"} : {f.home.score ?? "–"}
-                </span>
-                <span className="flex min-w-0 items-center justify-end gap-1.5 fold:gap-2">
-                  <span className="truncate text-right text-sm font-medium fold:text-lg">{f.home.name}</span>
-                  <Crest name={f.home.name} logo={f.home.logo} size="xs" className="fold:h-16 fold:w-[3.25rem]" />
-                </span>
-              </div>
+              <MatchSides
+                className="mt-3"
+                home={f.home.name}
+                away={f.away.name}
+                homeLogo={f.home.logo}
+                awayLogo={f.away.logo}
+                center={
+                  <span className="text-base font-bold tabular fold:text-2xl">
+                    {f.home.score ?? "–"} : {f.away.score ?? "–"}
+                  </span>
+                }
+              />
               <div className="mt-3 flex flex-wrap justify-center gap-2">
                 <span className="odds-chip bg-secondary">{formatDecimal(f.away.ml)}</span>
                 <span className="odds-chip bg-secondary">{formatDecimal(f.drawMl)}</span>

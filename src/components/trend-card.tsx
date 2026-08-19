@@ -1,4 +1,4 @@
-import { Crest } from "@/components/crest";
+import { MatchSides } from "@/components/match-sides";
 import { PriceChip } from "@/components/price-chip";
 import { briefFromTrend, usePickSheet } from "@/components/pick-sheet";
 import { formatBoardTime } from "@/lib/format";
@@ -36,20 +36,22 @@ export function TimeChip({
   raw,
   iso,
   invert,
+  compact,
 }: {
   raw?: string | null;
   iso?: string | null;
   invert?: boolean;
+  compact?: boolean;
 }) {
   const { clock, day } = formatBoardTime(raw, iso);
   return (
     <span
       className={cn(
-        "inline-flex items-baseline gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide uppercase tabular",
+        "inline-flex shrink-0 items-baseline gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide uppercase tabular",
         invert ? "bg-primary-foreground/15 text-primary-foreground backdrop-blur-md" : "glass-or text-or",
       )}
     >
-      {day ? <span className="font-medium opacity-80">{day}</span> : null}
+      {day ? <span className={cn("font-medium opacity-80", compact && "hidden fold:inline")}>{day}</span> : null}
       <span>{clock}</span>
     </span>
   );
@@ -66,21 +68,23 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
         highlight ? "glass-purpure text-primary-foreground" : "glass",
       )}
     >
-      <div className="mt-1 flex items-center gap-3">
-        <Crest name={pick.home} logo={pick.homeLogo && pick.homeLogo === pick.awayLogo ? null : pick.homeLogo} size="xs" className="shrink-0 fold:h-16 fold:w-[3.25rem]" />
-        <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-          <PriceChip value={pick.odds} />
-          <TimeChip raw={pick.kickoff} iso={pick.kickoffIso} invert={highlight} />
-          <span className={cn("max-w-full truncate text-center text-sm", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
-            {pick.league}
-          </span>
-        </div>
-        <Crest name={pick.away} logo={pick.awayLogo && pick.awayLogo === pick.homeLogo ? null : pick.awayLogo} size="xs" className="shrink-0 fold:h-16 fold:w-[3.25rem]" />
-      </div>
-      <p className="mt-3 truncate text-center text-base font-semibold">
-        {pick.home} <span className="text-subtle">vs</span> {pick.away}
-      </p>
-      <p className="mt-3 text-center text-lg font-semibold">{pick.label}</p>
+      <MatchSides
+        className="mt-1"
+        home={pick.home}
+        away={pick.away}
+        homeLogo={pick.homeLogo}
+        awayLogo={pick.awayLogo}
+        center={
+          <>
+            <PriceChip value={pick.odds} />
+            <TimeChip raw={pick.kickoff} iso={pick.kickoffIso} invert={highlight} compact />
+            <span className={cn("mt-1 w-full text-center text-[11px] leading-tight break-words", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
+              {pick.league}
+            </span>
+          </>
+        }
+      />
+      <p className="mt-3 text-center text-lg font-semibold leading-tight">{pick.label}</p>
     </button>
   );
 }
