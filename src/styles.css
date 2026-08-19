@@ -513,10 +513,11 @@
   font-size: clamp(1.35rem, 8.4vw, 1.85rem);
 }
 .brand-ball {
-  width: 0.86em;
-  height: 0.86em;
-  margin: 0 0.02em;
+  width: 0.56em;
+  height: 0.56em;
+  margin: 0 0.01em 0.02em;
   flex-shrink: 0;
+  display: block;
 }
 .brand-tag {
   display: block;
