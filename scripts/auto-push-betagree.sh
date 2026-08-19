@@ -22,6 +22,10 @@ cp -a "$SRC/public/crests/." "$DEST/public/crests/"
 cp -a "$SRC/public/data/." "$DEST/public/data/"
 cp -a "$SRC/public/brand/." "$DEST/public/brand/"
 [ -f "$SRC/public/app/betagree.apk" ] && cp -a "$SRC/public/app/betagree.apk" "$DEST/public/app/betagree.apk"
+if [ -d "$SRC/public/app/play" ]; then
+  mkdir -p "$DEST/public/app/play"
+  cp -a "$SRC/public/app/play/." "$DEST/public/app/play/"
+fi
 [ -f "$SRC/public/manifest.webmanifest" ] && cp -a "$SRC/public/manifest.webmanifest" "$DEST/public/manifest.webmanifest"
 [ -f "$SRC/public/apple-touch-icon.png" ] && cp -a "$SRC/public/apple-touch-icon.png" "$DEST/public/apple-touch-icon.png"
 if [ -f "$DEST/.github/workflows/pages.yml" ] && [ -f "$SRC/scripts/prepare-next-day.mjs" ]; then

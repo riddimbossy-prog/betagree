@@ -20,6 +20,7 @@ import { Route as LiveRouteImport } from './routes/live'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OddsRouteImport } from './routes/odds'
 import { Route as PlaybookRouteImport } from './routes/playbook'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as StreaksRouteImport } from './routes/streaks'
 import { Route as TipstersRouteImport } from './routes/tipsters'
 import { Route as TrendsRouteImport } from './routes/trends'
@@ -92,6 +93,11 @@ const OddsRoute = OddsRouteImport.update({
 const PlaybookRoute = PlaybookRouteImport.update({
   id: '/playbook',
   path: '/playbook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StreaksRoute = StreaksRouteImport.update({
@@ -197,6 +203,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
+  '/privacy': typeof PrivacyRoute
   '/streaks': typeof StreaksRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/trends': typeof TrendsRoute
@@ -227,6 +234,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
+  '/privacy': typeof PrivacyRoute
   '/streaks': typeof StreaksRoute
   '/trends': typeof TrendsRoute
   '/api/bankers': typeof ApiBankersRoute
@@ -258,6 +266,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
+  '/privacy': typeof PrivacyRoute
   '/streaks': typeof StreaksRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/trends': typeof TrendsRoute
@@ -291,6 +300,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/odds'
     | '/playbook'
+    | '/privacy'
     | '/streaks'
     | '/tipsters'
     | '/trends'
@@ -321,6 +331,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/odds'
     | '/playbook'
+    | '/privacy'
     | '/streaks'
     | '/trends'
     | '/api/bankers'
@@ -351,6 +362,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/odds'
     | '/playbook'
+    | '/privacy'
     | '/streaks'
     | '/tipsters'
     | '/trends'
@@ -383,6 +395,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OddsRoute: typeof OddsRoute
   PlaybookRoute: typeof PlaybookRoute
+  PrivacyRoute: typeof PrivacyRoute
   StreaksRoute: typeof StreaksRoute
   TipstersRoute: typeof TipstersRouteWithChildren
   TrendsRoute: typeof TrendsRoute
@@ -476,6 +489,13 @@ declare module '@tanstack/react-router' {
       path: '/playbook'
       fullPath: '/playbook'
       preLoaderRoute: typeof PlaybookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/streaks': {
@@ -647,6 +667,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OddsRoute: OddsRoute,
   PlaybookRoute: PlaybookRoute,
+  PrivacyRoute: PrivacyRoute,
   StreaksRoute: StreaksRoute,
   TipstersRoute: TipstersRouteWithChildren,
   TrendsRoute: TrendsRoute,

@@ -149,6 +149,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
             <Link to="/tipsters" className="hover:text-foreground">
               Sites
             </Link>
+            <Link to="/privacy" className="hover:text-foreground">
+              Privacy
+            </Link>
             <Link to="/get-app" className="hover:text-foreground">
               Get the app
             </Link>
