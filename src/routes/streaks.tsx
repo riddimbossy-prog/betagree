@@ -75,6 +75,11 @@ function StreaksPage() {
         <p className="mt-2 text-base text-subtle">
           {loading ? "Loading…" : `${listed.length} in this view`}
         </p>
+        <p className="mt-3">
+          <Link to="/banker" className="text-sm text-muted-foreground">
+            Bankers
+          </Link>
+        </p>
       </header>
 
       <div className="chip-row" role="group" aria-label="When">

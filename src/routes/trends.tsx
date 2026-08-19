@@ -25,9 +25,6 @@ function TrendsPage() {
     ) as Record<TrendCategory, TrendPick[]>;
   }, [data, todayOnly]);
   const total = cats ? Object.values(cats).reduce((a, b) => a + b.length, 0) : 0;
-  const bankers = (data?.bankers ?? []).filter(
-    (pick) => !todayOnly || isPlayingToday(pick.kickoffIso, pick.kickoff, data?.date),
-  );
   const visible = CATEGORY_META.filter((c) => (cats?.[c.id]?.length ?? 0) > 0);
 
   return (
@@ -38,7 +35,12 @@ function TrendsPage() {
           Today <span className="font-serif italic font-normal">trends</span>
         </h1>
         <p className="mt-2 text-sm text-subtle">
-          {loading ? "Loading…" : `${total} picks · ${bankers.length} bankers`}
+          {loading ? "Loading…" : `${total} picks`}
+        </p>
+        <p className="mt-3">
+          <Link to="/banker" className="text-sm text-muted-foreground">
+            Bankers
+          </Link>
         </p>
       </header>
 
@@ -62,8 +64,8 @@ function TrendsPage() {
               </a>
             );
           })}
-          <Link to="/banker" className="glass-purpure inline-flex shrink-0 items-center rounded-full px-4 py-2 text-sm font-semibold text-primary-foreground">
-            Bankers {bankers.length}
+          <Link to="/banker" className="glass-or inline-flex shrink-0 items-center rounded-full px-4 py-2 text-sm font-semibold text-or">
+            Bankers
           </Link>
         </div>
       ) : null}

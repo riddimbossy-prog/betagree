@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, CalendarDays, Flame, Home, Radio, Zap } from "lucide-react";
+import { Bell, Flame, Home, Radio, Sparkles, Zap } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
@@ -14,7 +14,7 @@ import { TodayFilterProvider } from "@/lib/today-filter";
 const NAV = [
   { to: "/", label: "Today", icon: Home },
   { to: "/live", label: "In play", icon: Radio },
-  { to: "/fixtures", label: "Fixtures", icon: CalendarDays },
+  { to: "/banker", label: "Bankers", icon: Sparkles },
   { to: "/form", label: "Form", icon: Flame },
   { to: "/streaks", label: "Streaks", icon: Zap },
 ] as const;
@@ -124,8 +124,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
             <Link to="/trends" className="hover:text-foreground">
               Trends
             </Link>
-            <Link to="/banker" className="hover:text-foreground">
-              Bankers
+            <Link to="/fixtures" className="hover:text-foreground">
+              Fixtures
             </Link>
             <Link to="/odds" className="hover:text-foreground">
               Filter
