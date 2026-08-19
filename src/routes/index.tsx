@@ -237,7 +237,7 @@ function Home() {
           </div>
           <div className="grid gap-3 fold:grid-cols-2">
             {bankers.slice(0, 4).map((pick) => (
-              <BankerCard key={`${pick.fixtureId}-${pick.rule}`} pick={pick} />
+              <BankerCard key={`${pick.fixtureId}-${pick.rule}`} pick={pick} compact />
             ))}
           </div>
         </section>
