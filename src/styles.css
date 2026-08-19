@@ -501,7 +501,7 @@
 }
 .brand-word {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   color: #ffffff;
   font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   font-weight: 800;
@@ -515,9 +515,10 @@
 .brand-ball {
   width: 0.56em;
   height: 0.56em;
-  margin: 0 0.01em 0.02em;
+  margin: 0 0.04em;
   flex-shrink: 0;
   display: block;
+  transform: translateY(0.08em);
 }
 .brand-tag {
   display: block;
