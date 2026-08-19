@@ -229,7 +229,7 @@ function Home() {
         <section>
           <div className="mb-4 flex items-end justify-between">
             <h2 className="text-2xl font-semibold">
-              Banker <span className="font-serif italic font-normal">rules</span>
+              Banker <span className="font-serif italic font-normal">picks</span>
             </h2>
             <Link to="/banker" className="text-sm text-muted-foreground">
               Banker desk
@@ -237,7 +237,7 @@ function Home() {
           </div>
           <div className="grid gap-3 fold:grid-cols-2">
             {bankers.slice(0, 4).map((pick) => (
-              <BankerCard key={`${pick.fixtureId}-${pick.rule}`} pick={pick} compact />
+              <BankerCard key={`${pick.fixtureId}-${pick.selection}`} pick={pick} />
             ))}
           </div>
         </section>

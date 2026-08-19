@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { BankerCard, RULE_LABEL, RULE_ORDER } from "@/components/banker-card";
+import { BankerCard, PICK_LABEL, PICK_ORDER, pickKind } from "@/components/banker-card";
 import { BoardState, LiveBar } from "@/components/live-bar";
 import { isPlayingToday, isPlayingTomorrow } from "@/lib/format";
 import { useBankers } from "@/lib/live/use-live";
@@ -13,7 +13,7 @@ type WhenFilter = "today" | "tomorrow" | "all";
 export function BankerPage() {
   const { data, error, loading, reload } = useBankers();
   const [when, setWhen] = useState<WhenFilter>("tomorrow");
-  const [rule, setRule] = useState("all");
+  const [kind, setKind] = useState("all");
 
   const picks = data?.picks ?? [];
   const todayN = picks.filter((p) => isPlayingToday(p.kickoff)).length;
@@ -27,24 +27,27 @@ export function BankerPage() {
     });
   }, [picks, when]);
 
-  const visible = useMemo(() => (rule === "all" ? dated : dated.filter((p) => p.rule === rule)), [dated, rule]);
+  const visible = useMemo(
+    () => (kind === "all" ? dated : dated.filter((p) => pickKind(p) === kind)),
+    [dated, kind],
+  );
 
   const grouped = useMemo(() => {
     const by = new Map<string, typeof visible>();
     for (const pick of visible) {
-      const list = by.get(pick.rule) ?? [];
+      const key = pickKind(pick);
+      const list = by.get(key) ?? [];
       list.push(pick);
-      by.set(pick.rule, list);
+      by.set(key, list);
     }
-    const keys = [
-      ...RULE_ORDER.filter((id) => by.has(id)),
-      ...[...by.keys()].filter((id) => !RULE_ORDER.includes(id as (typeof RULE_ORDER)[number])),
-    ];
-    return keys.map((id) => ({ id, label: RULE_LABEL[id] ?? id, picks: by.get(id) ?? [] }));
+    return PICK_ORDER.filter((id) => by.has(id)).map((id) => ({
+      id,
+      label: PICK_LABEL[id],
+      picks: by.get(id) ?? [],
+    }));
   }, [visible]);
 
-  const rules = RULE_ORDER.filter((id) => dated.some((p) => p.rule === id));
-  const skips = data?.meta?.skips ?? {};
+  const kinds = PICK_ORDER.filter((id) => dated.some((p) => pickKind(p) === id));
 
   return (
     <div className="flex flex-col gap-5 fold:gap-8">
@@ -53,9 +56,7 @@ export function BankerPage() {
         <h1 className="mt-2 text-3xl font-semibold fold:text-5xl">
           Banker <span className="font-serif italic font-normal">desk</span>
         </h1>
-        <p className="mt-2 text-sm text-subtle">
-          {loading ? "Loading…" : `${visible.length} signal${visible.length === 1 ? "" : "s"} · last 5 home vs last 5 away`}
-        </p>
+        <p className="mt-2 text-sm text-subtle">{loading ? "Loading…" : `${visible.length} on the board`}</p>
       </header>
 
       <div className="chip-row" role="group" aria-label="When">
@@ -81,31 +82,21 @@ export function BankerPage() {
         ))}
       </div>
 
-      {rules.length ? (
-        <div className="chip-row" role="group" aria-label="Rule">
-          <button
-            type="button"
-            onClick={() => setRule("all")}
-            className={cn(
-              "inline-flex shrink-0 items-center rounded-full px-4 py-2 text-sm",
-              rule === "all" ? "glass-purpure font-semibold text-primary-foreground" : "glass text-muted-foreground",
-            )}
-          >
-            All rules
-          </button>
-          {rules.map((id) => {
-            const n = dated.filter((p) => p.rule === id).length;
+      {kinds.length > 1 ? (
+        <div className="chip-row" role="group" aria-label="Pick">
+          {kinds.map((id) => {
+            const n = dated.filter((p) => pickKind(p) === id).length;
             return (
               <button
                 key={id}
                 type="button"
-                onClick={() => setRule(rule === id ? "all" : id)}
+                onClick={() => setKind(kind === id ? "all" : id)}
                 className={cn(
                   "inline-flex shrink-0 items-center rounded-full px-4 py-2 text-sm",
-                  rule === id ? "glass-purpure font-semibold text-primary-foreground" : "glass text-muted-foreground",
+                  kind === id ? "glass-purpure font-semibold text-primary-foreground" : "glass text-muted-foreground",
                 )}
               >
-                {RULE_LABEL[id] ?? id}
+                {PICK_LABEL[id]}
                 <span className="ml-2 tabular">{n}</span>
               </button>
             );
@@ -113,25 +104,11 @@ export function BankerPage() {
         </div>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {[
-          ["Qualified", picks.length],
-          ["Early season", skips["early-season"] ?? 0],
-          ["Home under 1 PPG", skips["home-under-1-ppg"] ?? 0],
-          ["Split top 5", skips["both-top-five"] ?? 0],
-        ].map(([label, n]) => (
-          <div key={String(label)} className="glass rounded-2xl px-3 py-2.5">
-            <small className="block text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">{label}</small>
-            <b className="tabular text-xl">{n}</b>
-          </div>
-        ))}
-      </div>
-
       <BoardState
         loading={loading && !data}
         error={error}
         empty={!loading && !error && visible.length === 0}
-        emptyLabel={when === "today" ? "No banker passed for today." : "No fixture passed the banker rules."}
+        emptyLabel={when === "today" ? "No bankers today." : "No bankers listed."}
         onRetry={reload}
       />
 
@@ -139,12 +116,11 @@ export function BankerPage() {
         <section key={section.id}>
           <h2 className="text-2xl font-semibold">
             {section.label.split(" ")[0]}{" "}
-            <span className="font-serif italic font-normal">{section.label.split(" ").slice(1).join(" ") || "rule"}</span>
-            <span className="ml-2 text-base font-medium text-muted-foreground tabular">{section.picks.length}</span>
+            <span className="font-serif italic font-normal">{section.label.split(" ").slice(1).join(" ") || "picks"}</span>
           </h2>
           <ul className="mt-3 grid gap-3 fold:grid-cols-2">
             {section.picks.map((pick) => (
-              <li key={`${pick.fixtureId}-${pick.rule}`}>
+              <li key={`${pick.fixtureId}-${pick.selection}`}>
                 <BankerCard pick={pick} />
               </li>
             ))}

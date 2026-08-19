@@ -114,10 +114,34 @@ export async function buildBankerBoard({ fixtures = [], date, dateLabel } = {}) 
     date: day,
     dateLabel: dateLabel || day,
     fetchedAt: new Date().toISOString(),
-    engine: "banker-rules-v2",
     scanned: fixtures.length,
     analyzed: ready.length,
-    picks: built.picks,
-    meta: built.meta,
+    picks: built.picks.map(publicPick),
+    meta: { count: built.picks.length },
+  };
+}
+
+function publicPick(p) {
+  const kind =
+    p.rule === "HOME_STRAIGHT_WIN"
+      ? "win"
+      : p.rule === "AWAY_TEAM_NOT_TO_WIN"
+        ? "not-win"
+        : p.selection === "Over 2.5" || p.rule === "BALANCED_HIGH_SCORING_OVER25"
+          ? "over25"
+          : "over15";
+  return {
+    fixtureId: p.fixtureId,
+    league: p.league,
+    country: p.country,
+    kickoff: p.kickoff,
+    home: p.home,
+    away: p.away,
+    homeLogo: p.homeLogo,
+    awayLogo: p.awayLogo,
+    kind,
+    market: p.market,
+    selection: p.selection,
+    label: p.displaySelection || p.selection,
   };
 }

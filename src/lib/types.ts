@@ -235,29 +235,31 @@ export type BankerRulePick = {
   away: string;
   homeLogo: string | null;
   awayLogo: string | null;
-  rule: BankerRuleId | string;
+  kind?: "win" | "not-win" | "over25" | "over15" | string;
+  rule?: BankerRuleId | string;
   market: string;
   selection: string;
-  displaySelection: string;
-  priority: number;
-  reasons: string[];
+  label?: string;
+  displaySelection?: string;
+  priority?: number;
+  reasons?: string[];
   ruleMeta?: Record<string, unknown>;
   alsoQualified?: string[];
-  metrics: { home: BankerMetrics; away: BankerMetrics; league: BankerLeagueProfile };
+  metrics?: { home: BankerMetrics; away: BankerMetrics; league: BankerLeagueProfile };
   homeSplit?: { position?: number; size?: number } | null;
   awaySplit?: { position?: number; size?: number } | null;
-  engine: "banker-rules-v2" | string;
+  engine?: string;
 };
 
 export type BankersPayload = {
   date: string;
   dateLabel: string;
   fetchedAt: string;
-  engine: "banker-rules-v2" | string;
+  engine?: string;
   scanned?: number;
   analyzed?: number;
   picks: BankerRulePick[];
-  meta: { engine: string; count: number; skips: Record<string, number> };
+  meta?: { engine?: string; count?: number; skips?: Record<string, number> };
 };
 
 export type TrendsPayload = {
