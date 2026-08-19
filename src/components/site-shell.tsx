@@ -9,6 +9,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { InstallGate } from "@/components/install-gate";
 import { PickProvider } from "@/components/pick-sheet";
 import { PlayingTodayChip } from "@/components/playing-today";
+import { applyFoldMode } from "@/lib/fold-mode";
 import { preloadOfficialCrests } from "@/lib/official-crests";
 import { TodayFilterProvider } from "@/lib/today-filter";
 
@@ -23,6 +24,10 @@ const NAV = [
 export function SiteShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   useEffect(() => {
+    applyFoldMode();
+    const onResize = () => applyFoldMode();
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
     const w = window as Window & {
       requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
       cancelIdleCallback?: (id: number) => void;
@@ -31,6 +36,8 @@ export function SiteShell({ children }: { children: ReactNode }) {
       ? w.requestIdleCallback(() => preloadOfficialCrests(), { timeout: 2500 })
       : window.setTimeout(() => preloadOfficialCrests(), 1200);
     return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
       if (w.cancelIdleCallback && typeof id === "number") w.cancelIdleCallback(id);
       else window.clearTimeout(id);
     };

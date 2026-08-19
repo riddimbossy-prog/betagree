@@ -412,14 +412,85 @@
   .page-pad { padding-bottom: calc(5.4rem + env(safe-area-inset-bottom)); }
 }
 
-@media (max-width: 22.5rem) {
-  /* Z Fold cover */
+@media (max-width: 26.85rem) {
+  /* Fold cover + tall phones */
   .live-pill { padding-inline: 0.65rem; }
   .brand-lockup-header .brand-tag { display: none; }
   .brand-lockup-header { height: 34px; padding-inline: 0.65rem; }
   .brand-lockup-header .brand-word { font-size: 0.9rem; }
-  .tab-dock { width: min(96%, 21.5rem); gap: 0.08rem; padding: 0.22rem; }
+  .tab-dock { width: min(96%, 22rem); gap: 0.08rem; padding: 0.22rem; }
   .tab-dock a { min-width: 0; padding-inline: 0.1rem; }
+}
+
+/* Outer screen: tall and narrow */
+html[data-fold="cover"] .brand-lockup-header { height: 32px; padding-inline: 0.6rem; }
+html[data-fold="cover"] .brand-lockup-header .brand-word { font-size: 0.86rem; }
+html[data-fold="cover"] .brand-lockup-header .brand-tag { display: none; }
+html[data-fold="cover"] header .mx-auto { padding-inline: 0.55rem; padding-block: 0.3rem; }
+html[data-fold="cover"] .live-pill { display: none; }
+html[data-fold="cover"] .page-pad {
+  padding-inline: 0.6rem;
+  padding-top: 0.45rem;
+  padding-bottom: calc(5.35rem + env(safe-area-inset-bottom));
+}
+html[data-fold="cover"] .analysis-hub h1 { font-size: 1.38rem; }
+html[data-fold="cover"] .analysis-hub .mt-3 { margin-top: 0.45rem; }
+html[data-fold="cover"] .analysis-card { padding: 0.7rem 0.8rem; border-radius: 1.25rem; }
+html[data-fold="cover"] .analysis-card-body { display: none; }
+html[data-fold="cover"] .analysis-card-title { font-size: 1.05rem; }
+html[data-fold="cover"] .analysis-card-icon { width: 2.25rem; height: 2.25rem; }
+html[data-fold="cover"] .tab-dock {
+  width: calc(100% - 0.55rem);
+  max-width: 24.5rem;
+  padding: 0.18rem;
+  gap: 0.04rem;
+  bottom: max(0.28rem, env(safe-area-inset-bottom));
+}
+html[data-fold="cover"] .tab-dock a { min-height: 2.6rem; }
+html[data-fold="cover"] .chip-row > * { min-height: 2.35rem; }
+html[data-fold="cover"] .install-gate-card { inset-inline: 0.4rem; }
+html[data-fold="cover"] .install-gate-hero { padding-inline: 2.35rem 2.5rem; padding-top: 0.9rem; }
+
+/* Inner screen: open book */
+html[data-fold="inner"] .page-pad {
+  padding-inline: 1.15rem;
+  padding-top: 0.85rem;
+  padding-bottom: calc(6.1rem + env(safe-area-inset-bottom));
+}
+html[data-fold="inner"] .analysis-hub h1 {
+  font-size: clamp(1.65rem, 3.2vw, 2.35rem);
+}
+html[data-fold="inner"] .analysis-card { min-height: 7.5rem; }
+html[data-fold="inner"] .tab-dock {
+  width: min(78%, 36rem);
+  padding: 0.38rem 0.42rem;
+  bottom: max(0.55rem, env(safe-area-inset-bottom));
+  gap: 0.2rem;
+}
+html[data-fold="inner"] .tab-dock a { min-height: 2.85rem; }
+html[data-fold="inner"] .tab-label { display: inline !important; font-size: 0.625rem; }
+html[data-fold="inner"] .chip-row { gap: 0.6rem; }
+
+/* Tabletop / flex — keep chrome off the hinge */
+html[data-fold="flex"] .analysis-hub h1 { font-size: 1.22rem; }
+html[data-fold="flex"] .analysis-card-body { display: none; }
+html[data-fold="flex"] .live-pill { display: none; }
+html[data-fold="flex"] .tab-dock .tab-label { display: none !important; }
+html[data-fold="flex"] .tab-dock {
+  width: min(70%, 28rem);
+  padding: 0.18rem;
+  bottom: max(0.22rem, env(safe-area-inset-bottom));
+}
+html[data-fold="flex"] .page-pad { padding-bottom: calc(4.8rem + env(safe-area-inset-bottom)); }
+
+@media (horizontal-viewport-segments: 2) {
+  html[data-fold="flex"] .page-pad {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+  html[data-fold="flex"] .tab-dock {
+    width: min(env(viewport-segment-width 0 0, 26rem), 28rem);
+  }
 }
 
 .page-pad { padding-bottom: calc(5.75rem + env(safe-area-inset-bottom)); }

@@ -6,6 +6,7 @@ import { ServiceWorkerGate } from "@/components/service-worker";
 import { SiteShell } from "@/components/site-shell";
 import { SnapshotProvider } from "@/lib/live/snapshot-context";
 import { loadAppSnapshot } from "@/lib/live/snapshot";
+import { FOLD_BOOT } from "@/lib/fold-mode";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Betagree";
@@ -82,6 +83,7 @@ function RootDocument() {
     <html lang="en" className="antialiased" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: FOLD_BOOT }} />
       </head>
       <body>
         <PreviewHostBridge />
