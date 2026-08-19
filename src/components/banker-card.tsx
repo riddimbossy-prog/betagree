@@ -27,6 +27,14 @@ export function pickKind(pick: BankerRulePick) {
   return "over15";
 }
 
+function shortPick(pick: BankerRulePick, kind: string) {
+  if (kind === "win") return "Home";
+  if (kind === "not-win") return pick.selection || "Home or Draw";
+  if (kind === "over25") return "Over 2.5";
+  if (kind === "over15") return "Over 1.5";
+  return pick.selection || "Banker";
+}
+
 function TeamCol({
   name,
   logo,
@@ -60,7 +68,7 @@ export function BankerCard({ pick }: { pick: BankerRulePick }) {
         <TeamCol name={pick.home} logo={sameLogo ? null : pick.homeLogo} align="left" />
         <div className="flex min-w-[5.5rem] flex-col items-center px-1">
           <span className="max-w-[9rem] text-center text-sm font-semibold leading-tight fold:text-base">
-            {pick.label || pick.displaySelection || pick.selection}
+            {shortPick(pick, kind)}
           </span>
           <span className="mt-1 max-w-full truncate text-[11px] text-muted-foreground">{pick.league}</span>
         </div>
