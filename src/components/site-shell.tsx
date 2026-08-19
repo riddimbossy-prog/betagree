@@ -6,6 +6,7 @@ import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/brand-logo";
+import { InstallGate } from "@/components/install-gate";
 import { PickProvider } from "@/components/pick-sheet";
 import { PlayingTodayChip } from "@/components/playing-today";
 import { preloadOfficialCrests } from "@/lib/official-crests";
@@ -150,6 +151,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       </footer>
+      <InstallGate />
     </div>
     </PickProvider>
     </TodayFilterProvider>
