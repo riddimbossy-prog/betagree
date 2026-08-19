@@ -96,8 +96,7 @@ export function InstallGate() {
             <div className="flex justify-center">
               <BrandLogo />
             </div>
-            <p className="mt-4 text-center text-[11px] tracking-[0.22em] text-or uppercase">First visit</p>
-            <Dialog.Title className="mt-1.5 text-center text-[1.65rem] leading-tight font-semibold tracking-tight fold:text-3xl">
+            <Dialog.Title className="mt-4 text-center text-[1.65rem] leading-tight font-semibold tracking-tight fold:text-3xl">
               Take the desk <span className="font-serif italic font-normal">with you</span>
             </Dialog.Title>
             <p className="mx-auto mt-1.5 max-w-sm text-center text-sm text-primary-foreground/80">
@@ -131,7 +130,7 @@ export function InstallGate() {
                   >
                     <Smartphone className="size-5" />
                     <span className="text-[10px] tracking-[0.16em] uppercase opacity-80">iPhone</span>
-                    <span className="text-base font-semibold leading-tight">Home Screen</span>
+                    <span className="text-base font-semibold leading-tight">Install app</span>
                   </button>
                 </div>
                 <button
@@ -196,16 +195,19 @@ function IosSteps({ onBack, onDone }: { onBack: () => void; onDone: () => void }
     <div className="space-y-4">
       <ol className="glass space-y-3 rounded-[22px] p-4 text-sm leading-relaxed text-muted-foreground">
         <li>
-          <b className="text-foreground">1.</b> Open this site in <b className="text-foreground">Safari</b> — not Chrome.
+          <b className="text-foreground">1.</b> Open betagree.com in <b className="text-foreground">Safari</b>.
         </li>
         <li>
           <b className="text-foreground">2.</b> Tap <Share className="mx-0.5 inline size-3.5 align-[-2px]" /> Share, then{" "}
           <b className="text-foreground">Add to Home Screen</b>.
         </li>
         <li>
-          <b className="text-foreground">3.</b> Tap Add. Betagree sits next to your other apps.
+          <b className="text-foreground">3.</b> Tap Add. Betagree opens as its own app — no Safari bar.
         </li>
       </ol>
+      <p className="px-1 text-xs leading-relaxed text-subtle">
+        Apple does not let a website hand you an iPhone app file. This is the install they allow, and it sits on your home screen like any other app.
+      </p>
       <div className="flex items-center justify-between gap-3 text-sm">
         <button type="button" onClick={onBack} className="text-subtle hover:text-foreground">
           Back

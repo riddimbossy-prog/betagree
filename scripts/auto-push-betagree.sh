@@ -23,6 +23,7 @@ cp -a "$SRC/public/data/." "$DEST/public/data/"
 cp -a "$SRC/public/brand/." "$DEST/public/brand/"
 [ -f "$SRC/public/app/betagree.apk" ] && cp -a "$SRC/public/app/betagree.apk" "$DEST/public/app/betagree.apk"
 [ -f "$SRC/public/manifest.webmanifest" ] && cp -a "$SRC/public/manifest.webmanifest" "$DEST/public/manifest.webmanifest"
+[ -f "$SRC/public/apple-touch-icon.png" ] && cp -a "$SRC/public/apple-touch-icon.png" "$DEST/public/apple-touch-icon.png"
 if [ -f "$DEST/.github/workflows/pages.yml" ] && [ -f "$SRC/scripts/prepare-next-day.mjs" ]; then
   # keep dest workflow, already patched in-repo
   true
@@ -35,7 +36,7 @@ done
 cd "$DEST"
 git add -A src scripts public/crests public/data public/brand public/favicon.svg \
   public/logo.svg public/logo.png public/logo-mark.svg public/logo-mark.png \
-  public/sw.js public/app public/manifest.webmanifest startup.sh .github/workflows/pages.yml
+  public/sw.js public/app public/manifest.webmanifest public/apple-touch-icon.png startup.sh .github/workflows/pages.yml
 # drop known bad crest hits if they sneak in
 git reset -q -- public/crests/ss-205106.png public/crests/ss-1106597.png public/crests/ss-1219724.png 2>/dev/null || true
 

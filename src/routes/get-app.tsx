@@ -13,7 +13,7 @@ export function GetAppPage() {
           Get the <span className="font-serif italic font-normal">app</span>
         </h1>
         <p className="mt-3 text-sm text-subtle">
-          Android installs the Betagree package. iPhone adds the desk to your Home Screen.
+          Android gets an APK. iPhone gets a home-screen app — Apple does not allow an app file from a website.
         </p>
       </header>
 

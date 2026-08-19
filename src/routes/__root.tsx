@@ -41,6 +41,9 @@ export const Route = createRootRoute({
           "Today's soccer fixtures and tips, compared across 22 tip sites. Filter high, medium, or low consensus picks.",
       },
       { name: "apple-mobile-web-app-title", content: APP_NAME },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "theme-color", content: "#12101a" },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
@@ -62,6 +65,7 @@ export const Route = createRootRoute({
       { rel: "preload", href: "/data/slate.json", as: "fetch", crossOrigin: "anonymous" },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "manifest", href: "/__grok/manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png" },
       { rel: "apple-touch-icon", href: "/__grok/icon-180.png" },
       {
         rel: "stylesheet",
