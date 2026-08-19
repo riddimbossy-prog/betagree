@@ -413,18 +413,14 @@
 }
 
 @media (max-width: 26.85rem) {
-  /* Fold cover + tall phones */
   .live-pill { padding-inline: 0.65rem; }
-  .brand-lockup-header .brand-tag { display: none; }
-  .brand-lockup-header { height: 34px; padding-inline: 0.65rem; }
-  .brand-lockup-header .brand-word { font-size: 0.9rem; }
   .tab-dock { width: min(96%, 22rem); gap: 0.08rem; padding: 0.22rem; }
   .tab-dock a { min-width: 0; padding-inline: 0.1rem; }
 }
 
 /* Outer screen: tall and narrow */
-html[data-fold="cover"] .brand-lockup-header { height: 32px; padding-inline: 0.6rem; }
-html[data-fold="cover"] .brand-lockup-header .brand-word { font-size: 0.86rem; }
+html[data-fold="cover"] .brand-lockup-header { height: 36px; padding-inline: 0.7rem; }
+html[data-fold="cover"] .brand-lockup-header .brand-word { font-size: 0.92rem; }
 html[data-fold="cover"] .brand-lockup-header .brand-tag { display: none; }
 html[data-fold="cover"] header .mx-auto { padding-inline: 0.55rem; padding-block: 0.3rem; }
 html[data-fold="cover"] .live-pill { display: none; }
@@ -553,7 +549,7 @@ html[data-fold="flex"] .page-pad { padding-bottom: calc(4.8rem + env(safe-area-i
   justify-content: center;
   flex-shrink: 0;
   box-sizing: border-box;
-  padding: 0.2rem 0.85rem 0.22rem;
+  padding: 0.2rem 0.75rem 0.22rem;
   border-radius: 999px;
   background: linear-gradient(180deg, #8b5cf6 0%, #7c3aed 52%, #6d28d9 100%);
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
@@ -563,6 +559,7 @@ html[data-fold="flex"] .page-pad { padding-bottom: calc(4.8rem + env(safe-area-i
 }
 .brand-lockup-header {
   height: 40px;
+  overflow: hidden;
 }
 .brand-lockup-hero {
   width: 100%;
@@ -571,28 +568,32 @@ html[data-fold="flex"] .page-pad { padding-bottom: calc(4.8rem + env(safe-area-i
   padding: 0.8rem 0.9rem 0.65rem;
 }
 .brand-word {
-  display: inline-flex;
-  align-items: baseline;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
   color: #ffffff;
   font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   font-weight: 800;
-  font-size: 1.02rem;
+  font-size: 0.98rem;
   letter-spacing: -0.035em;
   white-space: nowrap;
+  line-height: 1;
 }
 .brand-lockup-hero .brand-word {
   font-size: clamp(1.35rem, 8.4vw, 1.85rem);
 }
 .brand-ball {
-  width: 0.56em;
-  height: 0.56em;
+  width: 0.62em;
+  height: 0.62em;
   margin: 0 0.04em;
   flex-shrink: 0;
   display: block;
-  transform: translateY(0.08em);
+  position: relative;
+  top: 0.01em;
 }
 .brand-tag {
-  display: block;
+  display: none;
   margin-top: 0.12rem;
   color: #ffffff;
   font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
@@ -603,13 +604,14 @@ html[data-fold="flex"] .page-pad { padding-bottom: calc(4.8rem + env(safe-area-i
   opacity: 0.95;
 }
 .brand-lockup-hero .brand-tag {
+  display: block;
   margin-top: 0.28rem;
   font-size: clamp(0.62rem, 3.2vw, 0.78rem);
 }
 @media (min-width: 640px) {
   .brand-lockup-header { height: 44px; padding-inline: 0.95rem; }
   .brand-lockup-header .brand-word { font-size: 1.12rem; }
-  .brand-lockup-header .brand-tag { font-size: 0.44rem; }
+  .brand-lockup-header .brand-tag { display: block; font-size: 0.44rem; }
 }
 @media (min-width: 1024px) {
   .brand-lockup-header { height: 48px; padding-inline: 1.05rem; }

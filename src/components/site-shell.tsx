@@ -56,7 +56,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       </a>
       <header className="glass-strong header-glow sticky top-0 z-40 pt-[env(safe-area-inset-top)]">
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-2 sm:px-6 fold:gap-3 fold:py-2.5">
-          <Link to="/" className="flex min-w-0 shrink items-center no-underline">
+          <Link to="/" className="flex shrink-0 items-center no-underline">
             <BrandLogo />
           </Link>
           <nav className="hidden min-w-0 flex-1 items-center justify-center gap-1 lg:flex" aria-label="Primary">
