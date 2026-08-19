@@ -16,11 +16,13 @@ if [ -z "$(git -C "$DEST" config user.email || true)" ]; then
 fi
 
 cp -a "$SRC/src/." "$DEST/src/"
-mkdir -p "$DEST/scripts" "$DEST/public/crests" "$DEST/public/data" "$DEST/public/brand" "$DEST/.github/workflows"
+mkdir -p "$DEST/scripts" "$DEST/public/crests" "$DEST/public/data" "$DEST/public/brand" "$DEST/public/app" "$DEST/.github/workflows"
 cp -a "$SRC/scripts/." "$DEST/scripts/"
 cp -a "$SRC/public/crests/." "$DEST/public/crests/"
 cp -a "$SRC/public/data/." "$DEST/public/data/"
 cp -a "$SRC/public/brand/." "$DEST/public/brand/"
+[ -f "$SRC/public/app/betagree.apk" ] && cp -a "$SRC/public/app/betagree.apk" "$DEST/public/app/betagree.apk"
+[ -f "$SRC/public/manifest.webmanifest" ] && cp -a "$SRC/public/manifest.webmanifest" "$DEST/public/manifest.webmanifest"
 if [ -f "$DEST/.github/workflows/pages.yml" ] && [ -f "$SRC/scripts/prepare-next-day.mjs" ]; then
   # keep dest workflow, already patched in-repo
   true
@@ -33,7 +35,7 @@ done
 cd "$DEST"
 git add -A src scripts public/crests public/data public/brand public/favicon.svg \
   public/logo.svg public/logo.png public/logo-mark.svg public/logo-mark.png \
-  public/sw.js startup.sh .github/workflows/pages.yml
+  public/sw.js public/app public/manifest.webmanifest startup.sh .github/workflows/pages.yml
 # drop known bad crest hits if they sneak in
 git reset -q -- public/crests/ss-205106.png public/crests/ss-1106597.png public/crests/ss-1219724.png 2>/dev/null || true
 

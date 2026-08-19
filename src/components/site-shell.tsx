@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, Flame, Home, Radio, Sparkles, Zap } from "lucide-react";
+import { Bell, Flame, Home, Radio, Smartphone, Sparkles, Zap } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
@@ -75,6 +75,11 @@ export function SiteShell({ children }: { children: ReactNode }) {
           </nav>
           <div className="ml-auto flex shrink-0 items-center gap-2">
             {showTodayFilter ? <PlayingTodayChip /> : null}
+            <Button asChild variant="secondary" size="icon" className="rounded-full">
+              <Link to="/get-app" aria-label="Get the Android app">
+                <Smartphone />
+              </Link>
+            </Button>
             <AuthSlot />
           </div>
         </div>
@@ -135,6 +140,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
             </Link>
             <Link to="/tipsters" className="hover:text-foreground">
               Sites
+            </Link>
+            <Link to="/get-app" className="hover:text-foreground">
+              Get the app
             </Link>
             <Link to="/playbook" className="hover:text-foreground">
               Playbook

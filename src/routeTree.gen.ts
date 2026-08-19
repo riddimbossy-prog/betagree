@@ -15,6 +15,7 @@ import { Route as BankerRouteImport } from './routes/banker'
 import { Route as BoardRouteImport } from './routes/board'
 import { Route as FixturesRouteImport } from './routes/fixtures'
 import { Route as FormRouteImport } from './routes/form'
+import { Route as GetAppRouteImport } from './routes/get-app'
 import { Route as LiveRouteImport } from './routes/live'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OddsRouteImport } from './routes/odds'
@@ -66,6 +67,11 @@ const FixturesRoute = FixturesRouteImport.update({
 const FormRoute = FormRouteImport.update({
   id: '/form',
   path: '/form',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GetAppRoute = GetAppRouteImport.update({
+  id: '/get-app',
+  path: '/get-app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LiveRoute = LiveRouteImport.update({
@@ -186,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/board': typeof BoardRoute
   '/fixtures': typeof FixturesRouteWithChildren
   '/form': typeof FormRoute
+  '/get-app': typeof GetAppRoute
   '/live': typeof LiveRoute
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/banker': typeof BankerRoute
   '/board': typeof BoardRoute
   '/form': typeof FormRoute
+  '/get-app': typeof GetAppRoute
   '/live': typeof LiveRoute
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
@@ -245,6 +253,7 @@ export interface FileRoutesById {
   '/board': typeof BoardRoute
   '/fixtures': typeof FixturesRouteWithChildren
   '/form': typeof FormRoute
+  '/get-app': typeof GetAppRoute
   '/live': typeof LiveRoute
   '/login': typeof LoginRoute
   '/odds': typeof OddsRoute
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/board'
     | '/fixtures'
     | '/form'
+    | '/get-app'
     | '/live'
     | '/login'
     | '/odds'
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/banker'
     | '/board'
     | '/form'
+    | '/get-app'
     | '/live'
     | '/login'
     | '/odds'
@@ -335,6 +346,7 @@ export interface FileRouteTypes {
     | '/board'
     | '/fixtures'
     | '/form'
+    | '/get-app'
     | '/live'
     | '/login'
     | '/odds'
@@ -366,6 +378,7 @@ export interface RootRouteChildren {
   BoardRoute: typeof BoardRoute
   FixturesRoute: typeof FixturesRouteWithChildren
   FormRoute: typeof FormRoute
+  GetAppRoute: typeof GetAppRoute
   LiveRoute: typeof LiveRoute
   LoginRoute: typeof LoginRoute
   OddsRoute: typeof OddsRoute
@@ -428,6 +441,13 @@ declare module '@tanstack/react-router' {
       path: '/form'
       fullPath: '/form'
       preLoaderRoute: typeof FormRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/get-app': {
+      id: '/get-app'
+      path: '/get-app'
+      fullPath: '/get-app'
+      preLoaderRoute: typeof GetAppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/live': {
@@ -622,6 +642,7 @@ const rootRouteChildren: RootRouteChildren = {
   BoardRoute: BoardRoute,
   FixturesRoute: FixturesRouteWithChildren,
   FormRoute: FormRoute,
+  GetAppRoute: GetAppRoute,
   LiveRoute: LiveRoute,
   LoginRoute: LoginRoute,
   OddsRoute: OddsRoute,

@@ -1,0 +1,14 @@
+{
+  "name": "Betagree",
+  "short_name": "Betagree",
+  "description": "Today's soccer consensus desk",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#12101a",
+  "theme_color": "#7c3aed",
+  "icons": [
+    { "src": "/logo-mark.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/__grok/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" }
+  ]
+}
