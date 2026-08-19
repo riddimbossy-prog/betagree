@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { BankerCard, PICK_LABEL, PICK_ORDER, pickKind } from "@/components/banker-card";
 import { BoardState, LiveBar } from "@/components/live-bar";
@@ -12,12 +12,19 @@ type WhenFilter = "today" | "tomorrow" | "all";
 
 export function BankerPage() {
   const { data, error, loading, reload } = useBankers();
-  const [when, setWhen] = useState<WhenFilter>("tomorrow");
-  const [kind, setKind] = useState("all");
-
   const picks = data?.picks ?? [];
   const todayN = picks.filter((p) => isPlayingToday(p.kickoff)).length;
   const tomN = picks.filter((p) => isPlayingTomorrow(p.kickoff)).length;
+  const [when, setWhen] = useState<WhenFilter>("today");
+  const [kind, setKind] = useState("all");
+  const [touched, setTouched] = useState(false);
+
+  useEffect(() => {
+    if (touched || !data) return;
+    if (tomN > 0 && todayN === 0) setWhen("tomorrow");
+    else if (todayN > 0) setWhen("today");
+    else setWhen("all");
+  }, [data, todayN, tomN, touched]);
 
   const dated = useMemo(() => {
     return picks.filter((p) => {
@@ -70,7 +77,10 @@ export function BankerPage() {
           <button
             key={id}
             type="button"
-            onClick={() => setWhen(id)}
+            onClick={() => {
+              setTouched(true);
+              setWhen(id);
+            }}
             className={cn(
               "inline-flex shrink-0 items-center rounded-full px-4 py-2 text-sm",
               when === id ? "glass-lime font-semibold text-primary-foreground" : "glass text-muted-foreground",
