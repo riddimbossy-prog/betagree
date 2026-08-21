@@ -9,7 +9,7 @@ import { readdir, readFile, rename, stat, unlink, writeFile } from "node:fs/prom
 import { join } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
-import { findCrestOnline, sofascoreBadge } from "../../src/lib/crest-online.ts";
+import { findCrestOnline, sofascoreBadge, apiFootballBadge, footballDataBadge } from "../../src/lib/crest-online.ts";
 
 const ROOT = join(import.meta.dirname, "../..");
 const OUT = join(ROOT, "public/crests");
@@ -177,6 +177,27 @@ function mappedPath(byName, name) {
   return null;
 }
 
+function stampLogos(o, byName) {
+  if (!o) return;
+  if (Array.isArray(o)) {
+    for (const x of o) stampLogos(x, byName);
+    return;
+  }
+  if (typeof o !== "object") return;
+  for (const side of ["home", "away"]) {
+    const t = o[side];
+    if (t && typeof t === "object" && typeof t.name === "string") {
+      const path = mappedPath(byName, t.name);
+      if (path?.startsWith("/crests/")) t.logo = path;
+    }
+  }
+  if (typeof o.name === "string" && typeof o.logo === "string" && o.logo.startsWith("http")) {
+    const path = mappedPath(byName, o.name);
+    if (path?.startsWith("/crests/")) o.logo = path;
+  }
+  for (const v of Object.values(o)) if (v && typeof v === "object") stampLogos(v, byName);
+}
+
 function remember(byName, name, path) {
   for (const k of nameKeys(name)) {
     const cur = byName[k];
@@ -212,6 +233,11 @@ export async function collectBoardClubs() {
 }
 
 export async function fillCrests({ limit = 80, priority = [] } = {}) {
+  const apis = {
+    football: Boolean(process.env.API_FOOTBALL_KEY || process.env.FOOTBALL_API_KEY || process.env.APISPORTS_KEY || process.env.RAPIDAPI_KEY),
+    stats: Boolean(process.env.STATS_API_KEY || process.env.FOOTBALL_DATA_KEY || process.env.FOOTBALL_DATA_API_KEY),
+  };
+  console.log("fill-crests apis", apis);
   const idx = await loadIndex();
   const byName = { ...(idx.byName ?? {}) };
   const { names, espn } = await collectBoardClubs();
@@ -273,6 +299,14 @@ export async function fillCrests({ limit = 80, priority = [] } = {}) {
     }
     if (!local) {
       try {
+        const api = (await apiFootballBadge(name)) || (await footballDataBadge(name));
+        if (api) local = await saveRemote(api, `web-${slug(name)}.png`);
+      } catch {
+        /* next */
+      }
+    }
+    if (!local) {
+      try {
         const found = await findCrestOnline(name);
         if (found) {
           const id = sofaId(found);
@@ -316,6 +350,17 @@ export async function fillCrests({ limit = 80, priority = [] } = {}) {
   });
   await writeFile(`${INDEX}.tmp`, body);
   await rename(`${INDEX}.tmp`, INDEX);
+
+  for (const f of ["slate.json", "streaks.json", "form.json", "trends.json", "bankers.json"]) {
+    try {
+      const p = join(DATA, f);
+      const raw = JSON.parse(await readFile(p, "utf8"));
+      stampLogos(raw, byName);
+      await writeFile(p, JSON.stringify(raw));
+    } catch {
+      /* skip */
+    }
+  }
 
   const still = [];
   for (const name of all) {

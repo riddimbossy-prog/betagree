@@ -9,17 +9,18 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   acceptsHtml,
-  appNameFromHost,
   createHeadInjector,
   injectGrokPwaHead,
   isDocumentPath,
   isInstallQuery,
   renderInstallPageHtml,
   renderWebManifest,
+  snapshotOgIdentity,
 } from "./grok-pwa-shared.mjs";
 
+export const GROK_OG_IDENTITY_ID = "virtual:grok-og-identity";
+
 const INSTALL_PAGE_PATH = join(dirname(fileURLToPath(import.meta.url)), "install-page.html");
-const SW_PATH = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "sw.js");
 
 function requestHost(req) {
   const forwarded = req.headers["x-forwarded-host"];
@@ -48,21 +49,6 @@ function serveGrokPwa(middlewares) {
     const method = (req.method ?? "GET").toUpperCase();
     if (method !== "GET") {
       next();
-      return;
-    }
-
-    if (pathOnly === "/sw.js") {
-      try {
-        const body = readFileSync(SW_PATH);
-        res.statusCode = 200;
-        res.setHeader("content-type", "application/javascript; charset=utf-8");
-        res.setHeader("cache-control", "no-cache");
-        res.setHeader("service-worker-allowed", "/");
-        res.setHeader("content-length", String(body.byteLength));
-        res.end(body);
-      } catch {
-        next();
-      }
       return;
     }
 
@@ -115,7 +101,10 @@ function wrapHtmlResponses(middlewares) {
 
     const originalWrite = res.write.bind(res);
     const originalEnd = res.end.bind(res);
-    const injector = createHeadInjector(appNameFromHost(requestHost(req)));
+    const host = requestHost(req);
+    const injector = createHeadInjector({
+      host,
+    });
     let mode = null; // null = undecided, "inject" | "passthrough"
 
     const decideMode = () => {
@@ -164,8 +153,17 @@ function wrapHtmlResponses(middlewares) {
 export function grokPwaPlugin() {
   return {
     name: "app-builder:grok-pwa",
+    resolveId(id) {
+      if (id === GROK_OG_IDENTITY_ID) return `\0${GROK_OG_IDENTITY_ID}`;
+    },
+    load(id) {
+      if (id !== `\0${GROK_OG_IDENTITY_ID}`) return;
+      return `export const grokOgIdentity = ${JSON.stringify(snapshotOgIdentity())};`;
+    },
     transformIndexHtml(html) {
-      return injectGrokPwaHead(html);
+      return injectGrokPwaHead(html, {
+        host: process.env.VITE_PUBLIC_HOSTNAME ?? "",
+      });
     },
     configureServer(server) {
       // Registered directly (not in a returned post-hook) so both run BEFORE

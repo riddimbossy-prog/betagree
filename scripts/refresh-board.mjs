@@ -6,6 +6,7 @@ import { assembleSlate, gradeLedger } from "./lib/tip-sites.mjs";
 import { buildLeagueRates } from "./lib/league-rates.mjs";
 import { slimSlate } from "./lib/slim-slate.mjs";
 import { buildOddsBook } from "./lib/attach-odds.mjs";
+import { fillCrests } from "./lib/fill-crests.mjs";
 
 const LEAGUES = [
   ["eng.1", "Premier League"],
@@ -263,3 +264,15 @@ writeFileSync(
 console.log(
   `published ${dayStr} ${todayFix.length} fixtures / ${todaySlate.consensus.length} consensus / ${todaySlate.desks.length} sites; ${tomStr} ${tomFix.length} fixtures / ${tomorrowSlate.consensus.length} consensus; ledger ${history.length}; trends ${JSON.stringify(trends.counts ?? {})} bankers ${trends.bankers?.length ?? 0}; form ${form.playingToday ?? 0} playing`,
 );
+
+try {
+  const todayNames = [];
+  for (const f of [...todayFix, ...tomFix]) {
+    if (f.home?.name) todayNames.push(f.home.name);
+    if (f.away?.name) todayNames.push(f.away.name);
+  }
+  const crests = await fillCrests({ limit: Number(process.env.CREST_FILL_LIMIT || 90), priority: todayNames });
+  console.log("crests", JSON.stringify({ saved: crests.saved, still: crests.stillMissing?.length, mapped: crests.mapped }));
+} catch (err) {
+  console.error("crest fill failed", err);
+}

@@ -1,6 +1,6 @@
 /**
  * Online crest lookup — SofaScore first (official club badges),
- * then Wikipedia, then TheSportsDB.
+ * then Wikipedia, TheSportsDB, API-Football, and Football-Data.org (stats).
  *
  * Failures were almost never "SofaScore missing the club". They were:
  *   1. Search query too legalistic ("Al Hilal SFC", "Al Nassr Club") → 0 hits
@@ -66,6 +66,10 @@ const SEARCH_ALIAS: Record<string, string> = {
   "young boys bern": "Young Boys",
   "bohemians prague 1905": "Bohemians 1905",
   "alverca futebol": "Alverca",
+  lafc: "Los Angeles FC",
+  "los angeles fc": "Los Angeles FC",
+  "omonia 29is maiou": "Omonia 29 May",
+  "29is maiou": "Omonia 29 May",
   "cs cienciano": "Cienciano",
   "kf aegir": "Aegir",
   "jerv grimstad": "Jerv",
@@ -428,8 +432,9 @@ export async function wikiBadge(name: string): Promise<string | null> {
 export async function sportsDbBadge(name: string): Promise<string | null> {
   const q = queryFor(name);
   try {
+    const key = process.env.THESPORTSDB_API_KEY || "3";
     const res = await fetch(
-      `https://www.thesportsdb.com/api/v1/json/3/searchteams.php?t=${encodeURIComponent(q)}`,
+      `https://www.thesportsdb.com/api/v1/json/${key}/searchteams.php?t=${encodeURIComponent(q)}`,
       { signal: AbortSignal.timeout(12_000) },
     );
     if (!res.ok) return null;
@@ -454,7 +459,7 @@ export async function sportsDbBadge(name: string): Promise<string | null> {
 /** Same query you'd type into Google Images. Google itself is captcha-walled
  *  from servers, so we search Bing's image index and keep only official hosts. */
 const IMAGE_HOST_OK =
-  /upload\.wikimedia\.org|wikipedia\.org|img\.sofascore\.com|thesportsdb\.com|tmssl\.akamaized\.net|transfermarkt|seeklogo\.com|espncdn\.com|a\.espncdn\.com/i;
+  /upload\.wikimedia\.org|wikipedia\.org|img\.sofascore\.com|thesportsdb\.com|tmssl\.akamaized\.net|transfermarkt|seeklogo\.com|espncdn\.com|a\.espncdn\.com|media\.api-sports\.io|crests\.football-data\.org/i;
 
 export async function webImageBadge(name: string): Promise<string | null> {
   if (typeof window !== "undefined") return null;
@@ -494,6 +499,108 @@ export async function webImageBadge(name: string): Promise<string | null> {
   }
 }
 
+function footballApiKey() {
+  return (
+    process.env.API_FOOTBALL_KEY ||
+    process.env.FOOTBALL_API_KEY ||
+    process.env.APISPORTS_KEY ||
+    process.env.RAPIDAPI_KEY ||
+    ""
+  ).trim();
+}
+
+function statsApiKey() {
+  return (
+    process.env.FOOTBALL_DATA_KEY ||
+    process.env.FOOTBALL_DATA_API_KEY ||
+    process.env.STATS_API_KEY ||
+    ""
+  ).trim();
+}
+
+export async function apiFootballBadge(name: string): Promise<string | null> {
+  const key = footballApiKey();
+  if (!key) return null;
+  const q = queryFor(name);
+  const headers: Record<string, string> = { "x-apisports-key": key };
+  if (process.env.RAPIDAPI_KEY) {
+    headers["x-rapidapi-key"] = process.env.RAPIDAPI_KEY;
+    headers["x-rapidapi-host"] = "v3.football.api-sports.io";
+  }
+  try {
+    const res = await fetch(
+      `https://v3.football.api-sports.io/teams?search=${encodeURIComponent(q)}`,
+      { headers, signal: AbortSignal.timeout(12_000) },
+    );
+    if (!res.ok) return null;
+    const json = (await res.json()) as {
+      response?: { team?: { id?: number; name?: string; logo?: string } }[];
+    };
+    const rows = json.response ?? [];
+    const want = norm(q);
+    rows.sort((a, b) => {
+      const an = norm(String(a.team?.name ?? ""));
+      const bn = norm(String(b.team?.name ?? ""));
+      const as = an === want ? 2 : an.includes(want) || want.includes(an) ? 1 : 0;
+      const bs = bn === want ? 2 : bn.includes(want) || want.includes(bn) ? 1 : 0;
+      return bs - as;
+    });
+    const logo = rows[0]?.team?.logo;
+    if (logo && logo.startsWith("http")) return logo;
+    const id = rows[0]?.team?.id;
+    return id ? `https://media.api-sports.io/football/teams/${id}.png` : null;
+  } catch {
+    return null;
+  }
+}
+
+const FD_COMPS = ["PL", "PD", "SA", "BL1", "FL1", "FL2", "DED", "PPL", "ELC", "CL", "BSA", "DSU", "PPL"];
+let fdIndex: Map<string, string> | null = null;
+
+async function loadFootballDataIndex() {
+  if (fdIndex) return fdIndex;
+  const key = statsApiKey();
+  fdIndex = new Map();
+  if (!key) return fdIndex;
+  for (const code of FD_COMPS) {
+    try {
+      const res = await fetch(`https://api.football-data.org/v4/competitions/${code}/teams`, {
+        headers: { "X-Auth-Token": key },
+        signal: AbortSignal.timeout(12_000),
+      });
+      if (!res.ok) continue;
+      const json = (await res.json()) as {
+        teams?: { name?: string; shortName?: string; tla?: string; crest?: string }[];
+      };
+      for (const t of json.teams ?? []) {
+        const crest = String(t.crest ?? "");
+        if (!crest.startsWith("http")) continue;
+        for (const label of [t.name, t.shortName, t.tla]) {
+          const n = norm(String(label ?? ""));
+          if (n) fdIndex.set(n, crest);
+        }
+      }
+    } catch {
+      /* next league */
+    }
+  }
+  return fdIndex;
+}
+
+export async function footballDataBadge(name: string): Promise<string | null> {
+  if (!statsApiKey()) return null;
+  const idx = await loadFootballDataIndex();
+  const q = queryFor(name);
+  for (const k of [norm(name), norm(q), ...norm(q).split(" ").slice(-2)]) {
+    const hit = idx.get(k);
+    if (hit) return hit;
+  }
+  for (const [k, crest] of idx) {
+    if (k.includes(norm(q)) || norm(q).includes(k)) return crest;
+  }
+  return null;
+}
+
 /** SofaScore first on the server. In the browser, search is CORS-blocked. */
 export async function findCrestOnline(name: string): Promise<string | null> {
   const canSearchSofa = typeof window === "undefined";
@@ -501,6 +608,10 @@ export async function findCrestOnline(name: string): Promise<string | null> {
     const fromSofa = await sofascoreBadge(name);
     if (fromSofa) return fromSofa;
   }
+  const fromApi = await apiFootballBadge(name);
+  if (fromApi) return fromApi;
+  const fromStats = await footballDataBadge(name);
+  if (fromStats) return fromStats;
   const fromWiki = await wikiBadge(name);
   if (fromWiki) return fromWiki;
   const fromDb = await sportsDbBadge(name);
