@@ -566,42 +566,58 @@ export async function apiFootballHit(name: string): Promise<ApiFootballTeam | nu
   if (!key) return null;
   const q = queryFor(name);
   const cacheKey = norm(q);
-  if (apiFootballCache.has(cacheKey)) return apiFootballCache.get(cacheKey) ?? null;
-  try {
-    const res = await fetch(
-      `https://v3.football.api-sports.io/teams?search=${encodeURIComponent(q)}`,
-      { headers: footballHeaders(), signal: AbortSignal.timeout(12_000) },
-    );
-    if (!res.ok) {
-      apiFootballCache.set(cacheKey, null);
-      return null;
-    }
-    const json = (await res.json()) as {
-      response?: { team?: { id?: number; name?: string; logo?: string; national?: boolean } }[];
-    };
-    const rows = (json.response ?? [])
-      .map((row) => row.team)
-      .filter((t): t is { id: number; name: string; logo: string; national?: boolean } =>
-        Boolean(t?.id && t.name && !t.national),
-      )
-      .map((t) => ({ id: t.id, name: t.name, logo: t.logo, national: t.national }))
-      .sort((a, b) => scoreApiTeam(q, b.name) - scoreApiTeam(q, a.name));
-    const best = rows[0];
-    const hit = best && scoreApiTeam(q, best.name) >= 0.55
-      ? {
-          id: best.id,
-          name: best.name,
-          logo: best.logo?.startsWith("http")
-            ? best.logo
-            : `https://media.api-sports.io/football/teams/${best.id}.png`,
-        }
-      : null;
-    apiFootballCache.set(cacheKey, hit);
-    return hit;
-  } catch {
-    apiFootballCache.set(cacheKey, null);
-    return null;
+  if (apiFootballCache.has(cacheKey) && apiFootballCache.get(cacheKey)) {
+    return apiFootballCache.get(cacheKey) ?? null;
   }
+  const queries = [q, name, q.replace(/\s+ii$/i, " B"), q.replace(/\s+ii$/i, " II")].filter(Boolean);
+  let hit: ApiFootballTeam | null = null;
+  for (const query of queries) {
+    const cacheKey = norm(query);
+    if (apiFootballCache.has(cacheKey)) {
+      hit = apiFootballCache.get(cacheKey) ?? null;
+      if (hit) break;
+      continue;
+    }
+    try {
+      const res = await fetch(
+        `https://v3.football.api-sports.io/teams?search=${encodeURIComponent(query)}`,
+        { headers: footballHeaders(), signal: AbortSignal.timeout(12_000) },
+      );
+      if (!res.ok) {
+        apiFootballCache.set(cacheKey, null);
+        continue;
+      }
+      const json = (await res.json()) as {
+        response?: { team?: { id?: number; name?: string; logo?: string; national?: boolean } }[];
+      };
+      const rows = (json.response ?? [])
+        .map((row) => row.team)
+        .filter((t): t is { id: number; name: string; logo: string; national?: boolean } =>
+          Boolean(t?.id && t.name && !t.national),
+        )
+        .map((t) => ({ id: t.id, name: t.name, logo: t.logo, national: t.national }))
+        .sort((a, b) => scoreApiTeam(query, b.name) - scoreApiTeam(query, a.name));
+      const best = rows[0];
+      const found = best && scoreApiTeam(query, best.name) >= 0.5
+        ? {
+            id: best.id,
+            name: best.name,
+            logo: best.logo?.startsWith("http")
+              ? best.logo
+              : `https://media.api-sports.io/football/teams/${best.id}.png`,
+          }
+        : null;
+      apiFootballCache.set(cacheKey, found);
+      if (found) {
+        hit = found;
+        break;
+      }
+    } catch {
+      apiFootballCache.set(cacheKey, null);
+    }
+  }
+  apiFootballCache.set(norm(q), hit);
+  return hit;
 }
 
 export async function apiFootballBadge(name: string): Promise<string | null> {

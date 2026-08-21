@@ -210,7 +210,7 @@ function remember(byName, name, path) {
       byName[k] = path;
       continue;
     }
-    if (cur?.startsWith("/crests/af-") || cur?.startsWith("/crests/ss-")) continue;
+    if (cur?.startsWith("/crests/af-")) continue;
     byName[k] = path;
   }
 }
