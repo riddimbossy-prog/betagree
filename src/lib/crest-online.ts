@@ -1,6 +1,7 @@
 /**
  * Online crest lookup — SofaScore first (official club badges),
- * then Wikipedia, TheSportsDB, API-Football, and Football-Data.org (stats).
+ * Football API (API-Sports premium) first, then Stats API,
+ * SofaScore, Wikipedia, TheSportsDB.
  *
  * Failures were almost never "SofaScore missing the club". They were:
  *   1. Search query too legalistic ("Al Hilal SFC", "Al Nassr Club") → 0 hits
@@ -518,40 +519,94 @@ function statsApiKey() {
   ).trim();
 }
 
-export async function apiFootballBadge(name: string): Promise<string | null> {
+export function hasFootballApi() {
+  return Boolean(footballApiKey());
+}
+
+type ApiFootballTeam = { id: number; name: string; logo: string; national?: boolean };
+
+const apiFootballCache = new Map<string, ApiFootballTeam | null>();
+
+function footballHeaders() {
   const key = footballApiKey();
-  if (!key) return null;
-  const q = queryFor(name);
   const headers: Record<string, string> = { "x-apisports-key": key };
   if (process.env.RAPIDAPI_KEY) {
     headers["x-rapidapi-key"] = process.env.RAPIDAPI_KEY;
     headers["x-rapidapi-host"] = "v3.football.api-sports.io";
   }
+  return headers;
+}
+
+function youthish(label: string) {
+  return /\b(ii|iii|2|b|reserves?|u23|u21|u19|u18)\b/i.test(label);
+}
+
+function scoreApiTeam(query: string, team: string) {
+  const q = norm(query);
+  const r = norm(team);
+  if (!q || !r) return 0;
+  let s = 0;
+  if (q === r) s = 1;
+  else if (r.startsWith(q) || q.startsWith(r)) s = 0.92;
+  else if (r.includes(q) || q.includes(r)) s = 0.8;
+  else {
+    const qt = new Set(q.split(" ").filter((x) => x.length > 1));
+    const rt = new Set(r.split(" ").filter((x) => x.length > 1));
+    let hit = 0;
+    for (const t of qt) if (rt.has(t)) hit += 1;
+    if (!qt.size || !hit) return 0;
+    s = hit / Math.max(qt.size, rt.size);
+  }
+  if (youthish(query) !== youthish(team)) s -= 0.35;
+  return s;
+}
+
+export async function apiFootballHit(name: string): Promise<ApiFootballTeam | null> {
+  const key = footballApiKey();
+  if (!key) return null;
+  const q = queryFor(name);
+  const cacheKey = norm(q);
+  if (apiFootballCache.has(cacheKey)) return apiFootballCache.get(cacheKey) ?? null;
   try {
     const res = await fetch(
       `https://v3.football.api-sports.io/teams?search=${encodeURIComponent(q)}`,
-      { headers, signal: AbortSignal.timeout(12_000) },
+      { headers: footballHeaders(), signal: AbortSignal.timeout(12_000) },
     );
-    if (!res.ok) return null;
+    if (!res.ok) {
+      apiFootballCache.set(cacheKey, null);
+      return null;
+    }
     const json = (await res.json()) as {
-      response?: { team?: { id?: number; name?: string; logo?: string } }[];
+      response?: { team?: { id?: number; name?: string; logo?: string; national?: boolean } }[];
     };
-    const rows = json.response ?? [];
-    const want = norm(q);
-    rows.sort((a, b) => {
-      const an = norm(String(a.team?.name ?? ""));
-      const bn = norm(String(b.team?.name ?? ""));
-      const as = an === want ? 2 : an.includes(want) || want.includes(an) ? 1 : 0;
-      const bs = bn === want ? 2 : bn.includes(want) || want.includes(bn) ? 1 : 0;
-      return bs - as;
-    });
-    const logo = rows[0]?.team?.logo;
-    if (logo && logo.startsWith("http")) return logo;
-    const id = rows[0]?.team?.id;
-    return id ? `https://media.api-sports.io/football/teams/${id}.png` : null;
+    const rows = (json.response ?? [])
+      .map((row) => row.team)
+      .filter((t): t is { id: number; name: string; logo: string; national?: boolean } =>
+        Boolean(t?.id && t.name && !t.national),
+      )
+      .map((t) => ({ id: t.id, name: t.name, logo: t.logo, national: t.national }))
+      .sort((a, b) => scoreApiTeam(q, b.name) - scoreApiTeam(q, a.name));
+    const best = rows[0];
+    const hit = best && scoreApiTeam(q, best.name) >= 0.55
+      ? {
+          id: best.id,
+          name: best.name,
+          logo: best.logo?.startsWith("http")
+            ? best.logo
+            : `https://media.api-sports.io/football/teams/${best.id}.png`,
+        }
+      : null;
+    apiFootballCache.set(cacheKey, hit);
+    return hit;
   } catch {
+    apiFootballCache.set(cacheKey, null);
     return null;
   }
+}
+
+export async function apiFootballBadge(name: string): Promise<string | null> {
+  const hit = await apiFootballHit(name);
+  return hit?.logo ?? null;
 }
 
 const FD_COMPS = ["PL", "PD", "SA", "BL1", "FL1", "FL2", "DED", "PPL", "ELC", "CL", "BSA", "DSU", "PPL"];
@@ -601,17 +656,17 @@ export async function footballDataBadge(name: string): Promise<string | null> {
   return null;
 }
 
-/** SofaScore first on the server. In the browser, search is CORS-blocked. */
+/** Premium Football API first. SofaScore is the fallback. */
 export async function findCrestOnline(name: string): Promise<string | null> {
+  const fromApi = await apiFootballBadge(name);
+  if (fromApi) return fromApi;
+  const fromStats = await footballDataBadge(name);
+  if (fromStats) return fromStats;
   const canSearchSofa = typeof window === "undefined";
   if (canSearchSofa) {
     const fromSofa = await sofascoreBadge(name);
     if (fromSofa) return fromSofa;
   }
-  const fromApi = await apiFootballBadge(name);
-  if (fromApi) return fromApi;
-  const fromStats = await footballDataBadge(name);
-  if (fromStats) return fromStats;
   const fromWiki = await wikiBadge(name);
   if (fromWiki) return fromWiki;
   const fromDb = await sportsDbBadge(name);

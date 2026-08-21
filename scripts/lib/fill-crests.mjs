@@ -9,7 +9,7 @@ import { readdir, readFile, rename, stat, unlink, writeFile } from "node:fs/prom
 import { join } from "node:path";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
-import { findCrestOnline, sofascoreBadge, apiFootballBadge, footballDataBadge } from "../../src/lib/crest-online.ts";
+import { findCrestOnline, sofascoreBadge, apiFootballHit, footballDataBadge, hasFootballApi } from "../../src/lib/crest-online.ts";
 
 const ROOT = join(import.meta.dirname, "../..");
 const OUT = join(ROOT, "public/crests");
@@ -140,6 +140,11 @@ async function download(url, dest) {
     await unlink(dest).catch(() => undefined);
     throw new Error("tiny");
   }
+  const fromApi = /api-sports\.io|crests\.football-data\.org/i.test(url);
+  if (st.size > 160000 && !fromApi) {
+    await unlink(dest).catch(() => undefined);
+    throw new Error("too-big");
+  }
 }
 
 async function saveRemote(url, destRel) {
@@ -201,7 +206,11 @@ function stampLogos(o, byName) {
 function remember(byName, name, path) {
   for (const k of nameKeys(name)) {
     const cur = byName[k];
-    if (cur?.startsWith("/crests/ss-")) continue;
+    if (String(path).startsWith("/crests/af-")) {
+      byName[k] = path;
+      continue;
+    }
+    if (cur?.startsWith("/crests/af-") || cur?.startsWith("/crests/ss-")) continue;
     byName[k] = path;
   }
 }
@@ -234,7 +243,7 @@ export async function collectBoardClubs() {
 
 export async function fillCrests({ limit = 80, priority = [] } = {}) {
   const apis = {
-    football: Boolean(process.env.API_FOOTBALL_KEY || process.env.FOOTBALL_API_KEY || process.env.APISPORTS_KEY || process.env.RAPIDAPI_KEY),
+    football: hasFootballApi(),
     stats: Boolean(process.env.STATS_API_KEY || process.env.FOOTBALL_DATA_KEY || process.env.FOOTBALL_DATA_API_KEY),
   };
   console.log("fill-crests apis", apis);
@@ -260,7 +269,13 @@ export async function fillCrests({ limit = 80, priority = [] } = {}) {
   for (const { name, path } of needFile) {
     const id = sofaId(path);
     try {
-      if (id) {
+      if (String(path).startsWith("/crests/af-")) {
+        const af = String(path).match(/af-(\d+)\.png/)?.[1];
+        if (af) {
+          await saveRemote(`https://media.api-sports.io/football/teams/${af}.png`, `af-${af}.png`);
+          saved += 1;
+        }
+      } else if (id) {
         await saveRemote(`https://img.sofascore.com/api/v1/team/${id}/image`, `ss-${id}.png`);
         saved += 1;
       }
@@ -269,23 +284,42 @@ export async function fillCrests({ limit = 80, priority = [] } = {}) {
     }
   }
 
-  const queue = missing.slice(0, limit);
+  const force = apis.football ? priority.filter(Boolean) : [];
+  const queue = [...new Set([...force, ...missing])].slice(0, limit);
   for (let i = 0; i < queue.length; i += 1) {
     const name = queue[i];
     let local = null;
     try {
-      for (const q of shorten(name)) {
-        const sofa = await sofascoreBadge(q);
-        if (sofa) {
-          const id = sofaId(sofa);
-          if (id) {
-            local = await saveRemote(sofa, `ss-${id}.png`);
-            break;
-          }
-        }
+      const hit = await apiFootballHit(name);
+      if (hit?.id) {
+        local = await saveRemote(hit.logo, `af-${hit.id}.png`);
       }
     } catch {
       /* next */
+    }
+    if (!local) {
+      try {
+        const stats = await footballDataBadge(name);
+        if (stats) local = await saveRemote(stats, `web-${slug(name)}.png`);
+      } catch {
+        /* next */
+      }
+    }
+    if (!local) {
+      try {
+        for (const q of shorten(name)) {
+          const sofa = await sofascoreBadge(q);
+          if (sofa) {
+            const id = sofaId(sofa);
+            if (id) {
+              local = await saveRemote(sofa, `ss-${id}.png`);
+              break;
+            }
+          }
+        }
+      } catch {
+        /* next */
+      }
     }
     if (!local) {
       const espnUrl = espn.get(norm(name));
@@ -297,15 +331,7 @@ export async function fillCrests({ limit = 80, priority = [] } = {}) {
         }
       }
     }
-    if (!local) {
-      try {
-        const api = (await apiFootballBadge(name)) || (await footballDataBadge(name));
-        if (api) local = await saveRemote(api, `web-${slug(name)}.png`);
-      } catch {
-        /* next */
-      }
-    }
-    if (!local) {
+    if (!local && !apis.football) {
       try {
         const found = await findCrestOnline(name);
         if (found) {
@@ -316,7 +342,7 @@ export async function fillCrests({ limit = 80, priority = [] } = {}) {
         /* next */
       }
     }
-    if (!local) {
+    if (!local && !apis.football) {
       try {
         const commons = await commonsBadge(name);
         if (commons) local = await saveRemote(commons, `web-${slug(name)}.png`);
