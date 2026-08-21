@@ -4,10 +4,10 @@ import { useOfficialCrest, crestCandidates } from "@/lib/official-crests";
 import { cn } from "@/lib/utils";
 
 const SIZES = {
-  xs: "h-12 w-10",
-  sm: "h-16 w-[3.25rem]",
-  md: "h-[6.25rem] w-[5rem]",
-  lg: "h-24 w-[4.75rem] fold:h-32 fold:w-[6.5rem]",
+  xs: "h-[4.25rem] w-14",
+  sm: "h-[5.5rem] w-[4.5rem]",
+  md: "h-[7.5rem] w-24",
+  lg: "h-32 w-[6.5rem] fold:h-40 fold:w-32",
 } as const;
 
 function OrdinaryMark({ kind, ink }: { kind: Ordinary; ink: string }) {

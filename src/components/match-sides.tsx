@@ -11,7 +11,7 @@ function TeamStack({
 }) {
   return (
     <div className="flex min-w-0 flex-col items-center gap-1">
-      <Crest name={name} logo={logo} size="xs" className="shrink-0 tab:h-16 tab:w-[3.25rem]" />
+      <Crest name={name} logo={logo} size="sm" className="shrink-0" />
       <p className="w-full max-w-[9.5rem] text-center text-[12px] font-semibold leading-tight break-words fold:text-sm">
         {name}
       </p>

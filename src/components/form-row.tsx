@@ -49,7 +49,7 @@ export function FormRowCard({
     >
       <div className="flex w-full min-w-0 items-center gap-2 fold:gap-3">
         <span className="w-6 shrink-0 text-base font-semibold tabular text-subtle fold:w-8 fold:text-lg">{row.rank}</span>
-        <Crest name={row.team} logo={row.logo} size="xs" className="tab:h-16 tab:w-[3.25rem]" />
+        <Crest name={row.team} logo={row.logo} size="sm" />
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-semibold leading-tight break-words fold:text-base">{row.team}</span>
           <span className={cn("block truncate text-xs", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
