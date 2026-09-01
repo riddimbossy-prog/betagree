@@ -3,7 +3,7 @@
  * Scan every upcoming SportyBet football match with the main-board rules:
  * favourite win, weak under 2.5, GG, home 2+, away DNB.
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { namesMatch } from "./lib/names-match.mjs";
 import { loadLeagueSplit } from "./lib/last5.mjs";
@@ -260,6 +260,19 @@ export async function buildSportyScanBoard() {
 
 const board = await buildSportyScanBoard();
 mkdirSync(join(ROOT, "public/data"), { recursive: true });
+let prev = null;
+try {
+  if (existsSync(OUT)) prev = JSON.parse(readFileSync(OUT, "utf8"));
+} catch {
+  prev = null;
+}
+const bookEmpty = !board.scanned && !(board.books?.one > 0);
+if (bookEmpty && (prev?.scanned > 0 || prev?.picks?.length)) {
+  console.warn(
+    `sporty-scan: SportyBet book empty (${JSON.stringify(board.books)}) — keeping ${prev.picks?.length ?? 0} picks from ${prev.fetchedAt}`,
+  );
+  process.exit(0);
+}
 writeFileSync(OUT, JSON.stringify(board));
 const counts = {};
 for (const p of board.picks) counts[p.rule] = (counts[p.rule] || 0) + 1;
