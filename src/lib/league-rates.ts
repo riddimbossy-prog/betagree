@@ -138,12 +138,12 @@ export function leagueHitRate(file: LeagueRatesFile | null | undefined, item: Co
     if (item.selection === "away") return row.away;
     return row.draw;
   }
-  if (item.market === "dnb") {
+  if ((item.market as string) === "dnb") {
     if (item.selection === "home") return row.home + row.draw;
     if (item.selection === "away") return row.away + row.draw;
     return row.draw;
   }
-  if (item.market === "dc") {
+  if ((item.market as string) === "dc") {
     if (item.selection === "1X") return row.home + row.draw;
     if (item.selection === "X2") return row.away + row.draw;
     if (item.selection === "12") return row.home + row.away;

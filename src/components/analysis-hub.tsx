@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   Flame,
   Radio,
+  ScanSearch,
   Sparkles,
   Target,
   TrendingUp,
@@ -18,7 +19,7 @@ export type AnalysisTile = {
   badge: string;
   badgeHint?: string;
   to: string;
-  icon: "crown" | "spark" | "flame" | "zap" | "gg" | "proof" | "live";
+  icon: "crown" | "spark" | "flame" | "zap" | "gg" | "proof" | "live" | "scan";
   size?: "lg" | "md";
   tone?: "or" | "high" | "live" | "purpure" | "azure" | "plain";
 };
@@ -31,6 +32,7 @@ const ICONS = {
   gg: TrendingUp,
   proof: CheckCircle2,
   live: Radio,
+  scan: ScanSearch,
 } as const;
 
 function TileIcon({ name, tone }: { name: AnalysisTile["icon"]; tone?: AnalysisTile["tone"] }) {

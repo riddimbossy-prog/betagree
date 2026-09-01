@@ -21,6 +21,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as OddsRouteImport } from './routes/odds'
 import { Route as PlaybookRouteImport } from './routes/playbook'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ScanRouteImport } from './routes/scan'
 import { Route as StreaksRouteImport } from './routes/streaks'
 import { Route as TipstersRouteImport } from './routes/tipsters'
 import { Route as TrendsRouteImport } from './routes/trends'
@@ -32,6 +33,7 @@ import { Route as ApiLedgerRouteImport } from './routes/api/ledger'
 import { Route as ApiOddsRouteImport } from './routes/api/odds'
 import { Route as ApiScoresRouteImport } from './routes/api/scores'
 import { Route as ApiSlateRouteImport } from './routes/api/slate'
+import { Route as ApiSportyScanRouteImport } from './routes/api/sporty-scan'
 import { Route as ApiStreaksRouteImport } from './routes/api/streaks'
 import { Route as ApiTrendsRouteImport } from './routes/api/trends'
 import { Route as FixturesIndexRouteImport } from './routes/fixtures.index'
@@ -100,6 +102,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ScanRoute = ScanRouteImport.update({
+  id: '/scan',
+  path: '/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StreaksRoute = StreaksRouteImport.update({
   id: '/streaks',
   path: '/streaks',
@@ -155,6 +162,11 @@ const ApiSlateRoute = ApiSlateRouteImport.update({
   path: '/api/slate',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiSportyScanRoute = ApiSportyScanRouteImport.update({
+  id: '/api/sporty-scan',
+  path: '/api/sporty-scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiStreaksRoute = ApiStreaksRouteImport.update({
   id: '/api/streaks',
   path: '/api/streaks',
@@ -204,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
   '/privacy': typeof PrivacyRoute
+  '/scan': typeof ScanRoute
   '/streaks': typeof StreaksRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/trends': typeof TrendsRoute
@@ -215,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/api/odds': typeof ApiOddsRoute
   '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
+  '/api/sporty-scan': typeof ApiSportyScanRoute
   '/api/streaks': typeof ApiStreaksRoute
   '/api/trends': typeof ApiTrendsRoute
   '/fixtures/$id': typeof FixturesIdRoute
@@ -235,6 +249,7 @@ export interface FileRoutesByTo {
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
   '/privacy': typeof PrivacyRoute
+  '/scan': typeof ScanRoute
   '/streaks': typeof StreaksRoute
   '/trends': typeof TrendsRoute
   '/api/bankers': typeof ApiBankersRoute
@@ -245,6 +260,7 @@ export interface FileRoutesByTo {
   '/api/odds': typeof ApiOddsRoute
   '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
+  '/api/sporty-scan': typeof ApiSportyScanRoute
   '/api/streaks': typeof ApiStreaksRoute
   '/api/trends': typeof ApiTrendsRoute
   '/fixtures/$id': typeof FixturesIdRoute
@@ -267,6 +283,7 @@ export interface FileRoutesById {
   '/odds': typeof OddsRoute
   '/playbook': typeof PlaybookRoute
   '/privacy': typeof PrivacyRoute
+  '/scan': typeof ScanRoute
   '/streaks': typeof StreaksRoute
   '/tipsters': typeof TipstersRouteWithChildren
   '/trends': typeof TrendsRoute
@@ -278,6 +295,7 @@ export interface FileRoutesById {
   '/api/odds': typeof ApiOddsRoute
   '/api/scores': typeof ApiScoresRoute
   '/api/slate': typeof ApiSlateRoute
+  '/api/sporty-scan': typeof ApiSportyScanRoute
   '/api/streaks': typeof ApiStreaksRoute
   '/api/trends': typeof ApiTrendsRoute
   '/fixtures/$id': typeof FixturesIdRoute
@@ -301,6 +319,7 @@ export interface FileRouteTypes {
     | '/odds'
     | '/playbook'
     | '/privacy'
+    | '/scan'
     | '/streaks'
     | '/tipsters'
     | '/trends'
@@ -312,6 +331,7 @@ export interface FileRouteTypes {
     | '/api/odds'
     | '/api/scores'
     | '/api/slate'
+    | '/api/sporty-scan'
     | '/api/streaks'
     | '/api/trends'
     | '/fixtures/$id'
@@ -332,6 +352,7 @@ export interface FileRouteTypes {
     | '/odds'
     | '/playbook'
     | '/privacy'
+    | '/scan'
     | '/streaks'
     | '/trends'
     | '/api/bankers'
@@ -342,6 +363,7 @@ export interface FileRouteTypes {
     | '/api/odds'
     | '/api/scores'
     | '/api/slate'
+    | '/api/sporty-scan'
     | '/api/streaks'
     | '/api/trends'
     | '/fixtures/$id'
@@ -363,6 +385,7 @@ export interface FileRouteTypes {
     | '/odds'
     | '/playbook'
     | '/privacy'
+    | '/scan'
     | '/streaks'
     | '/tipsters'
     | '/trends'
@@ -374,6 +397,7 @@ export interface FileRouteTypes {
     | '/api/odds'
     | '/api/scores'
     | '/api/slate'
+    | '/api/sporty-scan'
     | '/api/streaks'
     | '/api/trends'
     | '/fixtures/$id'
@@ -396,6 +420,7 @@ export interface RootRouteChildren {
   OddsRoute: typeof OddsRoute
   PlaybookRoute: typeof PlaybookRoute
   PrivacyRoute: typeof PrivacyRoute
+  ScanRoute: typeof ScanRoute
   StreaksRoute: typeof StreaksRoute
   TipstersRoute: typeof TipstersRouteWithChildren
   TrendsRoute: typeof TrendsRoute
@@ -407,6 +432,7 @@ export interface RootRouteChildren {
   ApiOddsRoute: typeof ApiOddsRoute
   ApiScoresRoute: typeof ApiScoresRoute
   ApiSlateRoute: typeof ApiSlateRoute
+  ApiSportyScanRoute: typeof ApiSportyScanRoute
   ApiStreaksRoute: typeof ApiStreaksRoute
   ApiTrendsRoute: typeof ApiTrendsRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
@@ -498,6 +524,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/scan': {
+      id: '/scan'
+      path: '/scan'
+      fullPath: '/scan'
+      preLoaderRoute: typeof ScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/streaks': {
       id: '/streaks'
       path: '/streaks'
@@ -573,6 +606,13 @@ declare module '@tanstack/react-router' {
       path: '/api/slate'
       fullPath: '/api/slate'
       preLoaderRoute: typeof ApiSlateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/sporty-scan': {
+      id: '/api/sporty-scan'
+      path: '/api/sporty-scan'
+      fullPath: '/api/sporty-scan'
+      preLoaderRoute: typeof ApiSportyScanRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/streaks': {
@@ -668,6 +708,7 @@ const rootRouteChildren: RootRouteChildren = {
   OddsRoute: OddsRoute,
   PlaybookRoute: PlaybookRoute,
   PrivacyRoute: PrivacyRoute,
+  ScanRoute: ScanRoute,
   StreaksRoute: StreaksRoute,
   TipstersRoute: TipstersRouteWithChildren,
   TrendsRoute: TrendsRoute,
@@ -679,6 +720,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOddsRoute: ApiOddsRoute,
   ApiScoresRoute: ApiScoresRoute,
   ApiSlateRoute: ApiSlateRoute,
+  ApiSportyScanRoute: ApiSportyScanRoute,
   ApiStreaksRoute: ApiStreaksRoute,
   ApiTrendsRoute: ApiTrendsRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,

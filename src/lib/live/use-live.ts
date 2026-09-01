@@ -9,6 +9,7 @@ import type {
   TrendPick,
   TrendsPayload,
   BankersPayload,
+  SportyScanPayload,
 } from "@/lib/types";
 import { applySlateScores, type ScorePatch } from "@/lib/live/score-apply";
 import { mergeLiveFixtures } from "@/lib/live/merge-live";
@@ -298,6 +299,44 @@ export function useBankers(pollMs = 90_000, enabled = true) {
           setLoading(false);
           setData((cur) => {
             if (!cur) setError("Could not reach the banker desk.");
+            return cur;
+          });
+        }
+      }
+    };
+    void load();
+    const id = window.setInterval(() => void load(), pollMs);
+    return () => {
+      dead = true;
+      window.clearInterval(id);
+    };
+  }, [pollMs, tick, enabled]);
+
+  return { data, error, loading, reload };
+}
+
+export function useSportyScan(pollMs = 90_000, enabled = true, initial?: SportyScanPayload | null) {
+  const { tick, reload } = useReload();
+  const [data, setData] = useState<SportyScanPayload | null>(initial ?? null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(!initial);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let dead = false;
+    const load = async () => {
+      try {
+        const json = await loadJson<SportyScanPayload>(["/data/sporty-scan.json", "/api/sporty-scan"]);
+        if (!dead) {
+          setData(json);
+          setError(null);
+          setLoading(false);
+        }
+      } catch {
+        if (!dead) {
+          setLoading(false);
+          setData((cur) => {
+            if (!cur) setError("Could not reach the SportyBet scan.");
             return cur;
           });
         }

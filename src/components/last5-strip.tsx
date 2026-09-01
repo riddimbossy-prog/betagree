@@ -112,10 +112,10 @@ export function Last5Strip({ last5, home, away }: { last5: NonNullable<TrendPick
           </tr>
         </thead>
         <tbody>
-          {[
-            [`${home} (H)`, homeSplit],
-            [`${away} (A)`, awaySplit],
-          ].map(([label, side]) => (
+          {([
+            [`${home} (H)`, homeSplit] as const,
+            [`${away} (A)`, awaySplit] as const,
+          ]).map(([label, side]) => (
             <tr key={`ht-${label}`}>
               <td className="truncate py-1 text-left text-muted-foreground">{label}</td>
               {htLines.map((l) => (

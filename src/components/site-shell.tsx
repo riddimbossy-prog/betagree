@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Bell, Flame, Home, Radio, Smartphone, Sparkles, Zap } from "lucide-react";
+import { Bell, Flame, Home, Radio, ScanSearch, Smartphone, Sparkles, Zap } from "lucide-react";
 import { SignedIn, SignedOut, UserButton } from "@/lib/auth/gates";
 import { useCurrentUserState } from "@/lib/auth/use-current-user";
 import { cn } from "@/lib/utils";
@@ -16,6 +16,7 @@ import { TodayFilterProvider } from "@/lib/today-filter";
 const NAV = [
   { to: "/", label: "Today", short: "Today", icon: Home },
   { to: "/live", label: "Live", short: "Live", icon: Radio },
+  { to: "/scan", label: "Scan", short: "Scan", icon: ScanSearch },
   { to: "/banker", label: "Bankers", short: "Bankers", icon: Sparkles },
   { to: "/form", label: "Form", short: "Form", icon: Flame },
   { to: "/streaks", label: "Streaks", short: "Streaks", icon: Zap },

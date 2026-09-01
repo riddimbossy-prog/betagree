@@ -5,9 +5,15 @@
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
-export const SB_BASE = "https://www.sportybet.com/api/ng/factsCenter";
 export const SB_ORIGIN = "https://www.sportybet.com";
 export const SB_SPORT_FOOTBALL = "sr:sport:1";
+export const SB_REGIONS = ["ng", "gh", "ke", "zm"];
+let sbRegion = SB_REGIONS[0];
+export function sbBase() {
+  return `${SB_ORIGIN}/api/${sbRegion}/factsCenter`;
+}
+/** @deprecated use sbBase() — kept so older scripts keep compiling. */
+export const SB_BASE = `${SB_ORIGIN}/api/ng/factsCenter`;
 
 /** SportyBet market IDs we care about. */
 export const SB_MARKETS = {
@@ -15,32 +21,53 @@ export const SB_MARKETS = {
   doubleChance: 10,
   drawNoBet: 11,
   overUnder: 18,
+  homeOu: 19,
+  awayOu: 20,
   btts: 29,
   twoPlusStreak: 60010,
   threePlusStreak: 60020,
 };
 
-const DEFAULT_HEADERS = {
-  "User-Agent": UA,
-  Accept: "application/json",
-  Origin: SB_ORIGIN,
-  Referer: `${SB_ORIGIN}/ng/sport/football`,
-};
+function headers() {
+  return {
+    "User-Agent": UA,
+    Accept: "application/json",
+    Origin: SB_ORIGIN,
+    Referer: `${SB_ORIGIN}/${sbRegion}/sport/football`,
+  };
+}
+
+function regionalize(url) {
+  return url.replace(/\/api\/[a-z]{2}\/factsCenter/, `/api/${sbRegion}/factsCenter`);
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * Low-level JSON GET with retries for 403/429/5xx and empty bodies.
+ * 403 on ng fails over to gh/ke/zm — same football book, different edge.
  */
 export async function sbFetchJson(url, { retries = 4, timeoutMs = 22_000 } = {}) {
   let lastErr = null;
   for (let attempt = 0; attempt <= retries; attempt++) {
+    const target = regionalize(url);
     try {
-      const res = await fetch(url, {
-        headers: DEFAULT_HEADERS,
+      const res = await fetch(target, {
+        headers: headers(),
         signal: AbortSignal.timeout(timeoutMs),
       });
-      if (res.status === 403 || res.status === 429 || res.status >= 500) {
+      if (res.status === 403) {
+        lastErr = new Error(`SportyBet HTTP 403`);
+        const idx = SB_REGIONS.indexOf(sbRegion);
+        if (idx < SB_REGIONS.length - 1) {
+          sbRegion = SB_REGIONS[idx + 1];
+          console.warn(`[sportybet] 403 — switching to ${sbRegion}`);
+          continue;
+        }
+        await sleep(400 * (attempt + 1) ** 2);
+        continue;
+      }
+      if (res.status === 429 || res.status >= 500) {
         lastErr = new Error(`SportyBet HTTP ${res.status}`);
         await sleep(400 * (attempt + 1) ** 2);
         continue;
@@ -68,7 +95,7 @@ export async function pullMarket(marketId, { pageSize = 80, maxPages = 25 } = {}
   let total = Infinity;
   while ((page - 1) * pageSize < total && page <= maxPages) {
     const url =
-      `${SB_BASE}/pcUpcomingEvents` +
+      `${sbBase()}/pcUpcomingEvents` +
       `?sportId=${encodeURIComponent(SB_SPORT_FOOTBALL)}` +
       `&marketId=${marketId}&pageSize=${pageSize}&pageNum=${page}`;
     let json;
@@ -128,6 +155,32 @@ export function ouLines(ev) {
   return lines;
 }
 
+function packOuLine(m) {
+  const spec = String(m.specifier ?? "");
+  const line = Number((spec.match(/total=([\d.]+)/) || [])[1]);
+  if (!Number.isFinite(line)) return null;
+  const over = (m.outcomes ?? []).find((o) => /^over/i.test(String(o.desc)));
+  const under = (m.outcomes ?? []).find((o) => /^under/i.test(String(o.desc)));
+  return {
+    line,
+    over: Number.isFinite(Number(over?.odds)) ? Number(over.odds) : null,
+    under: Number.isFinite(Number(under?.odds)) ? Number(under.odds) : null,
+  };
+}
+
+/** Home (19) / Away (20) team-total lines keyed by total, e.g. {"2.5": {over, under}}. */
+export function teamOuLines(ev, side) {
+  const want = side === "away" ? "20" : "19";
+  const lines = {};
+  for (const m of marketsOf(ev)) {
+    if (String(m.id) !== want) continue;
+    const packed = packOuLine(m);
+    if (!packed) continue;
+    lines[String(packed.line)] = { over: packed.over, under: packed.under };
+  }
+  return lines;
+}
+
 export async function pullBoardBooks({ pageSize = 80, maxPages = 8 } = {}) {
   const [one, dc, dnb, ou, btts] = await Promise.all([
     pullMarket(SB_MARKETS.oneXTwo, { pageSize, maxPages }),
@@ -156,6 +209,55 @@ export async function pullBoardBooks({ pageSize = 80, maxPages = 8 } = {}) {
   return {
     events,
     counts: { one: one.size, dc: dc.size, dnb: dnb.size, ou: ou.size, btts: btts.size },
+  };
+}
+
+/** 1X2 + DNB + O/U + BTTS + home/away team totals for the main-board scan. */
+export async function pullScanBooks({ pageSize = 80, maxPages = 16 } = {}) {
+  const [one, dnb, ou, homeOu, awayOu, btts] = await Promise.all([
+    pullMarket(SB_MARKETS.oneXTwo, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.drawNoBet, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.overUnder, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.homeOu, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.awayOu, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.btts, { pageSize, maxPages }),
+  ]);
+  const ids = new Set([
+    ...one.keys(),
+    ...dnb.keys(),
+    ...ou.keys(),
+    ...homeOu.keys(),
+    ...awayOu.keys(),
+    ...btts.keys(),
+  ]);
+  const events = [];
+  for (const id of ids) {
+    const ev =
+      one.get(id) ?? dnb.get(id) ?? ou.get(id) ?? homeOu.get(id) ?? awayOu.get(id) ?? btts.get(id);
+    if (!ev) continue;
+    events.push({
+      id,
+      ev,
+      home: ev.homeTeamName,
+      away: ev.awayTeamName,
+      one: marketRow(one.get(id)),
+      dnb: marketRow(dnb.get(id)),
+      ou: ouLines(ou.get(id) ?? ev),
+      homeOu: teamOuLines(homeOu.get(id) ?? ev, "home"),
+      awayOu: teamOuLines(awayOu.get(id) ?? ev, "away"),
+      btts: marketRow(btts.get(id)),
+    });
+  }
+  return {
+    events,
+    counts: {
+      one: one.size,
+      dnb: dnb.size,
+      ou: ou.size,
+      homeOu: homeOu.size,
+      awayOu: awayOu.size,
+      btts: btts.size,
+    },
   };
 }
 

@@ -8,8 +8,9 @@ import { TrendCard } from "@/components/trend-card";
 import { isLiveBoardMatch } from "@/lib/board-match";
 import { fixtureIsToday, isPlayingToday, isPlayingTomorrow, sortBoardGames } from "@/lib/format";
 import { fixturesInBand } from "@/lib/odds-band";
-import { useFormBoard, useSlate, useStreaks, useTrends, useBankers } from "@/lib/live/use-live";
+import { useFormBoard, useSlate, useStreaks, useTrends, useBankers, useSportyScan } from "@/lib/live/use-live";
 import { BankerCard } from "@/components/banker-card";
+import { ScanCard } from "@/components/scan-card";
 import { loadBoardSnapshot } from "@/lib/live/snapshot";
 import { FormRowCard } from "@/components/form-row";
 import { StreakCard } from "@/components/streak-card";
@@ -47,6 +48,7 @@ function Home() {
   }, []);
   const trends = useTrends(90_000, secondary);
   const bankersBoard = useBankers(90_000, secondary);
+  const sportyScan = useSportyScan();
   const form = useFormBoard(90_000, secondary, true);
   const streaks = useStreaks(90_000, secondary);
   const todayOnly = useTodayOnly();
@@ -58,7 +60,7 @@ function Home() {
   );
   const high = [...byFixture.values()]
     .map((rows) => pickBoardTip(rows))
-    .filter((tip): tip is NonNullable<typeof tip> => Boolean(tip) && bandOf(tip) === "high");
+    .filter((tip): tip is NonNullable<typeof tip> => Boolean(tip) && bandOf(tip as NonNullable<typeof tip>) === "high");
   const top = high.slice(0, 4);
   const upcoming = fixtures.filter((f) => f.status !== "post" && !f.live);
   const liveGames = fixtures.filter(isLiveBoardMatch);
@@ -70,6 +72,9 @@ function Home() {
   });
   const bankers = (bankersBoard.data?.picks ?? []).filter(
     (pick) => !todayOnly || isPlayingToday(pick.kickoff),
+  );
+  const scanPicks = (sportyScan.data?.picks ?? []).filter(
+    (pick) => !todayOnly || pick.when === "today" || isPlayingToday(pick.kickoff),
   );
   const trendCats = trends.data?.categories;
   const trendTotal = trendCats
@@ -125,6 +130,18 @@ function Home() {
             icon: "spark",
             size: "lg",
             tone: "or",
+          },
+          {
+            id: "scan",
+            eyebrow: "SportyBet board",
+            title: "Sporty scan",
+            body: "Favourite wins, GG, unders, 2+ and DNB from the live book.",
+            badge: String(scanPicks.length || "—"),
+            badgeHint: "scan hits",
+            to: "/scan",
+            icon: "scan",
+            size: "lg",
+            tone: "azure",
           },
           {
             id: "form",
@@ -198,6 +215,24 @@ function Home() {
             </Link>
           </div>
           <FixtureList fixtures={highUpcoming.slice(0, 6)} byFixture={byFixture} />
+        </section>
+      ) : null}
+
+      {scanPicks.length ? (
+        <section>
+          <div className="mb-4 flex items-end justify-between">
+            <h2 className="text-2xl font-semibold">
+              Sporty <span className="font-serif italic font-normal">scan</span>
+            </h2>
+            <Link to="/scan" className="text-sm text-muted-foreground">
+              Full scan
+            </Link>
+          </div>
+          <div className="grid gap-3 fold:grid-cols-2">
+            {scanPicks.slice(0, 4).map((pick) => (
+              <ScanCard key={`${pick.fixtureId}-${pick.rule}-${pick.selection}`} pick={pick} />
+            ))}
+          </div>
         </section>
       ) : null}
 

@@ -100,7 +100,7 @@ async function download(url: string, dest: string) {
     signal: AbortSignal.timeout(16_000),
   });
   if (!res.ok || !res.body) throw new Error(`dl ${res.status}`);
-  await pipeline(Readable.fromWeb(res.body as ReadableStream), createWriteStream(dest));
+  await pipeline(Readable.fromWeb(res.body as unknown as import("stream/web").ReadableStream), createWriteStream(dest));
   const st = await stat(dest);
   if (st.size < 250) throw new Error("tiny");
 }

@@ -260,6 +260,27 @@ async function loadTable(home, away, ev) {
   };
 }
 
+/** Full home/away/total tables for a league, from one SportyBet/SofaScore matchup. */
+export async function loadLeagueSplit(home, away) {
+  const ev = await loadEvent(home, away);
+  if (!ev) return null;
+  const uniqueId = ev?.tournament?.uniqueTournament?.id;
+  const seasonId = ev?.season?.id;
+  if (!uniqueId || !seasonId) return null;
+  const [total, homeT, awayT] = await Promise.all([
+    loadStandings(uniqueId, seasonId, "total"),
+    loadStandings(uniqueId, seasonId, "home"),
+    loadStandings(uniqueId, seasonId, "away"),
+  ]);
+  if (!total.length) return null;
+  return {
+    size: total.length,
+    total: total.map(slimRow).filter((r) => r.name),
+    home: homeT.map(slimRow).filter((r) => r.name),
+    away: awayT.map(slimRow).filter((r) => r.name),
+  };
+}
+
 /** Even sides ignore last-5 — skip the match entirely. */
 export function isSameTier(pick, pack) {
   const table = pack?.table;

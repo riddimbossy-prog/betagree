@@ -368,7 +368,7 @@ export type StreakPick = {
     away: StreakTableSide | null;
   };
   market: "2+" | "3+";
-  pick: "Yes" | "No" | "Over";
+  pick: "Yes" | "No" | "Over" | "Under";
   label: string;
   odds: number;
   otherOdds: number | null;
@@ -443,4 +443,42 @@ export type StreakAccuracy = {
     rule2: StreakAccuracyRate;
     ruleOver: StreakAccuracyRate;
   }>;
+};
+
+export type SportyScanRule = "FAV_WIN" | "WEAK_UNDER25" | "GG_TEAM_O05" | "HOME_2PLUS" | "AWAY_DNB";
+
+export type SportyScanPick = {
+  fixtureId: string;
+  league: string;
+  kickoff: string;
+  when?: "today" | "tomorrow" | "later" | null;
+  home: string;
+  away: string;
+  homeLogo: string | null;
+  awayLogo: string | null;
+  rule: SportyScanRule | string;
+  market: string;
+  selection: string;
+  label: string;
+  price: number | null;
+  reasons?: string[];
+  engine?: string;
+};
+
+export type SportyScanPayload = {
+  date: string;
+  dateLabel: string;
+  fetchedAt: string;
+  engine?: string;
+  scanned?: number;
+  books?: Record<string, number>;
+  droppedYouth?: number;
+  tables?: { espn?: number; split?: number };
+  picks: SportyScanPick[];
+  meta?: {
+    engine?: string;
+    count?: number;
+    scanned?: number;
+    rules?: Record<string, number>;
+  };
 };

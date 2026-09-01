@@ -87,8 +87,8 @@ export function marketSafety(item: ConsensusItem, rates?: LeagueRatesFile | null
     if (side === "over") return 110 - line * 12;
     return 40 + line * 12;
   }
-  if (item.market === "dc") return 88;
-  if (item.market === "dnb") return 82;
+  if ((item.market as string) === "dc") return 88;
+  if ((item.market as string) === "dnb") return 82;
   if (item.market === "btts") return item.selection === "no" ? 72 : 58;
   if (item.market === "1x2") return item.selection === "draw" ? 54 : 48;
   return 40;
@@ -97,7 +97,7 @@ export function marketSafety(item: ConsensusItem, rates?: LeagueRatesFile | null
 function impliedPrice(item: ConsensusItem): number {
   const f = item.fixture;
   if (!f) return 0;
-  if (item.market === "1x2" || item.market === "dnb") {
+  if (item.market === "1x2" || (item.market as string) === "dnb") {
     const odds = item.selection === "home" ? f.home.ml : item.selection === "away" ? f.away.ml : f.drawMl;
     if (odds == null || !Number.isFinite(odds) || odds === 0) return 0;
     return odds < 0 ? -odds / (-odds + 100) : 100 / (odds + 100);

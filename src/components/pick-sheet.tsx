@@ -6,7 +6,7 @@ import { Last5Strip } from "@/components/last5-strip";
 import { PriceChip } from "@/components/price-chip";
 import { formatBoardTime } from "@/lib/format";
 import { formatDecimal } from "@/lib/odds";
-import type { FormRow, TrendPick } from "@/lib/types";
+import type { DeskSource, FormRow, SportyScanPick, TrendPick } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export type PickBrief = {
@@ -23,6 +23,7 @@ export type PickBrief = {
   odds?: number | null;
   last5?: TrendPick["last5"];
   why?: string;
+  sources?: DeskSource[];
 };
 
 function priceLabel(n: number | null | undefined) {
@@ -71,6 +72,21 @@ export function briefFromForm(row: FormRow, unit: string): PickBrief {
     label: `${row.team} · ${row.display} ${unit.toLowerCase()}`,
     stat: `${row.count}/${row.matches}`,
     why: "",
+  };
+}
+
+export function briefFromScan(pick: SportyScanPick): PickBrief {
+  return {
+    id: `scan:${pick.fixtureId}:${pick.rule}`,
+    home: pick.home,
+    away: pick.away,
+    homeLogo: pick.homeLogo,
+    awayLogo: pick.awayLogo,
+    league: pick.league,
+    kickoffIso: pick.kickoff,
+    label: pick.label,
+    odds: pick.price,
+    why: (pick.reasons ?? []).join(" · "),
   };
 }
 
