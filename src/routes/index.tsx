@@ -135,7 +135,9 @@ function Home() {
             id: "scan",
             eyebrow: "SportyBet board",
             title: "Sporty scan",
-            body: "Favourite wins, GG, unders, 2+ and DNB from the live book.",
+            body: sportyScan.data?.when?.today
+              ? `Scanned ${sportyScan.data.when.today} today matches. Favourite wins, GG, unders, 2+ and DNB.`
+              : "Favourite wins, GG, unders, 2+ and DNB from the live book.",
             badge: String(scanPicks.length || "—"),
             badgeHint: "scan hits",
             to: "/scan",

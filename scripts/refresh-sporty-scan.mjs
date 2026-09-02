@@ -2,6 +2,10 @@
 /**
  * Scan every upcoming SportyBet football match with the main-board rules:
  * favourite win, weak under 2.5, GG, home 2+, away DNB.
+ *
+ * The SportyBet book is two tabs. pcUpcomingEvents without todayGames=true is
+ * Early only (later days). Today's card is pulled via todayGames=true inside
+ * pullScanBooks → pullMarket.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -244,12 +248,18 @@ export async function buildSportyScanBoard() {
 
   const built = buildSportyScan(rows);
   const day = new Date().toISOString().slice(0, 10);
+  const whenCounts = { today: 0, tomorrow: 0, later: 0 };
+  for (const row of rows) whenCounts[row.when] = (whenCounts[row.when] || 0) + 1;
+  const pickWhen = { today: 0, tomorrow: 0, later: 0 };
+  for (const pick of built.picks) pickWhen[pick.when] = (pickWhen[pick.when] || 0) + 1;
   return {
     date: day,
     dateLabel: day,
     fetchedAt: new Date().toISOString(),
     engine: "sporty-scan-v1",
     scanned: rows.length,
+    when: whenCounts,
+    pickWhen,
     books: books.counts,
     droppedYouth,
     tables: { espn: espnTables.size, split: splitBySlug.size },
@@ -277,5 +287,5 @@ writeFileSync(OUT, JSON.stringify(board));
 const counts = {};
 for (const p of board.picks) counts[p.rule] = (counts[p.rule] || 0) + 1;
 console.log(
-  `sporty-scan ${board.date} scanned ${board.scanned} picks ${board.picks.length} ${JSON.stringify(counts)} books ${JSON.stringify(board.books)} tables ${JSON.stringify(board.tables)} youth ${board.droppedYouth}`,
+  `sporty-scan ${board.date} scanned ${board.scanned} when ${JSON.stringify(board.when)} picks ${board.picks.length} pickWhen ${JSON.stringify(board.pickWhen)} ${JSON.stringify(counts)} books ${JSON.stringify(board.books)} tables ${JSON.stringify(board.tables)} youth ${board.droppedYouth}`,
 );

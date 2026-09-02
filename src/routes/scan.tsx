@@ -37,11 +37,12 @@ export const Route = createFileRoute("/scan")({
 type WhenFilter = "today" | "tomorrow" | "all";
 
 function isTodayPick(pick: SportyScanPick) {
-  return pick.when === "today" || (!pick.when && isPlayingToday(pick.kickoff));
+  return pick.when === "today" || isPlayingToday(pick.kickoff);
 }
 
 function isTomorrowPick(pick: SportyScanPick) {
-  return pick.when === "tomorrow" || (!pick.when && isPlayingTomorrow(pick.kickoff));
+  if (isTodayPick(pick)) return false;
+  return pick.when === "tomorrow" || isPlayingTomorrow(pick.kickoff);
 }
 
 function autoWhen(picks: SportyScanPick[]): WhenFilter {
@@ -108,7 +109,11 @@ function ScanPage() {
         <p className="mt-2 text-sm text-subtle">
           {loading && !data
             ? "Loading…"
-            : `${visible.length} from ${data?.scanned ?? picks.length} matches`}
+            : when === "today" && data?.when?.today != null
+              ? `${visible.length} hits from ${data.when.today} today matches`
+              : when === "tomorrow" && data?.when?.tomorrow != null
+                ? `${visible.length} hits from ${data.when.tomorrow} tomorrow matches`
+                : `${visible.length} hits from ${data?.scanned ?? picks.length} matches`}
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
           Favourite wins, GG, under 2.5, home 2+ and away DNB from the live SportyBet book.

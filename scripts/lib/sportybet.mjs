@@ -86,23 +86,40 @@ export async function sbFetchJson(url, { retries = 4, timeoutMs = 22_000 } = {})
 }
 
 /**
- * Pull every upcoming football event that lists a given market.
- * Returns Map<eventId, event>.
+ * SportyBet splits the book:
+ *   today  → pcUpcomingEvents?todayGames=true  (Today tab)
+ *   early  → pcUpcomingEvents                  (Upcoming tab, skips today)
+ * Without todayGames the scan only sees later days.
  */
-export async function pullMarket(marketId, { pageSize = 80, maxPages = 25 } = {}) {
+export function upcomingEventsUrl(
+  marketId,
+  { pageSize = 80, pageNum = 1, todayGames = false, sportId = SB_SPORT_FOOTBALL } = {},
+) {
+  let url =
+    `${sbBase()}/pcUpcomingEvents` +
+    `?sportId=${encodeURIComponent(sportId)}` +
+    `&marketId=${marketId}&pageSize=${pageSize}&pageNum=${pageNum}`;
+  if (todayGames) url += "&todayGames=true";
+  return url;
+}
+
+async function pullMarketPages(
+  marketId,
+  { pageSize = 80, maxPages = 25, todayGames = false } = {},
+) {
   const byId = new Map();
   let page = 1;
   let total = Infinity;
   while ((page - 1) * pageSize < total && page <= maxPages) {
-    const url =
-      `${sbBase()}/pcUpcomingEvents` +
-      `?sportId=${encodeURIComponent(SB_SPORT_FOOTBALL)}` +
-      `&marketId=${marketId}&pageSize=${pageSize}&pageNum=${page}`;
+    const url = upcomingEventsUrl(marketId, { pageSize, pageNum: page, todayGames });
     let json;
     try {
       json = await sbFetchJson(url);
     } catch (err) {
-      console.warn(`[sportybet] market ${marketId} page ${page}:`, err.message || err);
+      console.warn(
+        `[sportybet] market ${marketId} ${todayGames ? "today" : "upcoming"} page ${page}:`,
+        err.message || err,
+      );
       break;
     }
     const data = json?.data;
@@ -119,6 +136,33 @@ export async function pullMarket(marketId, { pageSize = 80, maxPages = 25 } = {}
     await sleep(70);
   }
   return byId;
+}
+
+function mergeEventMaps(primary, extra) {
+  for (const [id, ev] of extra) {
+    if (!primary.has(id)) primary.set(id, ev);
+  }
+  return primary;
+}
+
+/**
+ * Pull football events that list a given market.
+ * Defaults to Today + Upcoming so today's SportyBet card is never skipped.
+ * Returns Map<eventId, event>.
+ */
+export async function pullMarket(
+  marketId,
+  { pageSize = 80, maxPages = 25, includeToday = true, todayGames = null } = {},
+) {
+  if (todayGames === true) {
+    return pullMarketPages(marketId, { pageSize, maxPages, todayGames: true });
+  }
+  if (todayGames === false || includeToday === false) {
+    return pullMarketPages(marketId, { pageSize, maxPages, todayGames: false });
+  }
+  const today = await pullMarketPages(marketId, { pageSize, maxPages, todayGames: true });
+  const rest = await pullMarketPages(marketId, { pageSize, maxPages, todayGames: false });
+  return mergeEventMaps(today, rest);
 }
 
 /** First market row on an event (SportyBet returns the requested market as [0]). */

@@ -471,6 +471,8 @@ export type SportyScanPayload = {
   fetchedAt: string;
   engine?: string;
   scanned?: number;
+  when?: { today?: number; tomorrow?: number; later?: number };
+  pickWhen?: { today?: number; tomorrow?: number; later?: number };
   books?: Record<string, number>;
   droppedYouth?: number;
   tables?: { espn?: number; split?: number };
