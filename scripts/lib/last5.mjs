@@ -406,6 +406,67 @@ export function agreedMarkets(pack) {
   return out.sort((a, b) => b.rate - a.rate);
 }
 
+/** Venue last-5 result markets for Best to win / Fade worst. */
+export function agreedResults(pack) {
+  if (!pack?.home || !pack?.away) return [];
+  const home = pickSummary(pack.homeHome, pack.home);
+  const away = pickSummary(pack.awayAway, pack.away);
+  const out = [];
+  const sides = [
+    { key: "home", sum: home },
+    { key: "away", sum: away },
+  ];
+  for (const side of sides) {
+    if (!side.sum || side.sum.n < LAST5) continue;
+    const other = side.key === "home" ? "away" : "home";
+    if (side.sum.winRate >= LAST5_FLOOR) {
+      out.push({
+        id: "wins",
+        market: "1x2",
+        selection: side.key,
+        teamSide: side.key,
+        rate: side.sum.winRate,
+        sample: side.sum.n,
+        label: "to win",
+      });
+    }
+    if (side.sum.unbeatenRate >= LAST5_FLOOR) {
+      out.push({
+        id: "undefeated",
+        market: "1x2",
+        selection: side.key,
+        teamSide: side.key,
+        rate: side.sum.unbeatenRate,
+        sample: side.sum.n,
+        label: "undefeated",
+      });
+    }
+    if (side.sum.lossRate >= LAST5_FLOOR) {
+      out.push({
+        id: "losses",
+        market: "1x2",
+        selection: other,
+        teamSide: side.key,
+        rate: side.sum.lossRate,
+        sample: side.sum.n,
+        label: "fade losses",
+      });
+    }
+    if (side.sum.winlessRate >= LAST5_FLOOR) {
+      out.push({
+        id: "winless",
+        market: "1x2",
+        selection: other,
+        teamSide: side.key,
+        rate: side.sum.winlessRate,
+        sample: side.sum.n,
+        label: "fade winless",
+      });
+    }
+  }
+  return out.sort((a, b) => b.rate - a.rate);
+}
+
 export function agreedGoalTips(pack) {
   if (!pack?.home || !pack?.away) return [];
   const home = pickSummary(pack.homeHome, pack.home);

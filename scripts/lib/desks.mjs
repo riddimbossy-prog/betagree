@@ -1,4 +1,4 @@
-import { agreedMarkets, isSameTier, last5Supports, loadLast5, packForSheet } from "./last5.mjs";
+import { agreedMarkets, agreedResults, isSameTier, last5Supports, loadLast5, packForSheet } from "./last5.mjs";
 
 export const MIN_RATE = 0.7;
 export const ODDS_FROM = 1.19;
@@ -254,12 +254,24 @@ export const FORM_BOARDS = [
   { id: "least-goals-conceded", pole: "least", metric: "conceded", path: "/form/least-goals-conceded", title: "Least conceded", unit: "Goals", valueKind: "avg" },
 ];
 
+function hasExactToken(a, b) {
+  const ta = nameTokens(a);
+  const tb = nameTokens(b);
+  return ta.some((x) => x.length >= 3 && tb.includes(x));
+}
+
+function namesAlign(a, b) {
+  const s = nameScore(a, b);
+  if (s >= 0.95) return true;
+  return s >= 0.72 && hasExactToken(a, b);
+}
+
 function findTeamFixture(fixtures, team) {
   let best = null;
   let score = 0;
   for (const f of fixtures || []) {
-    const sh = nameScore(f.home?.name, team);
-    const sa = nameScore(f.away?.name, team);
+    const sh = namesAlign(f.home?.name, team) ? nameScore(f.home?.name, team) : 0;
+    const sa = namesAlign(f.away?.name, team) ? nameScore(f.away?.name, team) : 0;
     const s = Math.max(sh, sa);
     if (s > score && s >= 0.72) {
       best = s === sh
@@ -273,11 +285,10 @@ function findTeamFixture(fixtures, team) {
 
 export function decorateFormRows(rows, fixtures, limit = 40) {
   const today = new Date().toISOString().slice(0, 10);
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
   const decorated = (rows || []).map((row) => {
     const hit = findTeamFixture(fixtures, row.team);
     const day = String(hit?.fixture?.start || "").slice(0, 10);
-    const onBoard = Boolean(hit && (day === today || day === tomorrow || hit.fixture.live));
+    const onToday = Boolean(hit && (hit.fixture.live || day === today));
     return {
       rank: row.rank ?? 0,
       team: row.team,
@@ -287,7 +298,7 @@ export function decorateFormRows(rows, fixtures, limit = 40) {
       rate: row.rate,
       display: row.display || (row.rate == null ? "—" : row.valueKind === "avg" ? String(row.rate) : `${Math.round(row.rate * 100)}%`),
       valueKind: row.valueKind === "avg" ? "avg" : "pct",
-      playingToday: Boolean(row.playingToday || onBoard),
+      playingToday: onToday,
       tipPath: null,
       teamPath: null,
       logo: hit?.side?.logo ?? null,
@@ -298,7 +309,7 @@ export function decorateFormRows(rows, fixtures, limit = 40) {
   });
   const top = decorated.slice(0, limit);
   const extra = decorated.filter((r) => r.fixtureId && !top.some((t) => t.team === r.team));
-  extra.sort((a, b) => a.rank - b.rank);
+  extra.sort((a, b) => Number(b.playingToday) - Number(a.playingToday) || a.rank - b.rank);
   return extra.concat(top);
 }
 
@@ -602,7 +613,9 @@ function emptyCategories() {
 function mergePicks(list) {
   const by = new Map();
   for (const p of list) {
-    const key = `${p.category}|${normName(p.home)}|${normName(p.away)}|${p.selection}`;
+    const key = p.fixtureId
+      ? `${p.category}|id:${p.fixtureId}|${p.selection}`
+      : `${p.category}|${normName(p.home)}|${normName(p.away)}|${p.selection}`;
     const prev = by.get(key);
     if (!prev) {
       by.set(key, { ...p, sources: [...p.sources], sourceNotes: [...p.sourceNotes] });
@@ -619,6 +632,8 @@ function mergePicks(list) {
       prev.homeLogo = p.homeLogo;
       prev.awayLogo = p.awayLogo;
     }
+    if (!prev.kickoffIso && p.kickoffIso) prev.kickoffIso = p.kickoffIso;
+    if (!prev.last5 && p.last5) prev.last5 = p.last5;
   }
   return [...by.values()].sort((a, b) => b.rate - a.rate || a.odds - b.odds);
 }
@@ -642,41 +657,72 @@ export function formRate(row, mode) {
   return row.rate;
 }
 
+function price1x2(selection, book, fixture) {
+  if (selection === "home") return book?.homeWin ?? fixtureMarketOdds(fixture, "1x2", "home");
+  if (selection === "away") return book?.awayWin ?? fixtureMarketOdds(fixture, "1x2", "away");
+  return null;
+}
+
 export function buildPicksFromPrimaForm(games, form, category, fixtures) {
   const out = [];
   const mode = category;
   for (const row of form) {
-    if (!row.playingToday && !findTeamGame(games, row.team)) continue;
     const hit = findTeamGame(games, row.team);
-    if (!hit) continue;
-    const g = hit.game;
-    const team = hit.side === "home" ? g.home : g.away;
-    const opponent = hit.side === "home" ? g.away : g.home;
+    const fxHit = hit ? null : findTeamFixture(fixtures, row.team);
+    if (!hit && !fxHit) continue;
     const rate = formRate(row, mode);
     if (rate == null) continue;
+    let home;
+    let away;
+    let isHome;
+    let league;
+    let kickoff;
+    let homeOdds;
+    let awayOdds;
+    if (hit) {
+      const g = hit.game;
+      home = g.home;
+      away = g.away;
+      isHome = hit.side === "home";
+      league = g.league || row.league;
+      kickoff = g.kickoff;
+      homeOdds = g.homeOdds;
+      awayOdds = g.awayOdds;
+    } else {
+      const f = fxHit.fixture;
+      home = f.home.name;
+      away = f.away.name;
+      isHome = fxHit.side === f.home;
+      league = f.league || row.league;
+      kickoff = f.start;
+      homeOdds = toDec(f.home?.ml);
+      awayOdds = toDec(f.away?.ml);
+    }
+    const team = isHome ? home : away;
+    const opponent = isHome ? away : home;
     let odds = null;
     let selection = "";
     let label = "";
-    let market = "1x2";
+    const market = "1x2";
     if (category === "wins" || category === "undefeated") {
-      odds = hit.side === "home" ? g.homeOdds : g.awayOdds;
-      selection = hit.side;
+      odds = isHome ? homeOdds : awayOdds;
+      selection = isHome ? "home" : "away";
       label = `${team} to win`;
     } else if (category === "losses" || category === "winless") {
-      odds = hit.side === "home" ? g.awayOdds : g.homeOdds;
-      selection = hit.side === "home" ? "away" : "home";
+      odds = isHome ? awayOdds : homeOdds;
+      selection = isHome ? "away" : "home";
       label = `${opponent} to win`;
     }
     const pick = attachFixture(
       {
-        id: pickId(category, g.home, g.away, team),
+        id: pickId(category, home, away, team),
         category,
-        home: g.home,
-        away: g.away,
+        home,
+        away,
         team,
         opponent,
-        league: g.league || row.league,
-        kickoff: g.kickoff,
+        league,
+        kickoff,
         kickoffIso: null,
         selection,
         label,
@@ -1067,6 +1113,18 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
   const books = odds?.byFixture ?? {};
   const seenAgree = new Set();
   const pool = [];
+  for (const f of fixtures) {
+    if (!f?.home?.name || !f?.away?.name) continue;
+    if (f.status === "post") continue;
+    pool.push({
+      home: f.home.name,
+      away: f.away.name,
+      league: f.league,
+      kickoff: f.start,
+      game: null,
+      fixture: f,
+    });
+  }
   for (const g of games.filter((row) => !row.settled)) {
     pool.push({
       home: g.home,
@@ -1080,6 +1138,8 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
     for (const p of list) pool.push(p);
   }
 
+  await mapPool(pool, 6, (row) => packOf(row));
+
   for (const row of pool) {
     const pair = `${normName(row.home)}|${normName(row.away)}`;
     if (skipPairs.has(pair) || seenAgree.has(pair)) continue;
@@ -1090,7 +1150,7 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
       continue;
     }
     const last5 = packForSheet(pack);
-    const fixture = findFixture(fixtures, row.home, row.away);
+    const fixture = row.fixture || findFixture(fixtures, row.home, row.away);
     const book = fixture ? books[fixture.id] : null;
     for (const m of agreedMarkets(pack)) {
       const price = priceAgreed(m, book, row.game, fixture);
@@ -1128,6 +1188,45 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
         categories[m.id].push(pick);
       }
     }
+    for (const m of agreedResults(pack)) {
+      const team = m.teamSide === "home" ? row.home : row.away;
+      const opponent = m.teamSide === "home" ? row.away : row.home;
+      const backed = m.selection === "home" ? row.home : row.away;
+      const price = price1x2(m.selection, book, fixture);
+      if (!inOddsBand(price)) continue;
+      const pick = attachFixture(
+        {
+          id: pickId(m.id, row.home, row.away, team),
+          category: m.id,
+          home: row.home,
+          away: row.away,
+          team,
+          opponent,
+          league: row.league,
+          kickoff: row.kickoff,
+          kickoffIso: fixture?.start ?? null,
+          selection: m.selection,
+          label: `${backed} to win`,
+          market: "1x2",
+          odds: price,
+          rate: m.rate,
+          sample: m.sample ?? 5,
+          statLabel: `${Math.round(m.rate * 100)}% last 5`,
+          sources: ["form"],
+          sourceNotes: [{ source: "form", rate: m.rate, sample: m.sample ?? 5, odds: price }],
+          fixtureId: fixture?.id ?? null,
+          homeLogo: fixture?.home?.logo ?? null,
+          awayLogo: fixture?.away?.logo ?? null,
+          url: "",
+          last5,
+        },
+        fixtures,
+      );
+      if (qualify(pick) && last5Supports(pick, pack)) {
+        categories[m.id] = categories[m.id] || [];
+        categories[m.id].push(pick);
+      }
+    }
   }
 
   for (const key of Object.keys(categories)) {
@@ -1148,6 +1247,6 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
     counts,
     categories,
     bankers,
-    games: games.length,
+    games: seenAgree.size || games.length,
   };
 }

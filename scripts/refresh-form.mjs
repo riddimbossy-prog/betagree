@@ -43,7 +43,11 @@ if (previewBoard) {
       boards: {
         "most-wins": {
           ...previewBoard,
-          overall: (previewBoard.overall ?? []).filter((r) => r.playingToday || r.boardLabel).slice(0, 8),
+          overall: (() => {
+            const rows = previewBoard.overall ?? [];
+            const todayRows = rows.filter((r) => r.playingToday);
+            return (todayRows.length ? todayRows : rows).slice(0, 8);
+          })(),
           home: [],
           away: [],
         },

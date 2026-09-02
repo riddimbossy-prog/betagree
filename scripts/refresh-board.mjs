@@ -188,8 +188,9 @@ writeJson(join(dir, "picks.json"), { date: dayStr, picks: todaySlate.picks ?? []
 writeJson(join(dir, "ledger.json"), ledger);
 writeJson(join(dir, "league-rates.json"), buildLeagueRates(history));
 
+let book = null;
 try {
-  const book = await buildOddsBook(todaySlate.fixtures ?? []);
+  book = await buildOddsBook(todaySlate.fixtures ?? []);
   writeJson(join(dir, "odds.json"), book);
   console.log(`odds matched ${book.matched}/${book.events}`);
 } catch (err) {
@@ -202,6 +203,7 @@ try {
     fixtures: todayFix,
     date: dayStr,
     dateLabel: todaySlate.dateLabel,
+    odds: book,
   });
   writeJson(join(dir, "trends.json"), trends);
 } catch (err) {
@@ -226,7 +228,11 @@ try {
         boards: {
           "most-wins": {
             ...previewBoard,
-            overall: (previewBoard.overall ?? []).slice(0, 8),
+            overall: (() => {
+              const rows = previewBoard.overall ?? [];
+              const todayRows = rows.filter((r) => r.playingToday);
+              return (todayRows.length ? todayRows : rows).slice(0, 8);
+            })(),
             home: [],
             away: [],
           },

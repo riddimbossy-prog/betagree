@@ -37,4 +37,8 @@ const trends = await buildTrends({
 mkdirSync(dir, { recursive: true });
 writeFileSync(join(dir, "trends.json"), JSON.stringify(trends));
 const n = Object.values(trends.counts ?? {}).reduce((a, b) => a + b, 0);
-console.log(`trends ${today} · ${n} picks · bankers ${trends.bankers?.length ?? 0} · games ${trends.games}`);
+const todayN = Object.values(trends.categories ?? {}).reduce(
+  (sum, list) => sum + list.filter((p) => String(p.kickoffIso || "").slice(0, 10) === today).length,
+  0,
+);
+console.log(`trends ${today} · ${n} picks · bankers ${trends.bankers?.length ?? 0} · games ${trends.games} · today ${todayN}`);

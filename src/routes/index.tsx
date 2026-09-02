@@ -84,7 +84,12 @@ function Home() {
         0,
       )
     : 0;
-  const formHot = (form.data?.boards["most-wins"]?.overall ?? []).filter((r) => r.playingToday).slice(0, 4);
+  const formBest = (trendCats?.wins ?? []).filter((pick) =>
+    isPlayingToday(pick.kickoffIso, pick.kickoff, trends.data?.date),
+  );
+  const formHot = (form.data?.boards["most-wins"]?.overall ?? [])
+    .filter((r) => r.playingToday && isPlayingToday(r.kickoff))
+    .slice(0, 4);
   const streakAll = [...(streaks.data?.twoYes ?? []), ...(streaks.data?.threeNo ?? [])];
   const streakToday = streakAll.filter((pick) => pick.when === "today" || isPlayingToday(pick.kickoff));
   const streakTomorrow = streakAll.filter((pick) => pick.when === "tomorrow" || isPlayingTomorrow(pick.kickoff));
@@ -150,7 +155,7 @@ function Home() {
             eyebrow: "Current form",
             title: "Form",
             body: "Best sides to back. Worst sides to fade.",
-            badge: String(formHot.length || "—"),
+            badge: String(formBest.length || formHot.length || "—"),
             badgeHint: "specialist",
             to: "/form",
             icon: "flame",
@@ -238,7 +243,7 @@ function Home() {
         </section>
       ) : null}
 
-      {formHot.length ? (
+      {formBest.length || formHot.length ? (
         <section>
           <div className="mb-4 flex items-end justify-between">
             <h2 className="text-2xl font-semibold">
@@ -248,11 +253,19 @@ function Home() {
               Full table
             </Link>
           </div>
-          <div className="flex flex-col gap-3">
-            {formHot.map((row) => (
-              <FormRowCard key={`${row.team}-${row.league}`} row={row} unit="Wins" highlight={row.rank === 1} />
-            ))}
-          </div>
+          {formBest.length ? (
+            <div className="grid gap-3 fold:grid-cols-2">
+              {formBest.slice(0, 4).map((pick) => (
+                <TrendCard key={pick.id} pick={pick} />
+              ))}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {formHot.map((row) => (
+                <FormRowCard key={`${row.team}-${row.league}`} row={row} unit="Wins" highlight={row.rank === 1} />
+              ))}
+            </div>
+          )}
         </section>
       ) : null}
 

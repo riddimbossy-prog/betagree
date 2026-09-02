@@ -150,6 +150,64 @@ test("form pick is dropped when odds miss the band", () => {
   assert.equal(picks.length, 0);
 });
 
+test("form playingToday is only a real today kickoff, not a PrimaTips flag", () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const celtic = decorateFormRows(
+    [{ team: "Celtic", playingToday: true, rank: 1, count: 8, matches: 10, rate: 0.8, league: "Scotland" }],
+    [
+      {
+        id: "fx-celt",
+        status: "pre",
+        start: `${today}T18:45:00Z`,
+        live: false,
+        home: { name: "Celtic", logo: null },
+        away: { name: "Aberdeen", logo: null },
+      },
+    ],
+  );
+  assert.equal(celtic[0].playingToday, true);
+  assert.equal(celtic[0].fixtureId, "fx-celt");
+
+  const flaggedOnly = decorateFormRows(
+    [{ team: "Levski Sofia", playingToday: true, rank: 2, count: 8, matches: 10, rate: 0.8, league: "Bulgaria" }],
+    [],
+  );
+  assert.equal(flaggedOnly[0].playingToday, false);
+
+  const falseFriend = decorateFormRows(
+    [{ team: "Hamilton", playingToday: true, rank: 3, count: 8, matches: 10, rate: 0.8, league: "Scotland" }],
+    [
+      {
+        id: "401880877",
+        status: "pre",
+        start: `${today}T18:45:00Z`,
+        home: { name: "Wigan Athletic", logo: null },
+        away: { name: "Milton Keynes Dons", logo: null },
+      },
+    ],
+  );
+  assert.equal(falseFriend[0].fixtureId, null);
+  assert.equal(falseFriend[0].playingToday, false);
+});
+
+test("PrimaTips form can attach to today's slate when the home list misses the game", () => {
+  const form = [{ team: "Celtic", matches: 10, count: 8, rate: 0.8, playingToday: true, league: "Scotland" }];
+  const picks = buildPicksFromPrimaForm([], form, "wins", [
+    {
+      id: "fx-celt",
+      status: "pre",
+      start: "2026-09-02T18:45:00Z",
+      league: "Scottish Premiership",
+      home: { name: "Celtic", ml: -400, logo: null },
+      away: { name: "Aberdeen", ml: 1000, logo: null },
+    },
+  ]);
+  assert.equal(picks.length, 1);
+  assert.equal(picks[0].selection, "home");
+  assert.equal(picks[0].home, "Celtic");
+  assert.ok(picks[0].odds >= 1.19 && picks[0].odds <= 1.55);
+});
+
 test("BetExplorer over/under keeps 70% + band only", () => {
   const html = `
     <table class="table-main">

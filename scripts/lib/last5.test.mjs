@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { agreedMarkets, isSameTier, last5Supports, summarizeGames } from "./last5.mjs";
+import { agreedMarkets, agreedResults, isSameTier, last5Supports, summarizeGames } from "./last5.mjs";
 
 const fourWins = summarizeGames([
   { result: "W", hs: 2, as: 0, goals: 2 },
@@ -123,4 +123,20 @@ test("both sides must agree on totals and first half", () => {
   assert.ok(ids.includes("gg"));
   assert.ok(ids.includes("ht_over05"));
   assert.ok(!ids.includes("under25"));
+});
+
+test("agreedResults emits venue last-5 wins and fade losses", () => {
+  const pack = {
+    home: fourWins,
+    away: cold,
+    homeHome: fourWins,
+    awayAway: cold,
+    h2h: summarizeGames([]),
+  };
+  const keys = agreedResults(pack).map((m) => `${m.id}:${m.selection}:${m.teamSide}`);
+  assert.ok(keys.includes("wins:home:home"));
+  assert.ok(keys.includes("undefeated:home:home"));
+  assert.ok(keys.includes("losses:home:away"));
+  assert.ok(keys.includes("winless:home:away"));
+  assert.ok(!keys.includes("wins:away:away"));
 });

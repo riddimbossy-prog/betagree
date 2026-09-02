@@ -58,7 +58,9 @@ function FormPage() {
           Current <span className="font-serif italic font-normal">form</span>
         </h1>
         <p className="mt-2 text-base text-subtle">
-          {loading && !data ? "Loading…" : `${total} ${pole === "best" ? "best" : "fade"} picks`}
+          {loading && !data
+            ? "Loading…"
+            : `${total} ${pole === "best" ? "best" : "fade"} picks${todayOnly ? " today" : ""}`}
         </p>
       </header>
 
