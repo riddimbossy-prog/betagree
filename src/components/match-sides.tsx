@@ -23,14 +23,16 @@ function TeamSide({
   return (
     <div
       className={cn(
-        "flex min-w-0 items-center gap-2",
-        align === "end" && "flex-row-reverse text-right",
+        "flex min-w-0 flex-col items-center gap-1.5",
+        align === "start" ? "fold:items-start" : "fold:items-end",
       )}
     >
       <Crest name={name} logo={logo} size="sm" className="shrink-0" />
       <p
+        title={name}
         className={cn(
-          "min-w-0 text-[13px] font-semibold leading-tight break-words fold:text-sm",
+          "w-full min-w-0 max-w-full text-center text-[13px] font-semibold leading-snug text-pretty hyphens-none [overflow-wrap:break-word] [word-break:normal] fold:text-sm",
+          align === "start" ? "fold:text-left" : "fold:text-right",
           picked && "text-or",
         )}
       >
@@ -60,14 +62,19 @@ export function MatchSides({
   const same = Boolean(homeLogo && homeLogo === awayLogo);
   const picked = pick?.trim().toLowerCase();
   return (
-    <div className={cn("grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5 fold:gap-3", className)}>
+    <div
+      className={cn(
+        "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 fold:items-center fold:gap-3",
+        className,
+      )}
+    >
       <TeamSide
         name={home}
         logo={same ? null : homeLogo}
         align="start"
         picked={Boolean(picked && home.toLowerCase() === picked)}
       />
-      <div className="flex min-w-0 max-w-[6.75rem] flex-col items-center justify-center px-0.5 fold:max-w-[8rem]">
+      <div className="flex min-w-0 max-w-[5.75rem] flex-col items-center justify-center self-center px-0.5 fold:max-w-[8rem]">
         {center}
       </div>
       <TeamSide
