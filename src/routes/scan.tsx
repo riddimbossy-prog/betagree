@@ -5,6 +5,7 @@ import { SCAN_LABEL, SCAN_ORDER, ScanCard, scanKind } from "@/components/scan-ca
 import { BoardState, LiveBar } from "@/components/live-bar";
 import { isPlayingToday, isPlayingTomorrow } from "@/lib/format";
 import { useSportyScan } from "@/lib/live/use-live";
+import { SPORTY_SCAN_COPY } from "@/lib/sporty-scan-copy";
 import type { SportyScanPayload, SportyScanPick } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +56,42 @@ function inWhen(pick: SportyScanPick, when: WhenFilter) {
   if (when === "today") return isTodayPick(pick);
   if (when === "tomorrow") return isTomorrowPick(pick);
   return true;
+}
+
+function ScanRules() {
+  const [copied, setCopied] = useState(false);
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(SPORTY_SCAN_COPY);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  }
+  return (
+    <details className="glass rounded-3xl p-4 fold:p-5">
+      <summary className="cursor-pointer text-sm font-semibold">
+        Rules <span className="font-serif italic font-normal text-muted-foreground">copyable</span>
+      </summary>
+      <div className="mt-3 flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">2 filters to qualify. Skip rules always hold.</p>
+        <button
+          type="button"
+          onClick={copy}
+          className={cn(
+            "inline-flex shrink-0 items-center rounded-full px-3 py-1.5 text-xs font-semibold",
+            copied ? "glass-lime text-primary-foreground" : "glass text-muted-foreground",
+          )}
+        >
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <pre className="mt-3 max-h-[28rem] overflow-auto whitespace-pre-wrap rounded-2xl bg-background/50 p-3 text-[11px] leading-relaxed text-foreground/90">
+        {SPORTY_SCAN_COPY}
+      </pre>
+    </details>
+  );
 }
 
 function ScanPage() {
@@ -116,9 +153,11 @@ function ScanPage() {
                 : `${visible.length} hits from ${data?.scanned ?? picks.length} matches`}
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Favourite wins, GG, under 2.5, home 2+ and away DNB from the live SportyBet book.
+          Favourite wins, GG, under 2.5, home 2+, away DNB and draw or over 2.5 from the live SportyBet book. Two filters qualify a market; skip rules always hold.
         </p>
       </header>
+
+      <ScanRules />
 
       <div className="chip-row" role="group" aria-label="When">
         {(

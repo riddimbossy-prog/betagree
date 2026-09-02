@@ -148,8 +148,8 @@ function Home() {
             eyebrow: "SportyBet board",
             title: "Sporty scan",
             body: sportyScan.data?.when?.today
-              ? `Scanned ${sportyScan.data.when.today} today matches. Favourite wins, GG, unders, 2+ and DNB.`
-              : "Favourite wins, GG, unders, 2+ and DNB from the live book.",
+              ? `Scanned ${sportyScan.data.when.today} today matches. Wins, GG, unders, 2+, DNB and draw or over 2.5.`
+              : "Favourite wins, GG, unders, 2+, DNB and draw or over 2.5 from the live book.",
             badge: String(scanPicks.length || "—"),
             badgeHint: "scan hits",
             to: "/scan",

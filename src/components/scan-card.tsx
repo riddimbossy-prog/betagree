@@ -7,20 +7,22 @@ import { cn } from "@/lib/utils";
 
 export const SCAN_LABEL: Record<string, string> = {
   win: "To win",
-  under25: "Under 2.5",
-  gg: "GG",
   twoPlus: "2+ goals",
   dnb: "Draw no bet",
+  gg: "GG",
+  under25: "Under 2.5",
+  drawOver: "Draw or over 2.5",
 };
 
-export const SCAN_ORDER = ["win", "twoPlus", "dnb", "gg", "under25"] as const;
+export const SCAN_ORDER = ["win", "twoPlus", "dnb", "gg", "under25", "drawOver"] as const;
 
 const SCAN_CHIP: Record<string, string> = {
   win: "glass-or text-or",
-  under25: "glass-azure text-primary-foreground",
-  gg: "glass-purpure text-primary-foreground",
   twoPlus: "glass-high text-band-high-foreground",
   dnb: "glass-lime text-primary-foreground",
+  gg: "glass-purpure text-primary-foreground",
+  under25: "glass-azure text-primary-foreground",
+  drawOver: "glass-amber text-primary-foreground",
 };
 
 export function scanKind(pick: SportyScanPick) {
@@ -29,6 +31,7 @@ export function scanKind(pick: SportyScanPick) {
   if (pick.rule === "GG_TEAM_O05") return "gg";
   if (pick.rule === "HOME_2PLUS") return "twoPlus";
   if (pick.rule === "AWAY_DNB") return "dnb";
+  if (pick.rule === "DRAW_OR_OVER25") return "drawOver";
   return "win";
 }
 

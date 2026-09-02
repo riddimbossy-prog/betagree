@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Scan every upcoming SportyBet football match with the main-board rules:
- * favourite win, weak under 2.5, GG, home 2+, away DNB.
+ * favourite win, weak under 2.5, GG, home 2+, away DNB, draw or over 2.5.
  *
  * The SportyBet book is two tabs. pcUpcomingEvents without todayGames=true is
  * Early only (later days). Today's card is pulled via todayGames=true inside
@@ -243,6 +243,8 @@ export async function buildSportyScanBoard() {
       bttsYes: outcomeOdds(item.btts, "yes") ?? outcomeOdds(item.btts, "gg"),
       dnbAway: outcomeOdds(item.dnb, "away"),
       dnbHome: outcomeOdds(item.dnb, "home"),
+      gg2plus: item.gg2plus ?? null,
+      drawOrOver25: item.drawOrOver25 ?? null,
     });
   }
 

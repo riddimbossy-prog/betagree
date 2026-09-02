@@ -469,7 +469,13 @@ export type StreakAccuracy = {
   }>;
 };
 
-export type SportyScanRule = "FAV_WIN" | "WEAK_UNDER25" | "GG_TEAM_O05" | "HOME_2PLUS" | "AWAY_DNB";
+export type SportyScanRule =
+  | "FAV_WIN"
+  | "WEAK_UNDER25"
+  | "GG_TEAM_O05"
+  | "HOME_2PLUS"
+  | "AWAY_DNB"
+  | "DRAW_OR_OVER25";
 
 export type SportyScanPick = {
   fixtureId: string;

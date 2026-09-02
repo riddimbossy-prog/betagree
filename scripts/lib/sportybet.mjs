@@ -26,6 +26,8 @@ export const SB_MARKETS = {
   btts: 29,
   twoPlusStreak: 60010,
   threePlusStreak: 60020,
+  ouGg: 36,
+  drawOrOver: 856,
 };
 
 function headers() {
@@ -225,6 +227,33 @@ export function teamOuLines(ev, side) {
   return lines;
 }
 
+function findMarket(ev, id, specRe) {
+  return (ev?.markets ?? []).find((m) => {
+    if (String(m.id) !== String(id)) return false;
+    if (!specRe) return true;
+    return specRe.test(String(m.specifier ?? ""));
+  });
+}
+
+function outcomeByDesc(market, re) {
+  const row = (market?.outcomes ?? []).find((o) => re.test(String(o.desc ?? "")));
+  const n = Number(row?.odds);
+  return Number.isFinite(n) ? n : null;
+}
+
+/** GG2+ is Over 2.5 & GG Yes on market 36. */
+export function gg2plusOdds(ev) {
+  const m = findMarket(ev, SB_MARKETS.ouGg, /total=2\.5/);
+  return outcomeByDesc(m, /over\s*2\.5\s*&\s*yes/i);
+}
+
+/** Draw or Over 2.5 Yes on market 856. */
+export function drawOrOverOdds(ev, line = 2.5) {
+  const re = new RegExp(`total=${String(line).replace(".", "\\.")}`);
+  const m = findMarket(ev, SB_MARKETS.drawOrOver, re);
+  return outcomeByDesc(m, /^yes$/i);
+}
+
 export async function pullBoardBooks({ pageSize = 80, maxPages = 8 } = {}) {
   const [one, dc, dnb, ou, btts] = await Promise.all([
     pullMarket(SB_MARKETS.oneXTwo, { pageSize, maxPages }),
@@ -256,15 +285,17 @@ export async function pullBoardBooks({ pageSize = 80, maxPages = 8 } = {}) {
   };
 }
 
-/** 1X2 + DNB + O/U + BTTS + home/away team totals for the main-board scan. */
+/** 1X2 + DNB + O/U + BTTS + home/away team totals + GG2+ + Draw or Over 2.5. */
 export async function pullScanBooks({ pageSize = 80, maxPages = 16 } = {}) {
-  const [one, dnb, ou, homeOu, awayOu, btts] = await Promise.all([
+  const [one, dnb, ou, homeOu, awayOu, btts, ouGg, drawOrOver] = await Promise.all([
     pullMarket(SB_MARKETS.oneXTwo, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.drawNoBet, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.overUnder, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.homeOu, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.awayOu, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.btts, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.ouGg, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.drawOrOver, { pageSize, maxPages }),
   ]);
   const ids = new Set([
     ...one.keys(),
@@ -273,11 +304,20 @@ export async function pullScanBooks({ pageSize = 80, maxPages = 16 } = {}) {
     ...homeOu.keys(),
     ...awayOu.keys(),
     ...btts.keys(),
+    ...ouGg.keys(),
+    ...drawOrOver.keys(),
   ]);
   const events = [];
   for (const id of ids) {
     const ev =
-      one.get(id) ?? dnb.get(id) ?? ou.get(id) ?? homeOu.get(id) ?? awayOu.get(id) ?? btts.get(id);
+      one.get(id) ??
+      dnb.get(id) ??
+      ou.get(id) ??
+      homeOu.get(id) ??
+      awayOu.get(id) ??
+      btts.get(id) ??
+      ouGg.get(id) ??
+      drawOrOver.get(id);
     if (!ev) continue;
     events.push({
       id,
@@ -290,6 +330,8 @@ export async function pullScanBooks({ pageSize = 80, maxPages = 16 } = {}) {
       homeOu: teamOuLines(homeOu.get(id) ?? ev, "home"),
       awayOu: teamOuLines(awayOu.get(id) ?? ev, "away"),
       btts: marketRow(btts.get(id)),
+      gg2plus: gg2plusOdds(ouGg.get(id) ?? ev),
+      drawOrOver25: drawOrOverOdds(drawOrOver.get(id) ?? ev),
     });
   }
   return {
@@ -301,6 +343,8 @@ export async function pullScanBooks({ pageSize = 80, maxPages = 16 } = {}) {
       homeOu: homeOu.size,
       awayOu: awayOu.size,
       btts: btts.size,
+      ouGg: ouGg.size,
+      drawOrOver: drawOrOver.size,
     },
   };
 }
