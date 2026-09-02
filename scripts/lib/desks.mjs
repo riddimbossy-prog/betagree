@@ -83,10 +83,14 @@ export function normName(s) {
 }
 
 export function nameTokens(s) {
-  return normName(s)
+  const raw = String(s ?? "");
+  const female = /\b(women|ladies|(?:^|[\s.-])w(?:$|[\s.-]))/i.test(raw);
+  const toks = normName(raw)
     .split(" ")
     .map((w) => ALIAS[w] || w)
     .filter((w) => w.length > 1 && !STOP.has(w));
+  if (female && !toks.includes("women")) toks.push("women");
+  return toks;
 }
 
 export function nameScore(a, b) {
@@ -283,16 +287,21 @@ function findTeamFixture(fixtures, team) {
   return best;
 }
 
-export function decorateFormRows(rows, fixtures, limit = 40) {
+export function decorateFormRows(rows, fixtures, limit = 40, games = []) {
   const today = new Date().toISOString().slice(0, 10);
   const decorated = (rows || []).map((row) => {
     const hit = findTeamFixture(fixtures, row.team);
+    const prima = hit ? null : findTeamGame(games, row.team);
     const day = String(hit?.fixture?.start || "").slice(0, 10);
-    const onToday = Boolean(hit && (hit.fixture.live || day === today));
+    const onSlate = Boolean(hit && (hit.fixture.live || day === today));
+    const onPrima = Boolean(prima && !prima.game.settled);
+    const onToday = onSlate || onPrima;
+    const home = hit?.fixture?.home?.name ?? prima?.game?.home ?? null;
+    const away = hit?.fixture?.away?.name ?? prima?.game?.away ?? null;
     return {
       rank: row.rank ?? 0,
       team: row.team,
-      league: row.league || hit?.fixture?.league || "",
+      league: row.league || hit?.fixture?.league || prima?.game?.league || "",
       count: row.count ?? 0,
       matches: row.matches ?? 0,
       rate: row.rate,
@@ -303,27 +312,35 @@ export function decorateFormRows(rows, fixtures, limit = 40) {
       teamPath: null,
       logo: hit?.side?.logo ?? null,
       fixtureId: hit?.fixture?.id ?? null,
-      opponent: hit?.opp?.name ?? null,
-      kickoff: hit?.fixture?.start ?? null,
+      opponent: hit?.opp?.name ?? (prima ? (prima.side === "home" ? prima.game.away : prima.game.home) : null),
+      home,
+      away,
+      kickoff: hit?.fixture?.start ?? prima?.game?.kickoff ?? null,
+      homeLogo: hit?.fixture?.home?.logo ?? null,
+      awayLogo: hit?.fixture?.away?.logo ?? null,
     };
   });
   const top = decorated.slice(0, limit);
-  const extra = decorated.filter((r) => r.fixtureId && !top.some((t) => t.team === r.team));
+  const extra = decorated.filter((r) => (r.fixtureId || r.playingToday) && !top.some((t) => t.team === r.team));
   extra.sort((a, b) => Number(b.playingToday) - Number(a.playingToday) || a.rank - b.rank);
   return extra.concat(top);
 }
 
 export async function buildFormBoard({ fixtures = [], date, dateLabel } = {}) {
   const today = date || new Date().toISOString().slice(0, 10);
-  const pages = await Promise.all(FORM_BOARDS.map((b) => fetchHtml(`https://primatips.com${b.path}`)));
+  const pages = await Promise.all([
+    fetchHtml("https://primatips.com/"),
+    ...FORM_BOARDS.map((b) => fetchHtml(`https://primatips.com${b.path}`)),
+  ]);
+  const games = parsePrimaGames(pages[0] || "");
   const boards = {};
   let playingToday = 0;
   for (let i = 0; i < FORM_BOARDS.length; i++) {
     const meta = FORM_BOARDS[i];
-    const tables = parsePrimaFormTables(pages[i] || "");
-    const overall = decorateFormRows(tables.overall, fixtures);
-    const home = decorateFormRows(tables.home, fixtures);
-    const away = decorateFormRows(tables.away, fixtures);
+    const tables = parsePrimaFormTables(pages[i + 1] || "");
+    const overall = decorateFormRows(tables.overall, fixtures, 40, games);
+    const home = decorateFormRows(tables.home, fixtures, 40, games);
+    const away = decorateFormRows(tables.away, fixtures, 40, games);
     if (meta.id === "most-wins") playingToday = overall.filter((r) => r.playingToday).length;
     boards[meta.id] = {
       ...meta,
@@ -471,7 +488,7 @@ export function parsePrimaTipMarkets(html) {
   };
 }
 
-function findGame(games, home, away) {
+export function findGame(games, home, away) {
   let best = null;
   let score = 0;
   for (const g of games) {
@@ -487,12 +504,14 @@ function findGame(games, home, away) {
   return best;
 }
 
-function findTeamGame(games, team) {
+export function findTeamGame(games, team) {
   let best = null;
   let score = 0;
   for (const g of games) {
-    const sh = nameScore(g.home, team);
-    const sa = nameScore(g.away, team);
+    const homeHit = namesAlign(g.home, team);
+    const awayHit = namesAlign(g.away, team);
+    const sh = homeHit ? nameScore(g.home, team) : 0;
+    const sa = awayHit ? nameScore(g.away, team) : 0;
     const s = Math.max(sh, sa);
     if (s > score && s >= 0.72) {
       best = { game: g, side: sh >= sa ? "home" : "away" };
@@ -539,6 +558,58 @@ function findFixture(fixtures, home, away) {
   return best;
 }
 
+function flipSide(selection) {
+  const s = String(selection || "");
+  if (s === "home") return "away";
+  if (s === "away") return "home";
+  if (/^home\b/i.test(s)) return s.replace(/^home/i, "Away");
+  if (/^away\b/i.test(s)) return s.replace(/^away/i, "Home");
+  return selection;
+}
+
+function snapName(name, fixture) {
+  if (!name) return name;
+  if (namesAlign(name, fixture.home.name) || sameTeam(name, fixture.home.name)) return fixture.home.name;
+  if (namesAlign(name, fixture.away.name) || sameTeam(name, fixture.away.name)) return fixture.away.name;
+  return name;
+}
+
+export function alignPickToFixture(pick, fixture) {
+  if (!fixture?.home?.name || !fixture?.away?.name) return pick;
+  const straight = nameScore(fixture.home.name, pick.home) + nameScore(fixture.away.name, pick.away);
+  const flipped = nameScore(fixture.home.name, pick.away) + nameScore(fixture.away.name, pick.home);
+  const swapped = flipped > straight;
+  const selection = swapped ? flipSide(pick.selection) : pick.selection;
+  const team = snapName(pick.team, fixture);
+  const opponent = snapName(pick.opponent, fixture);
+  let label = pick.label;
+  if (pick.team && team && pick.team !== team && label) label = String(label).replaceAll(pick.team, team);
+  return {
+    ...pick,
+    home: fixture.home.name,
+    away: fixture.away.name,
+    team,
+    opponent,
+    selection,
+    label,
+    fixtureId: fixture.id,
+    homeLogo: fixture.home.logo ?? pick.homeLogo ?? null,
+    awayLogo: fixture.away.logo ?? pick.awayLogo ?? null,
+    kickoffIso: fixture.start ?? pick.kickoffIso,
+    league: pick.league || fixture.league,
+  };
+}
+
+function attachFixture(pick, fixtures) {
+  const f = findFixture(fixtures, pick.home, pick.away);
+  const aligned = f ? alignPickToFixture(pick, f) : pick;
+  const book = fixtureMarketOdds(f, aligned.market, aligned.selection);
+  let odds = aligned.odds;
+  if (inOddsBand(book) && !inOddsBand(odds)) odds = book;
+  else if (odds == null && book != null) odds = book;
+  return { ...aligned, odds };
+}
+
 function isSoonRow(when, todayStamp) {
   if (!when) return true;
   const m = String(when).match(/(\d{2})\.(\d{2})\.(\d{4})/);
@@ -552,24 +623,6 @@ function isSoonRow(when, todayStamp) {
 
 function pickId(category, home, away, team) {
   return `${category}:${normName(home)}:${normName(away)}:${normName(team)}`;
-}
-
-function attachFixture(pick, fixtures) {
-  const f = findFixture(fixtures, pick.home, pick.away);
-  const book = fixtureMarketOdds(f, pick.market, pick.selection);
-  let odds = pick.odds;
-  if (inOddsBand(book) && !inOddsBand(odds)) odds = book;
-  else if (odds == null && book != null) odds = book;
-  if (!f) return { ...pick, odds };
-  return {
-    ...pick,
-    odds,
-    fixtureId: f.id,
-    homeLogo: f.home.logo,
-    awayLogo: f.away.logo,
-    kickoffIso: f.start,
-    league: pick.league || f.league,
-  };
 }
 
 function priceAgreed(m, book, game, fixture) {
@@ -610,7 +663,7 @@ function emptyCategories() {
   };
 }
 
-function mergePicks(list) {
+export function mergePicks(list) {
   const by = new Map();
   for (const p of list) {
     const key = p.fixtureId
@@ -629,11 +682,19 @@ function mergePicks(list) {
     if (!inOddsBand(prev.odds) && inOddsBand(p.odds)) prev.odds = p.odds;
     if (!prev.fixtureId && p.fixtureId) {
       prev.fixtureId = p.fixtureId;
+      prev.home = p.home;
+      prev.away = p.away;
       prev.homeLogo = p.homeLogo;
       prev.awayLogo = p.awayLogo;
+      prev.team = p.team;
+      prev.opponent = p.opponent;
+      prev.selection = p.selection;
+      prev.label = p.label;
     }
     if (!prev.kickoffIso && p.kickoffIso) prev.kickoffIso = p.kickoffIso;
     if (!prev.last5 && p.last5) prev.last5 = p.last5;
+    if (p.origin === "desk" || prev.origin === "desk") prev.origin = "desk";
+    else if (p.origin && !prev.origin) prev.origin = p.origin;
   }
   return [...by.values()].sort((a, b) => b.rate - a.rate || a.odds - b.odds);
 }
@@ -733,6 +794,7 @@ export function buildPicksFromPrimaForm(games, form, category, fixtures) {
         statLabel: `${Math.round(rate * 100)}% of ${row.matches}`,
         sources: ["form"],
         sourceNotes: [{ source: "form", rate, sample: row.matches, odds }],
+        origin: "desk",
         fixtureId: null,
         homeLogo: null,
         awayLogo: null,
@@ -754,7 +816,7 @@ export function buildPicksFromBeStreaks(games, rows, category, fixtures, todaySt
     const home = g?.home || row.home;
     const away = g?.away || row.away;
     if (!home || !away) continue;
-    const focusHome = sameTeam(row.team, home);
+    const focusHome = namesAlign(row.team, home) || sameTeam(row.team, home);
     const team = focusHome ? home : away;
     const opponent = focusHome ? away : home;
     const rate = row.streak >= MIN_SAMPLE ? 1 : row.streak / Math.max(row.streak, MIN_SAMPLE);
@@ -763,11 +825,15 @@ export function buildPicksFromBeStreaks(games, rows, category, fixtures, todaySt
     let selection = "";
     let label = "";
     if (category === "wins" || category === "undefeated") {
-      odds = focusHome ? (g?.homeOdds ?? row.homeOdds) : (g?.awayOdds ?? row.awayOdds);
+      const deskOdds = focusHome ? row.homeOdds : row.awayOdds;
+      const gameOdds = focusHome ? g?.homeOdds : g?.awayOdds;
+      odds = inOddsBand(deskOdds) ? deskOdds : gameOdds ?? deskOdds;
       selection = focusHome ? "home" : "away";
       label = `${team} to win`;
     } else {
-      odds = focusHome ? (g?.awayOdds ?? row.awayOdds) : (g?.homeOdds ?? row.homeOdds);
+      const deskOdds = focusHome ? row.awayOdds : row.homeOdds;
+      const gameOdds = focusHome ? g?.awayOdds : g?.homeOdds;
+      odds = inOddsBand(deskOdds) ? deskOdds : gameOdds ?? deskOdds;
       selection = focusHome ? "away" : "home";
       label = `${opponent} to win`;
     }
@@ -791,6 +857,7 @@ export function buildPicksFromBeStreaks(games, rows, category, fixtures, todaySt
         statLabel: `${sample}-game run`,
         sources: ["odds"],
         sourceNotes: [{ source: "odds", rate, sample, odds }],
+        origin: "desk",
         fixtureId: null,
         homeLogo: null,
         awayLogo: null,
@@ -834,6 +901,7 @@ export function buildPicksFromBeOu(games, rows, category, fixtures, todayStamp) 
         statLabel: `${Math.round((rate || 0) * 100)}% of ${row.games}`,
         sources: ["odds"],
         sourceNotes: [{ source: "odds", rate, sample: row.games, odds }],
+        origin: "desk",
         fixtureId: null,
         homeLogo: null,
         awayLogo: null,
@@ -917,6 +985,7 @@ export function buildGgAndOuFromTip(game, markets, fixtures) {
         statLabel: `${Math.round(rate * 100)}% recent GG`,
         sources: ["form"],
         sourceNotes: [{ source: "form", rate, sample: ggSample, odds }],
+        origin: "desk",
         fixtureId: null,
         homeLogo: null,
         awayLogo: null,
@@ -958,6 +1027,7 @@ export function buildGgAndOuFromTip(game, markets, fixtures) {
           statLabel: `${Math.round(rate * 100)}% recent`,
           sources: ["form"],
           sourceNotes: [{ source: "form", rate, sample: ggSample, odds }],
+          origin: "desk",
           fixtureId: null,
           homeLogo: null,
           awayLogo: null,
@@ -985,6 +1055,121 @@ export function bankersFrom(categories) {
     }
   }
   return out.sort((a, b) => b.rate - a.rate || a.odds - b.odds);
+}
+
+/** Last-5 splits may confirm a desk pick; they must not veto PrimaTips / BetExplorer. */
+export function keepFormPick(pick, pack) {
+  if (!pick) return false;
+  if (pick.origin !== "split") return true;
+  return last5Supports(pick, pack);
+}
+
+/** Rank teams both desks like, then sides that show up across markets. */
+export function formConsensus(categories) {
+  const by = new Map();
+  for (const list of Object.values(categories || {})) {
+    for (const p of list || []) {
+      if (!qualify(p)) continue;
+      const key = `${normName(p.home)}|${normName(p.away)}|${normName(p.team || p.home)}`;
+      const prev = by.get(key) ?? {
+        team: p.team,
+        home: p.home,
+        away: p.away,
+        league: p.league,
+        kickoff: p.kickoff,
+        kickoffIso: p.kickoffIso,
+        homeLogo: p.homeLogo,
+        awayLogo: p.awayLogo,
+        fixtureId: p.fixtureId,
+        markets: [],
+        sources: new Set(),
+        rate: 0,
+        odds: p.odds,
+        label: p.label,
+        pick: p,
+        dual: false,
+      };
+      if (!prev.markets.includes(p.category)) prev.markets.push(p.category);
+      for (const s of p.sources || []) prev.sources.add(s);
+      if (p.rate > prev.rate) {
+        prev.rate = p.rate;
+        prev.odds = p.odds;
+        prev.label = p.label;
+        prev.pick = p;
+      }
+      if (!prev.kickoffIso && p.kickoffIso) prev.kickoffIso = p.kickoffIso;
+      if (!prev.fixtureId && p.fixtureId) {
+        prev.fixtureId = p.fixtureId;
+        prev.home = p.home;
+        prev.away = p.away;
+        prev.homeLogo = p.homeLogo;
+        prev.awayLogo = p.awayLogo;
+      }
+      by.set(key, prev);
+    }
+  }
+  return [...by.values()]
+    .map((row) => {
+      const sources = [...row.sources];
+      const dual = sources.includes("form") && sources.includes("odds");
+      return {
+        team: row.team,
+        home: row.home,
+        away: row.away,
+        league: row.league,
+        kickoff: row.kickoff,
+        kickoffIso: row.kickoffIso,
+        homeLogo: row.homeLogo,
+        awayLogo: row.awayLogo,
+        fixtureId: row.fixtureId,
+        markets: row.markets,
+        sources,
+        rate: row.rate,
+        odds: row.odds,
+        label: row.label,
+        dual,
+        score: (dual ? 100 : 0) + row.markets.length * 10 + row.rate * 10,
+        pick: row.pick,
+      };
+    })
+    .sort((a, b) => b.score - a.score || b.rate - a.rate || (a.odds ?? 99) - (b.odds ?? 99));
+}
+
+export async function loadFormDesks() {
+  const pages = await Promise.all([
+    fetchHtml("https://primatips.com/"),
+    fetchHtml("https://primatips.com/form/most-wins"),
+    fetchHtml("https://primatips.com/form/most-losses"),
+    fetchHtml("https://primatips.com/form/least-wins"),
+    fetchHtml("https://primatips.com/form/least-losses"),
+    fetchHtml("https://primatips.com/form/most-goals-scored"),
+    fetchHtml("https://primatips.com/form/least-goals-scored"),
+    fetchHtml("https://www.betexplorer.com/football/streaks/wins/"),
+    fetchHtml("https://www.betexplorer.com/football/streaks/losses/"),
+    fetchHtml("https://www.betexplorer.com/football/streaks/no-wins/"),
+    fetchHtml("https://www.betexplorer.com/football/streaks/no-losses/"),
+    fetchHtml("https://www.betexplorer.com/football/streaks/over-under/"),
+  ]);
+  const ou = parseBeOverUnder(pages[11] || "");
+  return {
+    games: parsePrimaGames(pages[0] || ""),
+    prima: {
+      wins: parsePrimaForm(pages[1] || ""),
+      losses: parsePrimaForm(pages[2] || ""),
+      winless: parsePrimaForm(pages[3] || ""),
+      undefeated: parsePrimaForm(pages[4] || ""),
+      scored: parsePrimaForm(pages[5] || ""),
+      leastScored: parsePrimaForm(pages[6] || ""),
+    },
+    be: {
+      wins: parseBeStreakRows(pages[7] || ""),
+      losses: parseBeStreakRows(pages[8] || ""),
+      winless: parseBeStreakRows(pages[9] || ""),
+      undefeated: parseBeStreakRows(pages[10] || ""),
+      overs: ou.overs,
+      unders: ou.unders,
+    },
+  };
 }
 
 async function fetchHtml(url, ms = 14_000) {
@@ -1083,6 +1268,9 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
   for (const key of Object.keys(categories)) {
     categories[key] = mergePicks(categories[key]).filter(qualify);
   }
+
+  // Last-5 / same-tier never veto PrimaTips or BetExplorer desk picks.
+  // Even matches only skip extra last-5 markets, not the two desks.
   for (const list of Object.values(categories)) {
     for (const p of list) {
       const pack = await packOf(p);
@@ -1093,18 +1281,18 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
   for (const key of Object.keys(categories)) {
     const next = [];
     for (const p of categories[key]) {
-      const pair = `${normName(p.home)}|${normName(p.away)}`;
-      if (skipPairs.has(pair)) continue;
       const pack = await packOf(p);
-      if (!last5Supports(p, pack)) continue;
+      if (!keepFormPick(p, pack)) continue;
       const last5 = packForSheet(pack);
-      const focus = last5.home && p.team && p.home && String(p.team).toLowerCase() === String(p.home).toLowerCase()
-        ? last5.home
-        : last5.away;
+      const focus =
+        last5.home && p.team && p.home && String(p.team).toLowerCase() === String(p.home).toLowerCase()
+          ? last5.home
+          : last5.away;
+      const run = focus?.results?.join("") || "";
       next.push({
         ...p,
         last5,
-        statLabel: `${p.statLabel} · last 5 ${focus?.results?.join("") || ""}`.trim(),
+        statLabel: run ? `${p.statLabel} · last 5 ${run}` : p.statLabel,
       });
     }
     categories[key] = next;
@@ -1123,15 +1311,6 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
       kickoff: f.start,
       game: null,
       fixture: f,
-    });
-  }
-  for (const g of games.filter((row) => !row.settled)) {
-    pool.push({
-      home: g.home,
-      away: g.away,
-      league: g.league,
-      kickoff: g.kickoff,
-      game: g,
     });
   }
   for (const list of Object.values(categories)) {
@@ -1175,6 +1354,7 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
           statLabel: `${Math.round(m.rate * 100)}% both last 5`,
           sources: ["form"],
           sourceNotes: [{ source: "form", rate: m.rate, sample: 5, odds: price }],
+          origin: "split",
           fixtureId: fixture?.id ?? null,
           homeLogo: fixture?.home?.logo ?? null,
           awayLogo: fixture?.away?.logo ?? null,
@@ -1214,6 +1394,7 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
           statLabel: `${Math.round(m.rate * 100)}% last 5`,
           sources: ["form"],
           sourceNotes: [{ source: "form", rate: m.rate, sample: m.sample ?? 5, odds: price }],
+          origin: "split",
           fixtureId: fixture?.id ?? null,
           homeLogo: fixture?.home?.logo ?? null,
           awayLogo: fixture?.away?.logo ?? null,
@@ -1234,6 +1415,7 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
   }
 
   const bankers = bankersFrom(categories);
+  const consensus = formConsensus(categories);
   const counts = Object.fromEntries(Object.entries(categories).map(([k, v]) => [k, v.length]));
 
   return {
@@ -1247,6 +1429,7 @@ export async function buildTrends({ fixtures = [], date, dateLabel, odds = null 
     counts,
     categories,
     bankers,
+    consensus,
     games: seenAgree.size || games.length,
   };
 }

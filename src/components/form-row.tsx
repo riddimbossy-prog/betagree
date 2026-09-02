@@ -9,13 +9,21 @@ import type { FormBoardRow } from "@/lib/form-consensus";
 import type { FormRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
+function matchHome(row: FormRow | FormBoardRow) {
+  return row.home || row.team;
+}
+
+function matchAway(row: FormRow | FormBoardRow) {
+  return row.away || row.opponent || "—";
+}
+
 function briefFromForm(row: FormBoardRow, unit: string) {
   return {
     id: row.fixtureId ?? row.team,
-    home: row.team,
-    away: row.opponent ?? undefined,
-    homeLogo: row.homeLogo ?? row.logo,
-    awayLogo: row.awayLogo ?? null,
+    home: matchHome(row),
+    away: matchAway(row),
+    homeLogo: row.homeLogo ?? (row.home && row.team === row.home ? row.logo : null),
+    awayLogo: row.awayLogo ?? (row.away && row.team === row.away ? row.logo : null),
     league: row.league,
     kickoffIso: row.kickoff ?? null,
     label: row.boardLabel ?? `${row.team} · ${row.display} ${unit}`,
@@ -54,7 +62,7 @@ export function FormRowCard({
           <span className="block text-sm font-semibold leading-tight break-words fold:text-base">{row.team}</span>
           <span className={cn("block truncate text-xs", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
             {row.league}
-            {row.opponent ? ` · vs ${row.opponent}` : ""}
+            {row.home && row.away ? ` · ${row.home} vs ${row.away}` : row.opponent ? ` · vs ${row.opponent}` : ""}
           </span>
         </span>
         <span className="shrink-0 text-right">
@@ -109,10 +117,11 @@ export function FormMatchCard({
       </div>
       <MatchSides
         className="mt-3"
-        home={row.team}
-        away={row.opponent ?? "—"}
-        homeLogo={row.homeLogo ?? row.logo}
-        awayLogo={row.awayLogo}
+        home={matchHome(row)}
+        away={matchAway(row)}
+        homeLogo={row.homeLogo ?? (row.team === matchHome(row) ? row.logo : null)}
+        awayLogo={row.awayLogo ?? (row.team === matchAway(row) ? row.logo : null)}
+        pick={row.team}
         center={<span className="text-xs font-semibold uppercase tracking-wide text-subtle">vs</span>}
       />
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -123,3 +132,4 @@ export function FormMatchCard({
     </button>
   );
 }
+

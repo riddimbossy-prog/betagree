@@ -185,6 +185,7 @@ export type TrendPick = {
     } | null;
     agree: { line: number; side: string; home: number; away: number; h2h: number | null; rate: number; split?: boolean }[];
   } | null;
+  origin?: "desk" | "split";
 };
 
 export type TrendTeam = {
@@ -274,7 +275,28 @@ export type TrendsPayload = {
   categories: Record<TrendCategory, TrendPick[]>;
   teams?: TrendTeam[];
   bankers: (TrendPick & { agreed?: DeskSource[] })[];
+  consensus?: FormConsensusRow[];
   games: number;
+};
+
+export type FormConsensusRow = {
+  team: string;
+  home: string;
+  away: string;
+  league: string;
+  kickoff: string | null;
+  kickoffIso: string | null;
+  homeLogo?: string | null;
+  awayLogo?: string | null;
+  fixtureId?: string | null;
+  markets: TrendCategory[];
+  sources: DeskSource[];
+  rate: number;
+  odds: number | null;
+  label: string;
+  dual: boolean;
+  score: number;
+  pick?: TrendPick;
 };
 
 export type FormPole = "most" | "least";
@@ -296,6 +318,8 @@ export type FormRow = {
   logo: string | null;
   fixtureId: string | null;
   opponent: string | null;
+  home?: string | null;
+  away?: string | null;
   kickoff?: string | null;
   boardLabel?: string | null;
   boardMarket?: string | null;

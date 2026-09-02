@@ -1,6 +1,6 @@
 import type { ConsensusItem, Fixture } from "@/lib/types";
 import { formatDecimal } from "@/lib/odds";
-import { MatchSides } from "@/components/match-sides";
+import { backedTeam, MatchSides } from "@/components/match-sides";
 import { TimeChip } from "@/components/trend-card";
 import { ConsensusChip } from "@/components/consensus-chip";
 import { usePickSheet } from "@/components/pick-sheet";
@@ -88,6 +88,7 @@ export function FixtureList({
                 away={f.away.name}
                 homeLogo={f.home.logo}
                 awayLogo={f.away.logo}
+                pick={backedTeam(tip.boardSelection, f.home.name, f.away.name)}
                 center={
                   <span className="text-base font-bold tabular fold:text-2xl">
                     {f.home.score ?? "–"} : {f.away.score ?? "–"}
@@ -95,9 +96,9 @@ export function FixtureList({
                 }
               />
               <div className="mt-3 flex flex-wrap justify-center gap-2">
-                <span className="odds-chip bg-secondary">{formatDecimal(f.away.ml)}</span>
-                <span className="odds-chip bg-secondary">{formatDecimal(f.drawMl)}</span>
                 <span className="odds-chip bg-secondary">{formatDecimal(f.home.ml)}</span>
+                <span className="odds-chip bg-secondary">{formatDecimal(f.drawMl)}</span>
+                <span className="odds-chip bg-secondary">{formatDecimal(f.away.ml)}</span>
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <p className="text-[11px] tracking-wide text-subtle uppercase">{marketTitle(tip.boardMarket)}</p>

@@ -1,5 +1,5 @@
 import type { ConsensusItem } from "@/lib/types";
-import { MatchSides } from "@/components/match-sides";
+import { backedTeam, MatchSides } from "@/components/match-sides";
 import { TimeChip } from "@/components/trend-card";
 import { ConsensusChip } from "@/components/consensus-chip";
 import { usePickSheet } from "@/components/pick-sheet";
@@ -56,6 +56,7 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
         away={f.away.name}
         homeLogo={f.home.logo}
         awayLogo={f.away.logo}
+        pick={backedTeam(tip.boardSelection, f.home.name, f.away.name)}
         center={
           <>
             <p className="text-2xl font-bold tabular fold:text-3xl">
@@ -68,9 +69,9 @@ export function ConsensusCard({ item, rank }: { item: ConsensusItem; rank?: numb
         }
       />
       <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-        <span className="odds-chip">{formatDecimal(f.away.ml)}</span>
-        <span className="odds-chip">{formatDecimal(f.drawMl)}</span>
         <span className="odds-chip">{formatDecimal(f.home.ml)}</span>
+        <span className="odds-chip">{formatDecimal(f.drawMl)}</span>
+        <span className="odds-chip">{formatDecimal(f.away.ml)}</span>
       </div>
       <p className="mt-4 text-center text-sm font-semibold">{tip.boardLabel}</p>
       <div className="mt-2 flex justify-center gap-2">

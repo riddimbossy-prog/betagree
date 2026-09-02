@@ -7,7 +7,7 @@ import { isPlayingToday } from "@/lib/format";
 import { useTrends } from "@/lib/live/use-live";
 import { useTodayOnly } from "@/lib/store";
 import { CATEGORY_META, FAMILY_META, type FormFamily } from "@/lib/trend-meta";
-import type { TrendCategory, TrendPick } from "@/lib/types";
+import type { FormConsensusRow, TrendCategory, TrendPick } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/form")({ component: FormPage });
@@ -50,6 +50,54 @@ function FormPage() {
   const visible = poleCats.filter((c) => (metric === "all" || metric === c.id) && (cats?.[c.id]?.length ?? 0) > 0);
   const total = poleCats.reduce((n, c) => n + (cats?.[c.id]?.length ?? 0), 0);
 
+  const agreed = useMemo(() => {
+    const query = q.trim().toLowerCase();
+    const rows = (data?.consensus ?? []).filter((row) => {
+      if (!row.dual) return false;
+      if (todayOnly && !isPlayingToday(row.kickoffIso, row.kickoff, data?.date)) return false;
+      if (!query) return true;
+      return (
+        row.home.toLowerCase().includes(query) ||
+        row.away.toLowerCase().includes(query) ||
+        row.team.toLowerCase().includes(query) ||
+        row.league.toLowerCase().includes(query) ||
+        row.label.toLowerCase().includes(query)
+      );
+    });
+    if (rows.length) return rows;
+    if (!cats) return [] as FormConsensusRow[];
+    const dual = Object.values(cats)
+      .flat()
+      .filter((p) => p.sources.includes("form") && p.sources.includes("odds"));
+    const seen = new Set<string>();
+    const fallback: FormConsensusRow[] = [];
+    for (const p of dual) {
+      const key = `${p.home}|${p.away}|${p.selection}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      fallback.push({
+        team: p.team,
+        home: p.home,
+        away: p.away,
+        league: p.league,
+        kickoff: p.kickoff,
+        kickoffIso: p.kickoffIso,
+        homeLogo: p.homeLogo,
+        awayLogo: p.awayLogo,
+        fixtureId: p.fixtureId,
+        markets: [p.category],
+        sources: p.sources,
+        rate: p.rate,
+        odds: p.odds,
+        label: p.label,
+        dual: true,
+        score: 100,
+        pick: p,
+      });
+    }
+    return fallback;
+  }, [data, cats, todayOnly, q]);
+
   return (
     <div className="flex flex-col gap-5 fold:gap-8">
       <header className="max-w-2xl">
@@ -61,6 +109,9 @@ function FormPage() {
           {loading && !data
             ? "Loading…"
             : `${total} ${pole === "best" ? "best" : "fade"} picks${todayOnly ? " today" : ""}`}
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Season tables and streak desks, then a consensus when both land on the same side. Prices stay 1.19–1.55.
         </p>
       </header>
 
@@ -171,7 +222,7 @@ function FormPage() {
       <BoardState
         loading={loading && !data}
         error={error}
-        empty={!loading && !error && total === 0}
+        empty={!loading && !error && total === 0 && agreed.length === 0}
         emptyLabel={
           todayOnly
             ? "Nothing playing today."
@@ -179,6 +230,57 @@ function FormPage() {
         }
         onRetry={reload}
       />
+
+      {agreed.length && family === "all" && metric === "all" && pole === "best" ? (
+        <section>
+          <div className="mb-4">
+            <h2 className="text-2xl font-semibold fold:text-3xl">
+              Both <span className="font-serif italic font-normal">desks</span>
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Form tables and streak desks agree on {agreed.length} {agreed.length === 1 ? "side" : "sides"} today. Ranked across every market.
+            </p>
+          </div>
+          <ul className="grid gap-3 fold:grid-cols-2 xl:grid-cols-3">
+            {agreed.slice(0, 9).map((row, i) => (
+              <li key={`${row.home}-${row.away}-${row.team}`}>
+                {row.pick ? (
+                  <TrendCard pick={row.pick} highlight={i === 0} />
+                ) : (
+                  <TrendCard
+                    pick={{
+                      id: `${row.home}-${row.away}-${row.team}`,
+                      category: row.markets[0] ?? "wins",
+                      home: row.home,
+                      away: row.away,
+                      team: row.team,
+                      opponent: row.team === row.home ? row.away : row.home,
+                      league: row.league,
+                      kickoff: row.kickoff,
+                      kickoffIso: row.kickoffIso,
+                      selection: "home",
+                      label: row.label,
+                      market: "1x2",
+                      odds: row.odds,
+                      rate: row.rate,
+                      sample: 5,
+                      statLabel: row.markets
+                        .map((id) => CATEGORY_META.find((c) => c.id === id)?.label ?? id)
+                        .join(" · "),
+                      sources: row.sources,
+                      sourceNotes: [],
+                      fixtureId: row.fixtureId ?? null,
+                      homeLogo: row.homeLogo ?? null,
+                      awayLogo: row.awayLogo ?? null,
+                    }}
+                    highlight={i === 0}
+                  />
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
 
       {visible.map((c) => (
         <section key={c.id} id={c.id}>

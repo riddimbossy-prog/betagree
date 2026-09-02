@@ -1,4 +1,4 @@
-import { MatchSides } from "@/components/match-sides";
+import { backedTeam, MatchSides } from "@/components/match-sides";
 import { PriceChip } from "@/components/price-chip";
 import { briefFromTrend, usePickSheet } from "@/components/pick-sheet";
 import { formatBoardTime } from "@/lib/format";
@@ -74,6 +74,7 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
         away={pick.away}
         homeLogo={pick.homeLogo}
         awayLogo={pick.awayLogo}
+        pick={backedTeam(pick.selection, pick.home, pick.away)}
         center={
           <>
             <PriceChip value={pick.odds} />
@@ -85,6 +86,12 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
         }
       />
       <p className="mt-3 text-center text-lg font-semibold leading-tight">{pick.label}</p>
+      <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
+        <SourcePills sources={pick.sources} invert={highlight} />
+        <span className={cn("text-xs font-semibold tabular", highlight ? "text-primary-foreground/80" : "text-muted-foreground")}>
+          {Math.round(pick.rate * 100)}%
+        </span>
+      </div>
     </button>
   );
 }

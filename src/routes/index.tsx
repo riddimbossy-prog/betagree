@@ -84,9 +84,16 @@ function Home() {
         0,
       )
     : 0;
-  const formBest = (trendCats?.wins ?? []).filter((pick) =>
-    isPlayingToday(pick.kickoffIso, pick.kickoff, trends.data?.date),
-  );
+  const formBest = (
+    (trends.data?.consensus ?? [])
+      .filter((row) => row.dual && (!todayOnly || isPlayingToday(row.kickoffIso, row.kickoff, trends.data?.date)))
+      .map((row) => row.pick)
+      .filter((pick): pick is NonNullable<typeof pick> => Boolean(pick))
+  )
+    .concat(
+      (trendCats?.wins ?? []).filter((pick) => !todayOnly || isPlayingToday(pick.kickoffIso, pick.kickoff, trends.data?.date)),
+    )
+    .filter((pick, i, all) => all.findIndex((p) => p.id === pick.id) === i);
   const formHot = (form.data?.boards["most-wins"]?.overall ?? [])
     .filter((r) => r.playingToday && isPlayingToday(r.kickoff))
     .slice(0, 4);

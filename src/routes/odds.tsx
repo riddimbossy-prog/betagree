@@ -175,27 +175,18 @@ function OddsFilterPage() {
                     </div>
                     <div className="mt-3 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
                       <span className="flex min-w-0 items-center gap-2">
-                        <Crest name={hit.fixture.away.name} logo={hit.fixture.away.logo} size="sm" />
-                        <span className="truncate text-sm font-medium">{hit.fixture.away.name}</span>
+                        <Crest name={hit.fixture.home.name} logo={hit.fixture.home.logo} size="sm" />
+                        <span className="truncate text-sm font-medium">{hit.fixture.home.name}</span>
                       </span>
                       <span className="text-lg font-bold tabular">
-                        {hit.fixture.away.score ?? "–"} : {hit.fixture.home.score ?? "–"}
+                        {hit.fixture.home.score ?? "–"} : {hit.fixture.away.score ?? "–"}
                       </span>
                       <span className="flex min-w-0 items-center justify-end gap-2">
-                        <span className="truncate text-right text-sm font-medium">{hit.fixture.home.name}</span>
-                        <Crest name={hit.fixture.home.name} logo={hit.fixture.home.logo} size="sm" />
+                        <span className="truncate text-right text-sm font-medium">{hit.fixture.away.name}</span>
+                        <Crest name={hit.fixture.away.name} logo={hit.fixture.away.logo} size="sm" />
                       </span>
                     </div>
                     <div className="mt-3 flex flex-wrap justify-center gap-2">
-                      <span
-                        className={cn(
-                          "odds-chip",
-                          hit.side === "away" ? "bg-primary text-primary-foreground" : "bg-secondary",
-                        )}
-                      >
-                        {formatDecimal(hit.fixture.away.ml)}
-                      </span>
-                      <span className="odds-chip bg-secondary">{formatDecimal(hit.fixture.drawMl)}</span>
                       <span
                         className={cn(
                           "odds-chip",
@@ -203,6 +194,15 @@ function OddsFilterPage() {
                         )}
                       >
                         {formatDecimal(hit.fixture.home.ml)}
+                      </span>
+                      <span className="odds-chip bg-secondary">{formatDecimal(hit.fixture.drawMl)}</span>
+                      <span
+                        className={cn(
+                          "odds-chip",
+                          hit.side === "away" ? "bg-primary text-primary-foreground" : "bg-secondary",
+                        )}
+                      >
+                        {formatDecimal(hit.fixture.away.ml)}
                       </span>
                     </div>
                     <p className="mt-3 text-center text-sm text-azure">

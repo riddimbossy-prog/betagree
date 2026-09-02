@@ -1,13 +1,12 @@
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
-import { Crest } from "@/components/crest";
 import { Last5Strip } from "@/components/last5-strip";
+import { MatchSides } from "@/components/match-sides";
 import { PriceChip } from "@/components/price-chip";
 import { formatBoardTime } from "@/lib/format";
 import { formatDecimal } from "@/lib/odds";
 import type { DeskSource, FormRow, SportyScanPick, TrendPick } from "@/lib/types";
-import { cn } from "@/lib/utils";
 
 export type PickBrief = {
   id: string;
@@ -58,16 +57,18 @@ export function briefFromTrend(pick: TrendPick): PickBrief {
     stat: pick.statLabel,
     odds: pick.odds,
     last5: pick.last5 ?? null,
-    why: "",
+    sources: pick.sources,
+    why: pick.statLabel || "",
   };
 }
 
 export function briefFromForm(row: FormRow, unit: string): PickBrief {
   return {
     id: `form:${row.team}:${row.league}`,
-    home: row.team,
-    away: row.opponent,
-    homeLogo: row.logo,
+    home: row.home || row.team,
+    away: row.away || row.opponent,
+    homeLogo: row.homeLogo ?? (row.team === (row.home || row.team) ? row.logo : null),
+    awayLogo: row.awayLogo ?? (row.team === row.away ? row.logo : null),
     league: row.league,
     label: `${row.team} · ${row.display} ${unit.toLowerCase()}`,
     stat: `${row.count}/${row.matches}`,
@@ -118,35 +119,39 @@ export function PickProvider({ children }: { children: ReactNode }) {
                 </div>
 
                 <div className="space-y-4 px-5 pt-5 pb-6">
-                  <div className="flex items-end justify-between gap-3">
-                    <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                      <Crest name={brief.home} logo={brief.homeLogo} size="sm" className="fold:h-24 fold:w-[4.75rem]" />
-                      <span className="max-w-32 text-center text-sm font-semibold leading-tight break-words">{brief.home}</span>
-                    </div>
-                    <div className="pb-8 text-center">
-                      <p className="font-serif text-3xl italic text-or">{brief.away ? "vs" : "form"}</p>
-                      {time ? (
-                        <div className="glass-or mt-2 inline-flex flex-col items-center rounded-full px-3 py-1 text-or">
-                          {time.day ? (
-                            <span className="text-[10px] tracking-wide uppercase">{time.day}</span>
-                          ) : null}
-                          <span className="text-lg font-semibold tabular">{time.clock}</span>
-                        </div>
-                      ) : null}
-                    </div>
-                    {brief.away ? (
-                      <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-                        <Crest name={brief.away} logo={brief.awayLogo} size="sm" className="fold:h-24 fold:w-[4.75rem]" />
-                        <span className="max-w-32 text-center text-sm font-semibold leading-tight break-words">{brief.away}</span>
+                  <MatchSides
+                    home={brief.home}
+                    away={brief.away || "—"}
+                    homeLogo={brief.homeLogo}
+                    awayLogo={brief.awayLogo}
+                    center={
+                      <div className="text-center">
+                        <p className="font-serif text-3xl italic text-or">{brief.away ? "vs" : "form"}</p>
+                        {time ? (
+                          <div className="glass-or mt-2 inline-flex flex-col items-center rounded-full px-3 py-1 text-or">
+                            {time.day ? (
+                              <span className="text-[10px] tracking-wide uppercase">{time.day}</span>
+                            ) : null}
+                            <span className="text-lg font-semibold tabular">{time.clock}</span>
+                          </div>
+                        ) : null}
                       </div>
-                    ) : (
-                      <div className="flex-1" />
-                    )}
-                  </div>
+                    }
+                  />
                   <div className="flex flex-wrap items-center gap-2">
                     {price ? <PriceChip value={price} /> : null}
+                    {brief.sources?.includes("form") && brief.sources?.includes("odds") ? (
+                      <span className="glass-or rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-or uppercase">
+                        Both desks
+                      </span>
+                    ) : brief.sources?.length ? (
+                      <span className="text-sm text-muted-foreground">
+                        {brief.sources.includes("form") ? "Form desk" : "Odds desk"}
+                      </span>
+                    ) : null}
                     {brief.league ? <span className="text-base text-muted-foreground">{brief.league}</span> : null}
                   </div>
+                  {brief.why ? <p className="text-sm text-muted-foreground">{brief.why}</p> : null}
 
                   <Dialog.Description className="sr-only">{brief.label}</Dialog.Description>
 

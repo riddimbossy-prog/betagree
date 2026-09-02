@@ -16,6 +16,7 @@ import {
   parsePrimaTipMarkets,
   sameMatch,
   formRate,
+  alignPickToFixture,
   MIN_RATE,
   ODDS_FROM,
   ODDS_TO,
@@ -129,6 +130,8 @@ test("PrimaTips form tables split overall / home / away and keep goal averages",
   assert.equal(decorated[0].logo, "https://a.espncdn.com/pacific.png");
   assert.equal(decorated[0].fixtureId, "fx1");
   assert.equal(decorated[0].opponent, "York United");
+  assert.equal(decorated[0].home, "Pacific FC");
+  assert.equal(decorated[0].away, "York United");
 });
 
 test("form pick is dropped when odds miss the band", () => {
@@ -303,4 +306,88 @@ test("parse streak and tip markets", () => {
   assert.equal(parsePct("70%"), 0.7);
   assert.equal(ODDS_FROM, 1.19);
   assert.equal(ODDS_TO, 1.55);
+});
+
+test("form rows keep fixture home vs away even when the form team is away", () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = decorateFormRows(
+    [{ team: "Aberdeen", playingToday: true, rank: 8, count: 1, matches: 10, rate: 0.1, league: "Scotland" }],
+    [
+      {
+        id: "fx-celt",
+        status: "pre",
+        start: `${today}T18:45:00Z`,
+        live: false,
+        home: { name: "Celtic", logo: "c.png" },
+        away: { name: "Aberdeen", logo: "a.png" },
+      },
+    ],
+  );
+  assert.equal(rows[0].team, "Aberdeen");
+  assert.equal(rows[0].home, "Celtic");
+  assert.equal(rows[0].away, "Aberdeen");
+  assert.equal(rows[0].opponent, "Celtic");
+  assert.equal(rows[0].homeLogo, "c.png");
+  assert.equal(rows[0].awayLogo, "a.png");
+});
+
+test("alignPickToFixture rearranges reversed names and flips the selection", () => {
+  const aligned = alignPickToFixture(
+    {
+      home: "Aberdeen",
+      away: "Celtic",
+      team: "Celtic",
+      opponent: "Aberdeen",
+      selection: "away",
+      label: "Celtic to win",
+      market: "1x2",
+      odds: 1.25,
+    },
+    {
+      id: "fx-celt",
+      start: "2026-09-02T18:45:00Z",
+      league: "Scottish Premiership",
+      home: { name: "Celtic", logo: "c.png" },
+      away: { name: "Aberdeen", logo: "a.png" },
+    },
+  );
+  assert.equal(aligned.home, "Celtic");
+  assert.equal(aligned.away, "Aberdeen");
+  assert.equal(aligned.selection, "home");
+  assert.equal(aligned.team, "Celtic");
+  assert.equal(aligned.label, "Celtic to win");
+  assert.equal(aligned.fixtureId, "fx-celt");
+});
+
+test("PrimaTips reversed home/away snaps to the slate order", () => {
+  const form = [{ team: "Celtic", matches: 10, count: 8, rate: 0.8, playingToday: true, league: "Scotland" }];
+  const picks = buildPicksFromPrimaForm(
+    [
+      {
+        home: "Aberdeen",
+        away: "Celtic",
+        homeOdds: 8.5,
+        awayOdds: 1.25,
+        league: "Scotland",
+        kickoff: "19:45",
+      },
+    ],
+    form,
+    "wins",
+    [
+      {
+        id: "fx-celt",
+        status: "pre",
+        start: "2026-09-02T18:45:00Z",
+        league: "Scottish Premiership",
+        home: { name: "Celtic", ml: -400, logo: "c.png" },
+        away: { name: "Aberdeen", ml: 1000, logo: "a.png" },
+      },
+    ],
+  );
+  assert.equal(picks.length, 1);
+  assert.equal(picks[0].home, "Celtic");
+  assert.equal(picks[0].away, "Aberdeen");
+  assert.equal(picks[0].selection, "home");
+  assert.equal(picks[0].label, "Celtic to win");
 });

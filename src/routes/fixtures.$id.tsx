@@ -69,21 +69,21 @@ function FixturePage() {
         </p>
         <div className="mt-5 flex items-center justify-between gap-3">
           <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
-            <Crest name={fixture.away.name} logo={fixture.away.logo} size="lg" />
-            <span className="text-center text-sm font-medium">{fixture.away.name}</span>
-          </div>
-          <p className="text-4xl font-bold tabular">
-            {fixture.away.score ?? "–"} <span className="text-subtle">:</span> {fixture.home.score ?? "–"}
-          </p>
-          <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
             <Crest name={fixture.home.name} logo={fixture.home.logo} size="lg" />
             <span className="text-center text-sm font-medium">{fixture.home.name}</span>
           </div>
+          <p className="text-4xl font-bold tabular">
+            {fixture.home.score ?? "–"} <span className="text-subtle">:</span> {fixture.away.score ?? "–"}
+          </p>
+          <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
+            <Crest name={fixture.away.name} logo={fixture.away.logo} size="lg" />
+            <span className="text-center text-sm font-medium">{fixture.away.name}</span>
+          </div>
         </div>
         <dl className="mt-5 grid grid-cols-3 gap-2">
-          <OddCell k={fixture.away.abbr} v={formatDecimal(fixture.away.ml)} />
-          <OddCell k="Draw" v={formatDecimal(fixture.drawMl)} />
           <OddCell k={fixture.home.abbr} v={formatDecimal(fixture.home.ml)} />
+          <OddCell k="Draw" v={formatDecimal(fixture.drawMl)} />
+          <OddCell k={fixture.away.abbr} v={formatDecimal(fixture.away.ml)} />
         </dl>
       </header>
 

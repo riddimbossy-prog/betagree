@@ -69,6 +69,11 @@ function scrubTrends(data: TrendsPayload): TrendsPayload {
       ...scrubPick(p),
       agreed: (p.agreed ?? []).map(deskSource),
     })),
+    consensus: (data.consensus ?? []).map((row) => ({
+      ...row,
+      sources: (row.sources ?? []).map(deskSource),
+      pick: row.pick ? scrubPick(row.pick) : row.pick,
+    })),
   };
 }
 

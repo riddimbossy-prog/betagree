@@ -1,4 +1,4 @@
-import { MatchSides } from "@/components/match-sides";
+import { backedTeam, MatchSides } from "@/components/match-sides";
 import { briefFromScan, usePickSheet } from "@/components/pick-sheet";
 import { TimeChip } from "@/components/trend-card";
 import { PriceChip } from "@/components/price-chip";
@@ -54,6 +54,7 @@ export function ScanCard({ pick }: { pick: SportyScanPick }) {
         away={pick.away}
         homeLogo={pick.homeLogo}
         awayLogo={pick.awayLogo}
+        pick={backedTeam(pick.selection, pick.home, pick.away)}
         center={
           <>
             <span className="text-center text-sm font-semibold leading-tight fold:text-base">{pick.label}</span>

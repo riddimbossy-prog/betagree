@@ -1,4 +1,4 @@
-import { MatchSides } from "@/components/match-sides";
+import { backedTeam, MatchSides } from "@/components/match-sides";
 import { TimeChip } from "@/components/trend-card";
 import type { BankerRulePick } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -52,6 +52,7 @@ export function BankerCard({ pick }: { pick: BankerRulePick }) {
         away={pick.away}
         homeLogo={pick.homeLogo}
         awayLogo={pick.awayLogo}
+        pick={backedTeam(pick.selection, pick.home, pick.away) ?? (kind === "win" ? pick.home : undefined)}
         center={
           <>
             <span className="text-center text-sm font-semibold leading-tight fold:text-base">{shortPick(pick, kind)}</span>

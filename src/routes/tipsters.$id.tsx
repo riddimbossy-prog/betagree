@@ -84,7 +84,7 @@ function TipsterPage() {
                     </p>
                     <p className="text-sm font-medium">{p.label}</p>
                     <p className="truncate text-xs text-subtle">
-                      {p.fixture.away.abbr} {p.fixture.away.score}–{p.fixture.home.score} {p.fixture.home.abbr}
+                      {p.fixture.home.abbr} {p.fixture.home.score}–{p.fixture.away.score} {p.fixture.away.abbr}
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
