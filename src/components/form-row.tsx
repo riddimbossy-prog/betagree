@@ -51,15 +51,15 @@ export function FormRowCard({
       type="button"
       onClick={() => sheet.open(briefFromForm(tipped, unit))}
       className={cn(
-        "glass-lift flex w-full min-w-0 flex-col gap-2 overflow-hidden rounded-3xl p-3 text-left fold:p-4",
+        "glass-lift flex w-full min-w-0 flex-col gap-2 overflow-hidden rounded-2xl px-3 py-2.5 text-left fold:rounded-3xl fold:px-4",
         highlight ? "glass-purpure text-primary-foreground" : "glass",
       )}
     >
       <div className="flex w-full min-w-0 items-center gap-2 fold:gap-3">
         <span className="w-6 shrink-0 text-base font-semibold tabular text-subtle fold:w-8 fold:text-lg">{row.rank}</span>
-        <Crest name={row.team} logo={row.logo} size="sm" />
+        <Crest name={row.team} logo={row.logo} size="row" />
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-semibold leading-tight break-words fold:text-base">{row.team}</span>
+          <span className="block truncate text-sm font-semibold leading-tight fold:text-base">{row.team}</span>
           <span className={cn("block truncate text-xs", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
             {row.league}
             {row.home && row.away ? ` · ${row.home} vs ${row.away}` : row.opponent ? ` · vs ${row.opponent}` : ""}
@@ -106,30 +106,28 @@ export function FormMatchCard({
     <button
       type="button"
       onClick={() => sheet.open(briefFromForm(row, unit))}
-      className="glass glass-lift block w-full min-w-0 overflow-hidden rounded-3xl p-3 text-left fold:p-4"
+      className="glass glass-lift block w-full min-w-0 overflow-hidden rounded-2xl px-3 py-2.5 text-left fold:rounded-3xl fold:px-4"
     >
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex min-w-0 flex-wrap items-center gap-2">
         {row.kickoff ? <TimeChip raw={null} iso={row.kickoff} compact /> : null}
-        <span className="min-w-0 flex-1 text-sm leading-tight text-subtle break-words">{row.league}</span>
+        <span className="min-w-0 flex-1 truncate text-sm leading-tight text-subtle">{row.league}</span>
         {row.pct != null ? (
           <ConsensusChip pct={row.pct} count={row.tipCount ?? 0} coverage={row.coverage ?? 0} band={row.band} compact />
         ) : null}
       </div>
       <MatchSides
-        className="mt-3"
+        className="mt-2"
         home={matchHome(row)}
         away={matchAway(row)}
         homeLogo={row.homeLogo ?? (row.team === matchHome(row) ? row.logo : null)}
         awayLogo={row.awayLogo ?? (row.team === matchAway(row) ? row.logo : null)}
         pick={row.team}
-        center={<span className="text-xs font-semibold uppercase tracking-wide text-subtle">vs</span>}
       />
-      <div className="mt-3 flex flex-wrap items-center gap-2">
+      <div className="mt-2 flex flex-wrap items-center gap-2">
         {row.settle ? <SettleChip status={row.settle} compact /> : null}
         {row.price != null ? <span className="odds-chip">{row.price.toFixed(2)}</span> : null}
-        <p className="text-sm font-semibold text-or">{row.boardLabel}</p>
+        <p className="min-w-0 truncate text-sm font-semibold text-or">{row.boardLabel}</p>
       </div>
     </button>
   );
 }
-

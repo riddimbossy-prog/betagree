@@ -36,8 +36,8 @@ export function StreakCard({ pick }: { pick: StreakPick }) {
   const away = pick.table.away;
   const { clock, day } = formatBoardTime(null, pick.kickoff);
   return (
-    <article className="glass glass-lift block w-full min-w-0 overflow-hidden rounded-3xl p-3 text-left fold:p-5">
-      <div className="flex items-center justify-between gap-2">
+    <article className="glass glass-lift block w-full min-w-0 overflow-hidden rounded-2xl px-3 py-2.5 text-left fold:rounded-3xl fold:px-4 fold:py-3">
+      <div className="flex min-w-0 items-center justify-between gap-2">
         <span
           className={cn(
             "shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide",
@@ -50,34 +50,32 @@ export function StreakCard({ pick }: { pick: StreakPick }) {
         >
           {shortLabel(pick)}
         </span>
-        <span className="glass-or inline-flex shrink-0 items-baseline gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide tabular text-or">
-          {day ? <span className="hidden font-medium opacity-80 fold:inline">{day}</span> : null}
-          <span>{clock}</span>
-        </span>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <PriceChip value={pick.odds} compact />
+          <span className="glass-or inline-flex shrink-0 items-baseline gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide tabular text-or">
+            {day ? <span className="hidden font-medium opacity-80 fold:inline">{day}</span> : null}
+            <span>{clock}</span>
+          </span>
+        </div>
       </div>
 
       <MatchSides
-        className="mt-3"
+        className="mt-2"
         home={pick.home}
         away={pick.away}
         homeLogo={pick.homeLogo}
         awayLogo={pick.awayLogo}
-        center={
-          <>
-            <PriceChip value={pick.odds} />
-            <span className="mt-1 text-xs font-semibold uppercase tracking-wide text-subtle">vs</span>
-          </>
-        }
       />
 
-      <p className="mt-2 truncate text-center text-xs text-muted-foreground fold:text-sm">
-        {pick.league}
-        {pick.scoring?.heat === "hot" ? " · hot" : pick.scoring?.heat === "cold" ? " · tight" : ""}
-      </p>
-
-      <div className="mt-2 flex flex-wrap items-center justify-center gap-1.5">
-        {home ? <PoleChip rank={home.rank} size={pick.table.size} pole={home.pole} /> : null}
-        {away ? <PoleChip rank={away.rank} size={pick.table.size} pole={away.pole} /> : null}
+      <div className="mt-1.5 flex min-w-0 items-center justify-between gap-2">
+        <p className="min-w-0 truncate text-xs text-muted-foreground">
+          {pick.league}
+          {pick.scoring?.heat === "hot" ? " · hot" : pick.scoring?.heat === "cold" ? " · tight" : ""}
+        </p>
+        <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5">
+          {home ? <PoleChip rank={home.rank} size={pick.table.size} pole={home.pole} /> : null}
+          {away ? <PoleChip rank={away.rank} size={pick.table.size} pole={away.pole} /> : null}
+        </div>
       </div>
     </article>
   );

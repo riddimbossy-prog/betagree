@@ -64,33 +64,35 @@ export function TrendCard({ pick, highlight }: { pick: TrendPick; highlight?: bo
       type="button"
       onClick={() => sheet.open(briefFromTrend(pick))}
       className={cn(
-        "glass-lift block w-full min-w-0 overflow-hidden rounded-3xl p-3 text-left fold:p-5",
+        "glass-lift block w-full min-w-0 overflow-hidden rounded-2xl px-3 py-2.5 text-left fold:rounded-3xl fold:px-4 fold:py-3",
         highlight ? "glass-purpure text-primary-foreground" : "glass",
       )}
     >
+      <div className="flex min-w-0 items-center justify-between gap-2">
+        <p className="min-w-0 truncate text-sm font-semibold">{pick.label}</p>
+        <div className="flex shrink-0 items-center gap-1.5">
+          <PriceChip value={pick.odds} compact />
+          <TimeChip raw={pick.kickoff} iso={pick.kickoffIso} invert={highlight} compact />
+        </div>
+      </div>
       <MatchSides
-        className="mt-1"
+        className="mt-2"
         home={pick.home}
         away={pick.away}
         homeLogo={pick.homeLogo}
         awayLogo={pick.awayLogo}
         pick={backedTeam(pick.selection, pick.home, pick.away)}
-        center={
-          <>
-            <PriceChip value={pick.odds} />
-            <TimeChip raw={pick.kickoff} iso={pick.kickoffIso} invert={highlight} compact />
-            <span className={cn("mt-1 w-full text-center text-[11px] leading-tight break-words", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
-              {pick.league}
-            </span>
-          </>
-        }
       />
-      <p className="mt-3 text-center text-lg font-semibold leading-tight">{pick.label}</p>
-      <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-        <SourcePills sources={pick.sources} invert={highlight} />
-        <span className={cn("text-xs font-semibold tabular", highlight ? "text-primary-foreground/80" : "text-muted-foreground")}>
-          {Math.round(pick.rate * 100)}%
-        </span>
+      <div className="mt-1.5 flex min-w-0 flex-wrap items-center justify-between gap-2">
+        <p className={cn("min-w-0 truncate text-xs", highlight ? "text-primary-foreground/70" : "text-muted-foreground")}>
+          {pick.league}
+        </p>
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <SourcePills sources={pick.sources} invert={highlight} />
+          <span className={cn("text-xs font-semibold tabular", highlight ? "text-primary-foreground/80" : "text-muted-foreground")}>
+            {Math.round(pick.rate * 100)}%
+          </span>
+        </div>
       </div>
     </button>
   );

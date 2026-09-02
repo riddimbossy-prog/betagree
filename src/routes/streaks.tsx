@@ -36,7 +36,7 @@ function Section({
       <h2 className="text-2xl font-semibold">
         {title} <span className="font-serif italic font-normal">{italic}</span>
       </h2>
-      <ul className="mt-3 grid gap-3 fold:grid-cols-2 xl:grid-cols-3">
+      <ul className="mt-3 grid grid-cols-1 gap-2 fold:gap-3 tab:grid-cols-2 xl:grid-cols-3">
         {picks.map((pick) => (
           <li key={pick.id}>
             <StreakCard pick={pick} />

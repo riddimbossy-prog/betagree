@@ -23,16 +23,16 @@ function TeamSide({
   return (
     <div
       className={cn(
-        "flex min-w-0 flex-col items-center gap-1.5",
-        align === "start" ? "fold:items-start" : "fold:items-end",
+        "flex min-w-0 items-center gap-1.5 fold:gap-2",
+        align === "end" && "flex-row-reverse",
       )}
     >
-      <Crest name={name} logo={logo} size="sm" className="shrink-0" />
+      <Crest name={name} logo={logo} size="row" className="shrink-0" />
       <p
         title={name}
         className={cn(
-          "w-full min-w-0 max-w-full text-center text-[13px] font-semibold leading-snug text-pretty hyphens-none [overflow-wrap:break-word] [word-break:normal] fold:text-sm",
-          align === "start" ? "fold:text-left" : "fold:text-right",
+          "min-w-0 flex-1 truncate text-[13px] font-semibold leading-tight fold:text-sm",
+          align === "end" ? "text-right" : "text-left",
           picked && "text-or",
         )}
       >
@@ -55,7 +55,7 @@ export function MatchSides({
   away: string;
   homeLogo?: string | null;
   awayLogo?: string | null;
-  center: ReactNode;
+  center?: ReactNode;
   pick?: string | null;
   className?: string;
 }) {
@@ -64,7 +64,7 @@ export function MatchSides({
   return (
     <div
       className={cn(
-        "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-start gap-2 fold:items-center fold:gap-3",
+        "grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-1.5 fold:gap-3",
         className,
       )}
     >
@@ -74,8 +74,8 @@ export function MatchSides({
         align="start"
         picked={Boolean(picked && home.toLowerCase() === picked)}
       />
-      <div className="flex min-w-0 max-w-[5.75rem] flex-col items-center justify-center self-center px-0.5 fold:max-w-[8rem]">
-        {center}
+      <div className="flex min-w-0 max-w-[3.75rem] flex-col items-center justify-center px-0.5 fold:max-w-[5.5rem]">
+        {center ?? <span className="text-[11px] font-semibold uppercase tracking-wide text-subtle">vs</span>}
       </div>
       <TeamSide
         name={away}

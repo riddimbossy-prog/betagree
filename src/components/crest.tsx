@@ -4,6 +4,7 @@ import { useOfficialCrest, crestCandidates } from "@/lib/official-crests";
 import { cn } from "@/lib/utils";
 
 const SIZES = {
+  row: "h-8 w-7 fold:h-9 fold:w-8",
   xs: "h-[4.25rem] w-14",
   sm: "h-[5.5rem] w-[4.5rem]",
   md: "h-[7.5rem] w-24",
