@@ -1,7 +1,7 @@
 export const FLASH_COPY = `FLASH ENGINE V1
 
 SportyBet markets only. Every route starts with both hard gates:
-- Match Over 3.5 odds must be greater than 1.50.
+- Match Over 3.5 odds must be below 2.00.
 - The 1X2 favourite must be ranked in the overall top 4.
 
 ROUTES
@@ -10,4 +10,4 @@ ROUTES
 3. Independently, if favourite Win & BTTS No is below 2.00, choose the favourite to win.
 4. Independently, if favourite Win & BTTS Yes is below 2.00, choose the favourite to score 2+.
 
-Strict boundaries: 1.50, 4.00 and 2.00 do not qualify. Missing odds or standings fail closed.`;
+Strict boundaries: Over 3.5 at 2.00, draw at 4.00 and combo odds at 2.00 do not qualify. Missing odds or standings fail closed.`;

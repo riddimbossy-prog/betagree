@@ -6,15 +6,16 @@ function row(over = {}) {
   return {
     fixtureId: "fx", league: "League", kickoff: "2026-09-07T18:00:00Z", when: "tomorrow",
     home: "Home", away: "Away", homeWin: 1.6, draw: 4.2, awayWin: 5.5,
-    homeRank: 3, awayRank: 12, ou: { "2.5": { over: 1.55 }, "3.5": { over: 2.1 } },
+    homeRank: 3, awayRank: 12, ou: { "2.5": { over: 1.55 }, "3.5": { over: 1.9 } },
     homeOu: { "1.5": { over: 1.42 } }, awayOu: { "1.5": { over: 2.4 } },
     homeBttsNo: 1.9, homeBttsYes: 1.85, awayBttsNo: 8, awayBttsYes: 9,
     drawOrOver25: 1.25, ...over,
   };
 }
 
-test("hard gates reject Over 3.5 at 1.50 and favourites outside top 4", () => {
-  assert.deepEqual(evaluateFlash(row({ ou: { "3.5": { over: 1.5 } } })), []);
+test("hard gates reject Over 3.5 at 2.00 or higher and favourites outside top 4", () => {
+  assert.deepEqual(evaluateFlash(row({ ou: { "3.5": { over: 2 } } })), []);
+  assert.deepEqual(evaluateFlash(row({ ou: { "3.5": { over: 2.1 } } })), []);
   assert.deepEqual(evaluateFlash(row({ homeRank: 5 })), []);
 });
 
