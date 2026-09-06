@@ -409,3 +409,13 @@ export function eventLeagueKey(ev) {
     .replace(/\s+/g, " ")
     .trim();
 }
+
+/** Official crest shown on SportyBet's mobile match/team details page. */
+export async function sportyTeamDetails(teamId) {
+  if (!teamId) return null;
+  const json = await sbFetchJson(`${sbBase()}/teams/${encodeURIComponent(teamId)}`, {
+    retries: 2,
+    timeoutMs: 12_000,
+  });
+  return json?.bizCode === 10000 ? json.data ?? null : null;
+}
