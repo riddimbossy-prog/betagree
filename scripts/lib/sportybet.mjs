@@ -24,6 +24,7 @@ export const SB_MARKETS = {
   homeOu: 19,
   awayOu: 20,
   btts: 29,
+  oneXTwoBtts: 35,
   twoPlusStreak: 60010,
   threePlusStreak: 60020,
   ouGg: 36,
@@ -287,13 +288,14 @@ export async function pullBoardBooks({ pageSize = 80, maxPages = 8 } = {}) {
 
 /** 1X2 + DNB + O/U + BTTS + home/away team totals + GG2+ + Draw or Over 2.5. */
 export async function pullScanBooks({ pageSize = 80, maxPages = 16 } = {}) {
-  const [one, dnb, ou, homeOu, awayOu, btts, ouGg, drawOrOver] = await Promise.all([
+  const [one, dnb, ou, homeOu, awayOu, btts, oneXTwoBtts, ouGg, drawOrOver] = await Promise.all([
     pullMarket(SB_MARKETS.oneXTwo, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.drawNoBet, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.overUnder, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.homeOu, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.awayOu, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.btts, { pageSize, maxPages }),
+    pullMarket(SB_MARKETS.oneXTwoBtts, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.ouGg, { pageSize, maxPages }),
     pullMarket(SB_MARKETS.drawOrOver, { pageSize, maxPages }),
   ]);
@@ -304,6 +306,7 @@ export async function pullScanBooks({ pageSize = 80, maxPages = 16 } = {}) {
     ...homeOu.keys(),
     ...awayOu.keys(),
     ...btts.keys(),
+    ...oneXTwoBtts.keys(),
     ...ouGg.keys(),
     ...drawOrOver.keys(),
   ]);
@@ -316,6 +319,7 @@ export async function pullScanBooks({ pageSize = 80, maxPages = 16 } = {}) {
       homeOu.get(id) ??
       awayOu.get(id) ??
       btts.get(id) ??
+      oneXTwoBtts.get(id) ??
       ouGg.get(id) ??
       drawOrOver.get(id);
     if (!ev) continue;
@@ -330,6 +334,7 @@ export async function pullScanBooks({ pageSize = 80, maxPages = 16 } = {}) {
       homeOu: teamOuLines(homeOu.get(id) ?? ev, "home"),
       awayOu: teamOuLines(awayOu.get(id) ?? ev, "away"),
       btts: marketRow(btts.get(id)),
+      oneXTwoBtts: marketRow(oneXTwoBtts.get(id)),
       gg2plus: gg2plusOdds(ouGg.get(id) ?? ev),
       drawOrOver25: drawOrOverOdds(drawOrOver.get(id) ?? ev),
     });
@@ -343,6 +348,7 @@ export async function pullScanBooks({ pageSize = 80, maxPages = 16 } = {}) {
       homeOu: homeOu.size,
       awayOu: awayOu.size,
       btts: btts.size,
+      oneXTwoBtts: oneXTwoBtts.size,
       ouGg: ouGg.size,
       drawOrOver: drawOrOver.size,
     },

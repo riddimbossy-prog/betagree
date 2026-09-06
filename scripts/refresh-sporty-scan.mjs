@@ -13,10 +13,12 @@ import { namesMatch } from "./lib/names-match.mjs";
 import { loadLeagueSplit } from "./lib/last5.mjs";
 import { eventLeagueKey, eventStartMs, outcomeOdds, pullScanBooks } from "./lib/sportybet.mjs";
 import { buildSportyScan } from "./lib/sporty-scan.mjs";
+import { buildFlash } from "./lib/flash-engine.mjs";
 import { dayBucket, isSeniorName } from "./lib/streak-rules.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
 const OUT = join(ROOT, "public/data/sporty-scan.json");
+const FLASH_OUT = join(ROOT, "public/data/flash.json");
 const ESPN = "https://site.web.api.espn.com/apis/v2/sports/soccer";
 const HORIZON_DAYS = 4;
 
@@ -241,6 +243,10 @@ export async function buildSportyScanBoard() {
       awayOu: item.awayOu,
       ou: item.ou,
       bttsYes: outcomeOdds(item.btts, "yes") ?? outcomeOdds(item.btts, "gg"),
+      homeBttsYes: outcomeOdds(item.oneXTwoBtts, "home & yes"),
+      homeBttsNo: outcomeOdds(item.oneXTwoBtts, "home & no"),
+      awayBttsYes: outcomeOdds(item.oneXTwoBtts, "away & yes"),
+      awayBttsNo: outcomeOdds(item.oneXTwoBtts, "away & no"),
       dnbAway: outcomeOdds(item.dnb, "away"),
       dnbHome: outcomeOdds(item.dnb, "home"),
       gg2plus: item.gg2plus ?? null,
@@ -249,6 +255,7 @@ export async function buildSportyScanBoard() {
   }
 
   const built = buildSportyScan(rows);
+  const flash = buildFlash(rows);
   const day = new Date().toISOString().slice(0, 10);
   const whenCounts = { today: 0, tomorrow: 0, later: 0 };
   for (const row of rows) whenCounts[row.when] = (whenCounts[row.when] || 0) + 1;
@@ -267,6 +274,17 @@ export async function buildSportyScanBoard() {
     tables: { espn: espnTables.size, split: splitBySlug.size },
     picks: built.picks,
     meta: built.meta,
+    flash: {
+      date: day,
+      dateLabel: day,
+      fetchedAt: new Date().toISOString(),
+      engine: "flash-v1",
+      source: "sportybet",
+      scanned: rows.length,
+      when: whenCounts,
+      picks: flash.picks,
+      meta: flash.meta,
+    },
   };
 }
 
@@ -285,6 +303,8 @@ if (bookEmpty && (prev?.scanned > 0 || prev?.picks?.length)) {
   );
   process.exit(0);
 }
+writeFileSync(FLASH_OUT, JSON.stringify(board.flash));
+delete board.flash;
 writeFileSync(OUT, JSON.stringify(board));
 const counts = {};
 for (const p of board.picks) counts[p.rule] = (counts[p.rule] || 0) + 1;

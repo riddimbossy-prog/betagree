@@ -10,6 +10,7 @@ import type {
   TrendsPayload,
   BankersPayload,
   SportyScanPayload,
+  FlashPayload,
 } from "@/lib/types";
 import { applySlateScores, type ScorePatch } from "@/lib/live/score-apply";
 import { mergeLiveFixtures } from "@/lib/live/merge-live";
@@ -342,6 +343,44 @@ export function useSportyScan(pollMs = 90_000, enabled = true, initial?: SportyS
           setLoading(false);
           setData((cur) => {
             if (!cur) setError("Could not reach the SportyBet scan.");
+            return cur;
+          });
+        }
+      }
+    };
+    void load();
+    const id = window.setInterval(() => void load(), pollMs);
+    return () => {
+      dead = true;
+      window.clearInterval(id);
+    };
+  }, [pollMs, tick, enabled]);
+
+  return { data, error, loading, reload };
+}
+
+export function useFlash(pollMs = 90_000, enabled = true, initial?: FlashPayload | null) {
+  const { tick, reload } = useReload();
+  const [data, setData] = useState<FlashPayload | null>(initial ?? null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(!initial);
+
+  useEffect(() => {
+    if (!enabled) return;
+    let dead = false;
+    const load = async () => {
+      try {
+        const json = await loadJson<FlashPayload>(["/data/flash.json", "/api/flash"]);
+        if (!dead) {
+          setData(json);
+          setError(null);
+          setLoading(false);
+        }
+      } catch {
+        if (!dead) {
+          setLoading(false);
+          setData((cur) => {
+            if (!cur) setError("Could not reach the Flash board.");
             return cur;
           });
         }
