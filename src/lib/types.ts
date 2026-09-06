@@ -514,3 +514,23 @@ export type SportyScanPayload = {
     rules?: Record<string, number>;
   };
 };
+
+export type FlashRule =
+  | "FLASH_DRAW_OVER25"
+  | "FLASH_TOP2_DRAW_OVER25"
+  | "FLASH_WIN_BTTS_NO"
+  | "FLASH_WIN_BTTS_YES";
+
+export type FlashPick = SportyScanPick & { rule: FlashRule | string; engine?: "flash-v1" | string };
+
+export type FlashPayload = {
+  date: string;
+  dateLabel: string;
+  fetchedAt: string;
+  engine: "flash-v1" | string;
+  source: "sportybet";
+  scanned: number;
+  when?: { today?: number; tomorrow?: number; later?: number };
+  picks: FlashPick[];
+  meta?: { engine?: string; count?: number; scanned?: number; rules?: Record<string, number> };
+};
