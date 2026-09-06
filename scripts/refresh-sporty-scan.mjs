@@ -14,6 +14,7 @@ import { loadLeagueSplit } from "./lib/last5.mjs";
 import { eventLeagueKey, eventStartMs, outcomeOdds, pullScanBooks } from "./lib/sportybet.mjs";
 import { buildSportyScan } from "./lib/sporty-scan.mjs";
 import { buildFlash } from "./lib/flash-engine.mjs";
+import { cacheSportyCrests } from "./lib/sporty-crests.mjs";
 import { dayBucket, isSeniorName } from "./lib/streak-rules.mjs";
 
 const ROOT = join(import.meta.dirname, "..");
@@ -177,6 +178,11 @@ export async function buildSportyScanBoard() {
     upcoming.push(item);
   }
 
+  const sportyCrests = await cacheSportyCrests(upcoming).catch((err) => {
+    console.warn("sporty crest cache failed", err?.message || err);
+    return { localById: new Map(), teams: 0, saved: 0 };
+  });
+
   const bySlug = new Map();
   for (const item of upcoming) {
     const slug = mapSlug(eventLeagueKey(item.ev));
@@ -227,8 +233,8 @@ export async function buildSportyScanBoard() {
       when: dayBucket(kickoff, now),
       home: item.home,
       away: item.away,
-      homeLogo: sameLogo ? null : ev.homeTeamIcon || homeOver?.logo || null,
-      awayLogo: sameLogo ? null : ev.awayTeamIcon || awayOver?.logo || null,
+      homeLogo: sameLogo ? null : sportyCrests.localById.get(ev.homeTeamId) || ev.homeTeamIcon || homeOver?.logo || null,
+      awayLogo: sameLogo ? null : sportyCrests.localById.get(ev.awayTeamId) || ev.awayTeamIcon || awayOver?.logo || null,
       homeWin: outcomeOdds(item.one, "home"),
       draw: outcomeOdds(item.one, "draw"),
       awayWin: outcomeOdds(item.one, "away"),
@@ -272,6 +278,7 @@ export async function buildSportyScanBoard() {
     books: books.counts,
     droppedYouth,
     tables: { espn: espnTables.size, split: splitBySlug.size },
+    crests: { sportyTeams: sportyCrests.teams, sportySaved: sportyCrests.saved },
     picks: built.picks,
     meta: built.meta,
     flash: {
