@@ -258,8 +258,11 @@ export function crestCandidates(official: string | null | undefined, logo?: stri
     if (s.startsWith("https://")) return;
     out.push(s);
   };
-  add(toLocalCrest(official));
+  // A fixture's explicit logo is tied to its provider team ID and is therefore
+  // more reliable than the global name index (which can collide with reserve,
+  // youth and similarly named clubs).
   add(toLocalCrest(logo));
+  add(toLocalCrest(official));
   // /api/crest-img only exists on the preview server, not GitHub Pages.
   if (import.meta.env.DEV) {
     add(crestProxy(official, name));
