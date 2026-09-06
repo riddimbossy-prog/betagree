@@ -9,12 +9,22 @@ import { sportyTeamDetails } from "./sportybet.mjs";
 const ROOT = join(import.meta.dirname, "../..");
 const OUT = join(ROOT, "public/crests");
 const INDEX = join(OUT, "index.json");
-const SPORTY_CDN = /^https:\/\/s\.sporty\.net\//i;
+// SportyBet's team-details response currently points at these image CDNs.
+const SPORTY_CREST_HOSTS = new Set(["s.sporty.net", "s.football.com", "www.flashscore.com"]);
 const LEGAL = new Set(["fc", "cf", "sc", "cs", "afc", "cfc", "sfc", "fk", "club", "cd", "de", "del", "la", "el"]);
 
 export function sportyCrestFile(teamId) {
   const id = String(teamId || "").match(/^sr:competitor:(\d+)$/)?.[1];
   return id ? `sb-${id}.png` : null;
+}
+
+export function isTrustedSportyCrestUrl(url) {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === "https:" && SPORTY_CREST_HOSTS.has(parsed.hostname);
+  } catch {
+    return false;
+  }
 }
 
 function norm(name) {
@@ -37,17 +47,8 @@ async function fileOk(file) {
   try { return (await stat(join(OUT, file))).size >= 250; } catch { return false; }
 }
 
-function indexedCrest(byName, name) {
-  for (const key of sportyNameKeys(name)) {
-    const path = byName[key];
-    const file = typeof path === "string" && path.startsWith("/crests/") ? path.slice(8) : null;
-    if (file) return { path, file };
-  }
-  return null;
-}
-
 async function download(url, file) {
-  if (!SPORTY_CDN.test(url)) throw new Error("untrusted SportyBet crest URL");
+  if (!isTrustedSportyCrestUrl(url)) throw new Error("untrusted SportyBet crest URL");
   const dest = join(OUT, file);
   const res = await fetch(url, {
     headers: { "User-Agent": "Mozilla/5.0", Accept: "image/png,image/*,*/*", Referer: "https://www.sportybet.com/" },
@@ -94,15 +95,13 @@ export async function cacheSportyCrests(events, { concurrency = 8 } = {}) {
     const file = sportyCrestFile(teamId);
     if (!file) return;
     try {
-      const existing = indexedCrest(index.byName, boardName);
-      if (existing && await fileOk(existing.file)) {
-        localById.set(teamId, existing.path);
-        return;
-      }
       const ready = await fileOk(file);
-      const details = await sportyTeamDetails(teamId);
+      const details = ready ? null : await sportyTeamDetails(teamId);
       const url = String(details?.logoUri || "");
-      if (!ready && url) { await download(url, file); saved += 1; }
+      if (!ready && url) {
+        await download(url, file);
+        saved += 1;
+      }
       if (!(await fileOk(file))) return;
       const path = `/crests/${file}`;
       localById.set(teamId, path);
