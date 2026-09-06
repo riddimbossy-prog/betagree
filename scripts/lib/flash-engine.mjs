@@ -1,11 +1,11 @@
 /** Flash: strict high-goal SportyBet routes. */
 
-export const FLASH = Object.freeze({ over35Min: 1.5, favoriteRankMax: 4, drawOver25Min: 4.0, comboMax: 2.0 });
+export const FLASH = Object.freeze({ over35Max: 2.0, favoriteRankMax: 4, drawOver25Min: 4.0, comboMax: 2.0 });
 
 export const FLASH_COPY = `FLASH ENGINE V1
 
 SportyBet markets only. Every route starts with both hard gates:
-- Match Over 3.5 odds must be greater than 1.50.
+- Match Over 3.5 odds must be below 2.00.
 - The 1X2 favourite must be ranked in the overall top 4.
 
 ROUTES
@@ -14,7 +14,7 @@ ROUTES
 3. Independently, if favourite Win & BTTS No is below 2.00, choose the favourite to win.
 4. Independently, if favourite Win & BTTS Yes is below 2.00, choose the favourite to score 2+.
 
-Strict boundaries: 1.50, 4.00 and 2.00 do not qualify. Missing odds or standings fail closed.`;
+Strict boundaries: Over 3.5 at 2.00, draw at 4.00 and combo odds at 2.00 do not qualify. Missing odds or standings fail closed.`;
 
 function num(value) {
   const n = Number(value);
@@ -43,7 +43,7 @@ function base(row, rule, market, selection, label, price, reasons) {
 
 export function evaluateFlash(row) {
   const over35 = num(row?.ou?.["3.5"]?.over);
-  if (over35 == null || over35 <= FLASH.over35Min) return [];
+  if (over35 == null || over35 >= FLASH.over35Max) return [];
 
   const homeWin = num(row.homeWin);
   const awayWin = num(row.awayWin);
@@ -60,7 +60,7 @@ export function evaluateFlash(row) {
   const topTwoClash = homeRank != null && awayRank != null && new Set([homeRank, awayRank]).size === 2 &&
     homeRank <= 2 && awayRank <= 2;
   const gates = [
-    `SportyBet Over 3.5 ${over35} > ${FLASH.over35Min}`,
+    `SportyBet Over 3.5 ${over35} < ${FLASH.over35Max}`,
     `${favoriteName} is the 1X2 favourite and ranks ${favoriteRank}`,
   ];
   const picks = [];
