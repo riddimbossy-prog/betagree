@@ -47,6 +47,14 @@ function ymd(d) {
   return d.toISOString().slice(0, 10).replace(/-/g, "");
 }
 
+function daysInclusive(start, end) {
+  const out = [];
+  const t0 = Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate());
+  const t1 = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate());
+  for (let t = t0; t <= t1; t += 86400_000) out.push(ymd(new Date(t)));
+  return out;
+}
+
 function parseAmerican(raw) {
   if (raw == null) return null;
   const n = typeof raw === "number" ? raw : Number(String(raw).replace("+", "").trim());
@@ -132,10 +140,12 @@ async function scoreboard(slug, dates) {
 }
 
 async function loadRange(start, end, settledOnly) {
-  const range = `${ymd(start)}-${ymd(end)}`;
+  // ESPN rejects YYYYMMDD-YYYYMMDD ranges with 400; single-day queries still work.
+  const days = daysInclusive(start, end);
   const batches = await Promise.all(
     LEAGUES.map(async ([slug, name]) => {
-      const events = await scoreboard(slug, range);
+      const events = [];
+      for (const date of days) events.push(...(await scoreboard(slug, date)));
       return events.map((e) => parseEvent(e, name, slug)).filter(Boolean);
     }),
   );
