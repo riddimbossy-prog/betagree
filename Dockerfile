@@ -1,13 +1,18 @@
 FROM node:22-alpine AS build
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
+COPY package.json package-lock.json ./
+RUN npm ci
 COPY . .
 RUN npm run build
+
 FROM node:22-alpine
 WORKDIR /app
-ENV NODE_ENV=production PORT=8080
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/server.mjs ./server.mjs
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=8080
+ENV NITRO_HOST=0.0.0.0
+ENV NITRO_PORT=8080
+COPY --from=build /app/.output .output
+COPY --from=build /app/package.json ./
 EXPOSE 8080
-CMD ["node","server.mjs"]
+CMD ["node", ".output/server/index.mjs"]
