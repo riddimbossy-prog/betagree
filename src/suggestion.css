@@ -1,0 +1,6 @@
+.suggestion{align-items:center}
+.suggestion>div{flex:1}
+.suggestion small{color:var(--green);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.suggestion button{border:0;background:var(--green);color:#0b150e;border-radius:9px;padding:9px 10px;font-size:10px;font-weight:700;white-space:nowrap}
+.suggestion button:disabled{opacity:.4}
+@media(max-width:520px){.suggestion{align-items:flex-start}.suggestion button{padding:8px}}
