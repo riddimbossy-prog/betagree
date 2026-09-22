@@ -1,13 +1,4 @@
-node_modules
-dist
-.output
-.vercel
-.nitro
-.tanstack
-*.log
+node_modules/
+dist/
 .env
-.env.local
-.DS_Store
-screenshots
-artifacts
-.grok
+*.log
