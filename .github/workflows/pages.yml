@@ -22,7 +22,22 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - name: Refresh SportyBet matches and odds
-        run: node scripts/refresh-matches.mjs
+        run: |
+          for attempt in 1 2 3; do
+            if node scripts/refresh-matches.mjs; then
+              exit 0
+            fi
+
+            echo "SportyBet refresh attempt ${attempt} failed"
+            sleep $((attempt * 10))
+          done
+
+          echo "Using the last verified live SportyBet feed"
+          mkdir -p public/data
+          curl --fail --retry 3 --retry-delay 3 \
+            https://betagree.com/data/matches.json \
+            --output public/data/matches.json
+          node -e 'const data = require("./public/data/matches.json"); if (!Array.isArray(data.matches) || data.matches.length === 0) process.exit(1); console.log(`Using ${data.matches.length} last-known SportyBet matches`)'
       - run: npm run typecheck
       - run: npm run build
       - name: Prepare Pages
