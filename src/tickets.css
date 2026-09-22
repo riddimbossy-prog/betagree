@@ -1,0 +1,16 @@
+.slip{gap:14px}
+.slip-title{display:flex;align-items:center;gap:10px}
+.slip label{display:flex;flex-direction:column;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.slip label input{width:82px;margin-top:3px;padding:7px 8px;border:1px solid #6da634;border-radius:8px;background:#eaffd3;color:#101710;font-weight:800;outline:none}
+.slip-return{display:flex;flex-direction:column}.slip-return small{font-size:9px;text-transform:uppercase}.slip-return b{font-size:13px}
+.tickets{display:grid;gap:16px}
+.ticket{overflow:hidden;background:var(--card);border:1px solid var(--line);border-radius:18px}
+.ticket-won{border-color:#4d7c2a}.ticket-lost{border-color:#673333}.ticket-void{border-color:#58615e}
+.ticket-head{position:static;height:auto;padding:15px 17px;background:#0b1411;border:0;backdrop-filter:none}
+.ticket-head>div{display:flex;align-items:center;gap:9px}.ticket-head small{color:var(--muted);text-transform:uppercase;font-size:9px;letter-spacing:1px}.ticket-head b{font-size:12px}.ticket-head span{color:var(--muted);font-size:10px}
+.ticket-state{text-transform:uppercase;font-size:10px;letter-spacing:1px;padding:7px 10px;border-radius:20px;background:#34413c;color:#c3cfca}.ticket-state.won{background:#9eea4520;color:var(--green)}.ticket-state.lost{background:#ff5f5f20;color:#ff7777}.ticket-state.void{background:#89938f22;color:#c7d0cd}
+.ticket-legs{padding:0 16px}.ticket-leg{display:flex;align-items:center;gap:12px;padding:15px 0;border-bottom:1px solid var(--line)}.ticket-leg:last-child{border-bottom:0}.leg-lost{opacity:.65}.leg-void{opacity:.55}
+.leg-number{width:25px;height:25px;display:grid;place-items:center;flex:0 0 auto;border-radius:50%;background:#1a2822;color:var(--green);font-size:10px;font-weight:800}.leg-copy{flex:1}.leg-copy small{color:var(--muted);font-size:9px}.leg-copy h3{font-size:14px;margin:3px 0}.leg-copy h3 span{color:var(--muted);font-weight:400}.leg-copy p{font-size:12px;margin:0}.leg-copy p b{color:var(--green)}
+.ticket .settle{display:flex;gap:5px}.ticket .settle button{display:flex;align-items:center;gap:3px;border:1px solid var(--line);background:#16221d;color:#d8e2de;border-radius:8px;padding:7px;font-size:9px}.ticket .settle svg{width:12px;height:12px}.status.void{background:#89938f22;color:#c7d0cd}
+.ticket-foot{display:grid;grid-template-columns:repeat(3,1fr);height:auto;position:static;padding:13px 17px;background:#0b1411;border:0;border-top:1px solid var(--line);backdrop-filter:none}.ticket-foot div{display:flex;flex-direction:column}.ticket-foot div:nth-child(2){text-align:center}.ticket-foot div:last-child{text-align:right}.ticket-foot small{color:var(--muted);font-size:9px;text-transform:uppercase}.ticket-foot b{font-size:13px;margin-top:2px}.ticket-won .ticket-foot div:last-child b{color:var(--green)}.ticket-lost .ticket-foot div:last-child b{color:#ff7777}
+@media(max-width:700px){.slip{display:grid;grid-template-columns:1fr 1fr}.slip-title{grid-column:1/-1}.slip-return{text-align:right}.slip>button{grid-column:1/-1;justify-content:center}.ticket-head>div{align-items:flex-start;flex-direction:column;gap:2px}.ticket-leg{align-items:flex-start;flex-wrap:wrap}.ticket .settle{width:100%;padding-left:37px}.ticket .settle button{flex:1;justify-content:center}}
