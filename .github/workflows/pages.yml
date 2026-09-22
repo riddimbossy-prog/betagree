@@ -1,0 +1,154 @@
+name: pages
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/20 * * * *"
+    - cron: "0 21 * * *"
+    - cron: "0 23 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
+      FOOTBALL_API_KEY: ${{ secrets.FOOTBALL_API_KEY }}
+      APISPORTS_KEY: ${{ secrets.APISPORTS_KEY }}
+      RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+      STATS_API_KEY: ${{ secrets.STATS_API_KEY }}
+      FOOTBALL_DATA_KEY: ${{ secrets.FOOTBALL_DATA_KEY }}
+      FOOTBALL_DATA_API_KEY: ${{ secrets.FOOTBALL_DATA_API_KEY }}
+      THESPORTSDB_API_KEY: ${{ secrets.THESPORTSDB_API_KEY }}
+      CREST_FILL_LIMIT: "220"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - uses: actions/cache@v4
+        id: deps
+        with:
+          path: |
+            node_modules
+            .tanstack
+          key: ${{ runner.os }}-node22-${{ hashFiles('package-lock.json', 'package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node22-
+
+      - name: Install dependencies
+        if: steps.deps.outputs.cache-hit != 'true'
+        run: npm install --no-audit --no-fund --prefer-offline
+
+      - name: Restore crest index
+        run: node scripts/restore-crests-index.mjs
+
+      - name: Guard crest index size
+        run: |
+          head -c 40 public/crests/index.json || true
+          if grep -q 'PLACEHOLDER' public/crests/index.json 2>/dev/null; then
+            echo "crest index is PLACEHOLDER — restoring"
+            node scripts/restore-crests-index.mjs
+          fi
+          n=$(node -e "const i=require('./public/crests/index.json'); console.log(Object.keys(i.byName||{}).length)")
+          echo "crest map size=$n"
+          test "$n" -ge 200
+
+      - name: Refresh live board
+        run: node scripts/refresh-board.mjs
+
+      - name: Refresh streaks board
+        run: node scripts/fetch-streaks.mjs
+        continue-on-error: true
+
+      - name: SportyBet main-board scan
+        run: node scripts/refresh-sporty-scan.mjs
+        continue-on-error: true
+
+      - name: Banker rules v2
+        if: >-
+          github.event.schedule == '0 21 * * *' ||
+          github.event.schedule == '0 23 * * *' ||
+          github.event_name == 'workflow_dispatch' ||
+          github.event_name == 'push'
+        run: node scripts/refresh-bankers.mjs
+        continue-on-error: true
+
+      - name: Nightly next-day prep
+        if: >-
+          github.event.schedule == '0 21 * * *' ||
+          github.event.schedule == '0 23 * * *' ||
+          github.event_name == 'workflow_dispatch'
+        run: node scripts/prepare-next-day.mjs --crests-only
+        continue-on-error: true
+
+      - name: Compact data JSON
+        run: |
+          node -e '
+            const fs = require("fs");
+            const path = require("path");
+            const dir = "public/data";
+            for (const f of fs.readdirSync(dir).filter((n) => n.endsWith(".json"))) {
+              const p = path.join(dir, f);
+              const raw = fs.readFileSync(p, "utf8");
+              try {
+                const min = JSON.stringify(JSON.parse(raw));
+                if (min.length < raw.length) {
+                  fs.writeFileSync(p, min);
+                  console.log(f, raw.length, "->", min.length);
+                }
+              } catch (e) {
+                console.warn("skip", f, e.message);
+              }
+            }
+          '
+
+      - name: Build
+        run: npx vite build
+
+      - name: Prepare Pages folder
+        id: out
+        run: |
+          dir=dist/client
+          if [ ! -f "$dir/_shell.html" ] && [ ! -f "$dir/index.html" ]; then
+            echo "Missing $dir HTML" >&2
+            find dist -type f | head -40
+            exit 1
+          fi
+          [ -f "$dir/_shell.html" ] && cp -f "$dir/_shell.html" "$dir/index.html"
+          cp -f "$dir/index.html" "$dir/404.html"
+          mkdir -p "$dir/crests"
+          cp -f public/crests/index.json "$dir/crests/index.json"
+          if [ -d public/crests ]; then
+            cp -n public/crests/*.png "$dir/crests/" 2>/dev/null || true
+          fi
+          echo "betagree.com" > "$dir/CNAME"
+          echo "dir=$dir" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ${{ steps.out.outputs.dir }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
