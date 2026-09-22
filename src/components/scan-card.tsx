@@ -1,0 +1,72 @@
+import { backedTeam, MatchSides } from "@/components/match-sides";
+import { briefFromScan, usePickSheet } from "@/components/pick-sheet";
+import { TimeChip } from "@/components/trend-card";
+import { PriceChip } from "@/components/price-chip";
+import type { SportyScanPick } from "@/lib/types";
+import { cn } from "@/lib/utils";
+
+export const SCAN_LABEL: Record<string, string> = {
+  win: "To win",
+  twoPlus: "2+ goals",
+  dnb: "Draw no bet",
+  gg: "GG",
+  under25: "Under 2.5",
+  drawOver: "Draw or over 2.5",
+};
+
+export const SCAN_ORDER = ["win", "twoPlus", "dnb", "gg", "under25", "drawOver"] as const;
+
+const SCAN_CHIP: Record<string, string> = {
+  win: "glass-or text-or",
+  twoPlus: "glass-high text-band-high-foreground",
+  dnb: "glass-lime text-primary-foreground",
+  gg: "glass-purpure text-primary-foreground",
+  under25: "glass-azure text-primary-foreground",
+  drawOver: "glass-amber text-primary-foreground",
+};
+
+export function scanKind(pick: SportyScanPick) {
+  if (pick.rule === "FAV_WIN") return "win";
+  if (pick.rule === "WEAK_UNDER25") return "under25";
+  if (pick.rule === "GG_TEAM_O05") return "gg";
+  if (pick.rule === "HOME_2PLUS") return "twoPlus";
+  if (pick.rule === "AWAY_DNB") return "dnb";
+  if (pick.rule === "DRAW_OR_OVER25") return "drawOver";
+  return "win";
+}
+
+export function ScanCard({ pick }: { pick: SportyScanPick }) {
+  const sheet = usePickSheet();
+  const kind = scanKind(pick);
+  return (
+    <button
+      type="button"
+      onClick={() => sheet.open(briefFromScan(pick))}
+      className="glass glass-lift block w-full min-w-0 overflow-hidden rounded-2xl px-3 py-2.5 text-left fold:rounded-3xl fold:px-4 fold:py-3"
+    >
+      <div className="flex min-w-0 items-center justify-between gap-2">
+        <span className={cn("shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold tracking-wide uppercase", SCAN_CHIP[kind] ?? "glass")}>
+          {SCAN_LABEL[kind] ?? pick.label}
+        </span>
+        <div className="flex min-w-0 items-center gap-1.5">
+          <PriceChip value={pick.price} compact />
+          <TimeChip iso={pick.kickoff} compact />
+        </div>
+      </div>
+
+      <MatchSides
+        className="mt-2"
+        home={pick.home}
+        away={pick.away}
+        homeLogo={pick.homeLogo}
+        awayLogo={pick.awayLogo}
+        pick={backedTeam(pick.selection, pick.home, pick.away)}
+      />
+
+      <p className="mt-1.5 truncate text-xs text-muted-foreground">
+        <span className="font-semibold text-or">{pick.label}</span>
+        <span> · {pick.league}</span>
+      </p>
+    </button>
+  );
+}

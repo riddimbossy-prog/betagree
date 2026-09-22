@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 220" role="img" aria-label="Betagree.com">
+  <defs>
+    <linearGradient id="pill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8B5CF6" stop-opacity="0.86"/>
+      <stop offset="1" stop-color="#4C1D95" stop-opacity="0.96"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="892" height="212" rx="106" fill="url(#pill)"/>
+  <rect x="4" y="4" width="892" height="212" rx="106" fill="none" stroke="#C4B5FD" stroke-opacity="0.45" stroke-width="2"/>
+  <text x="450" y="132" text-anchor="middle" fill="#F7F2EA"
+    font-family="Plus Jakarta Sans, Segoe UI, Helvetica, Arial, sans-serif"
+    font-size="72" font-weight="700" letter-spacing="-2.2">Betagree.com</text>
+</svg>
